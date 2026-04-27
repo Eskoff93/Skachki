@@ -1,6 +1,6 @@
 (function(){
-  if (window.__raceScreenFixLoaded) return;
-  window.__raceScreenFixLoaded = true;
+  if (window.__raceScreenFixLoadedV2) return;
+  window.__raceScreenFixLoadedV2 = true;
 
   var timer = null;
   var originalCreateRaceGame = null;
@@ -14,8 +14,10 @@
   }
 
   function ensureBelowBoard(){
-    var box = byId('phaserBox');
-    if (!box) return null;
+    var viewport = document.querySelector('#raceScreen .race-viewport');
+    var panel = document.querySelector('#raceScreen .race-panel');
+    if (!viewport) return null;
+
     removeTopOverlay();
 
     var board = byId('raceBelowBoard');
@@ -24,24 +26,16 @@
       board.id = 'raceBelowBoard';
       board.className = 'race-below-board';
       board.innerHTML = '<div class="race-below-title"><span>Позиции</span><span id="raceBelowPlayer">ВЫ</span></div><div class="race-below-list" id="raceBelowList"></div>';
-      box.insertAdjacentElement('afterend', board);
+      if (panel) panel.parentNode.insertBefore(board, panel);
+      else viewport.insertAdjacentElement('afterend', board);
     }
     return board;
   }
 
-  function patchScene(scene){
-    if (!scene || scene.raceScreenFixed) return;
-    scene.raceScreenFixed = true;
-
-    if (typeof scene.updateLeaderboard === 'function') {
-      scene.updateLeaderboard = function(){
-        if (this.boardBox) this.boardBox.setVisible(false);
-        if (this.boardLines) this.boardLines.forEach(function(line){ if (line) line.setVisible(false); });
-      };
-    }
-
-    if (scene.boardBox) scene.boardBox.setVisible(false);
-    if (scene.boardLines) scene.boardLines.forEach(function(line){ if (line) line.setVisible(false); });
+  function restorePhaserBoard(scene){
+    if (!scene) return;
+    if (scene.boardBox) scene.boardBox.setVisible(true);
+    if (scene.boardLines) scene.boardLines.forEach(function(line){ if (line) line.setVisible(true); });
   }
 
   function updateBelowBoard(){
@@ -53,7 +47,7 @@
     var scene = window.raceGame && window.raceGame.scene && window.raceGame.scene.scenes && window.raceGame.scene.scenes[0];
     if (!scene || !scene.runners || !list) return;
 
-    patchScene(scene);
+    restorePhaserBoard(scene);
 
     var sorted = scene.runners.slice().sort(function(a,b){ return b.progress - a.progress; });
     var total = scene.totalLaps || 1;
@@ -74,39 +68,41 @@
   }
 
   function startBoard(){
-    stopBoard();
+    stopBoard(false);
     ensureBelowBoard();
     timer = setInterval(updateBelowBoard, 250);
     setTimeout(updateBelowBoard, 100);
     setTimeout(updateBelowBoard, 500);
   }
 
-  function stopBoard(){
+  function stopBoard(removeBoard){
     if (timer) clearInterval(timer);
     timer = null;
     removeTopOverlay();
+    if (removeBoard) {
+      var b = byId('raceBelowBoard');
+      if (b) b.remove();
+    }
   }
 
   function install(){
-    if (typeof window.createRaceGame === 'function' && !window.createRaceGame.__raceFixWrapped) {
+    if (typeof window.createRaceGame === 'function' && !window.createRaceGame.__raceFixWrappedV2) {
       originalCreateRaceGame = window.createRaceGame;
       var wrappedCreate = function(){
         originalCreateRaceGame.apply(this, arguments);
         setTimeout(startBoard, 120);
       };
-      wrappedCreate.__raceFixWrapped = true;
+      wrappedCreate.__raceFixWrappedV2 = true;
       window.createRaceGame = wrappedCreate;
     }
 
-    if (typeof window.destroyRaceGame === 'function' && !window.destroyRaceGame.__raceFixWrapped) {
+    if (typeof window.destroyRaceGame === 'function' && !window.destroyRaceGame.__raceFixWrappedV2) {
       originalDestroyRaceGame = window.destroyRaceGame;
       var wrappedDestroy = function(){
-        stopBoard();
-        var b = byId('raceBelowBoard');
-        if (b) b.remove();
+        stopBoard(true);
         originalDestroyRaceGame.apply(this, arguments);
       };
-      wrappedDestroy.__raceFixWrapped = true;
+      wrappedDestroy.__raceFixWrappedV2 = true;
       window.destroyRaceGame = wrappedDestroy;
     }
   }
