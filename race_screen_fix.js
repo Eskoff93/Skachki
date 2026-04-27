@@ -1,7 +1,10 @@
 (function(){
+  if (window.__raceScreenFixLoaded) return;
+  window.__raceScreenFixLoaded = true;
+
   var timer = null;
-  var oldCreate = null;
-  var oldDestroy = null;
+  var originalCreateRaceGame = null;
+  var originalDestroyRaceGame = null;
 
   function byId(id){ return document.getElementById(id); }
 
@@ -26,16 +29,11 @@
     return board;
   }
 
-  function hidePhaserBoard(scene){
-    if (!scene || !scene.boardHiddenPatched) return;
-  }
-
   function patchScene(scene){
     if (!scene || scene.raceScreenFixed) return;
     scene.raceScreenFixed = true;
 
-    var originalUpdateLeaderboard = scene.updateLeaderboard;
-    if (typeof originalUpdateLeaderboard === 'function') {
+    if (typeof scene.updateLeaderboard === 'function') {
       scene.updateLeaderboard = function(){
         if (this.boardBox) this.boardBox.setVisible(false);
         if (this.boardLines) this.boardLines.forEach(function(line){ if (line) line.setVisible(false); });
@@ -48,7 +46,8 @@
 
   function updateBelowBoard(){
     removeTopOverlay();
-    var board = ensureBelowBoard();
+    ensureBelowBoard();
+
     var list = byId('raceBelowList');
     var player = byId('raceBelowPlayer');
     var scene = window.raceGame && window.raceGame.scene && window.raceGame.scene.scenes && window.raceGame.scene.scenes[0];
@@ -59,6 +58,7 @@
     var sorted = scene.runners.slice().sort(function(a,b){ return b.progress - a.progress; });
     var total = scene.totalLaps || 1;
     var playerRunner = sorted.find(function(r){ return r.horse && r.horse.isPlayer; });
+
     if (player && playerRunner) {
       var pPlace = sorted.indexOf(playerRunner) + 1;
       var pPc = Math.min(100, Math.round((playerRunner.progress / total) * 100));
@@ -88,22 +88,26 @@
   }
 
   function install(){
-    if (typeof window.createRaceGame === 'function' && window.createRaceGame !== oldCreate) {
-      oldCreate = window.createRaceGame;
-      window.createRaceGame = function(){
-        oldCreate.apply(this, arguments);
+    if (typeof window.createRaceGame === 'function' && !window.createRaceGame.__raceFixWrapped) {
+      originalCreateRaceGame = window.createRaceGame;
+      var wrappedCreate = function(){
+        originalCreateRaceGame.apply(this, arguments);
         setTimeout(startBoard, 120);
       };
+      wrappedCreate.__raceFixWrapped = true;
+      window.createRaceGame = wrappedCreate;
     }
 
-    if (typeof window.destroyRaceGame === 'function' && window.destroyRaceGame !== oldDestroy) {
-      oldDestroy = window.destroyRaceGame;
-      window.destroyRaceGame = function(){
+    if (typeof window.destroyRaceGame === 'function' && !window.destroyRaceGame.__raceFixWrapped) {
+      originalDestroyRaceGame = window.destroyRaceGame;
+      var wrappedDestroy = function(){
         stopBoard();
         var b = byId('raceBelowBoard');
         if (b) b.remove();
-        oldDestroy.apply(this, arguments);
+        originalDestroyRaceGame.apply(this, arguments);
       };
+      wrappedDestroy.__raceFixWrapped = true;
+      window.destroyRaceGame = wrappedDestroy;
     }
   }
 
