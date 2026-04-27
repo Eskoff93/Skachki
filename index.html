@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Прототип мини‑приложения «Скачки» — обновлённый интерфейс</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    /* Общие стили */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 10px;
+      background-color: #f3f3f3;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 15px;
+    }
+
+    /* Карточка лошади */
+    .horse-card {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .horse-card img {
+      width: 64px;
+      height: 64px;
+      margin-right: 12px;
+    }
+    .horse-info {
+      flex-grow: 1;
+    }
+    .horse-info h2 {
+      font-size: 1.1em;
+      margin: 0 0 6px 0;
+    }
+    .stats {
+      font-size: 0.85em;
+      margin-bottom: 6px;
+    }
+    .stat-label {
+      display: inline-block;
+      width: 90px;
+      color: #555;
+    }
+    .stat-bar {
+      display: inline-block;
+      width: calc(100% - 100px);
+      height: 6px;
+      background-color: #e0e0e0;
+      border-radius: 3px;
+      vertical-align: middle;
+    }
+    .stat-bar span {
+      display: block;
+      height: 100%;
+      border-radius: 3px;
+      background-color: #4caf50;
+    }
+    .train-btn {
+      padding: 6px 10px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85em;
+    }
+    .train-btn:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+
+    /* Форма разведения */
+    #breedForm {
+      background-color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 20px;
+    }
+    #breedForm label {
+      margin-right: 5px;
+    }
+    #breedForm select {
+      margin-bottom: 5px;
+    }
+    .breed-btn {
+      background-color: #2196f3;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85em;
+    }
+    /* Адаптивность */
+    @media (min-width: 600px) {
+      .horse-card {
+        flex-direction: row;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Скачки — обновлённый прототип</h1>
+  <p>Этот обновлённый прототип адаптирован под мобильные устройства и включает простую графику. Карточки лошадей отображают основные характеристики в виде полос прогресса.</p>
+  <div id="horseCards"></div>
+
+  <div id="breedForm">
+    <h3>Разведение лошадей</h3>
+    <label for="parent1">Родитель&nbsp;1:</label>
+    <select id="parent1"></select><br>
+    <label for="parent2">Родитель&nbsp;2:</label>
+    <select id="parent2"></select><br>
+    <button id="breedButton" class="breed-btn">Скрестить</button>
+  </div>
+
+  <script>
+    // Интеграция с Telegram Web App
+    (function() {
+      if (window.Telegram && window.Telegram.WebApp) {
+        const tg = window.Telegram.WebApp;
+        try {
+          tg.ready();
+          tg.expand();
+        } catch (e) {
+          console.log('Telegram WebApp API unavailable or not in Telegram context');
+        }
+      }
+    })();
+
+    // Генерация случайного числа в диапазоне
+    function randInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    // Список возможных темпераментов
+    const temperaments = ['Ночная','Упрямая','Пугливая','Быстрая','Смелая'];
+    // Создание лошади
+    function createHorse(name) {
+      return {
+        id: Date.now() + Math.random().toString(36).substring(2, 6),
+        name: name,
+        speed: randInt(50, 80),
+        stamina: randInt(50, 80),
+        acceleration: randInt(50, 80),
+        agility: randInt(50, 80),
+        power: randInt(50, 80),
+        intelligence: randInt(50, 80),
+        temperament: temperaments[randInt(0, temperaments.length - 1)],
+        potential: 100,
+        energy: 100
+      };
+    }
+    // Массив с исходными лошадями
+    let horses = [
+      createHorse('Буран'),
+      createHorse('Молния'),
+      createHorse('Ветерок')
+    ];
+    // URL изображения лошади (иконка emoji Twemoji)
+    const horseImgUrl = 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f40e.png';
+
+    // Отображение карточек лошадей
+    function renderHorseCards() {
+      const container = document.getElementById('horseCards');
+      container.innerHTML = '';
+      horses.forEach(horse => {
+        const card = document.createElement('div');
+        card.className = 'horse-card';
+        card.innerHTML = `
+          <img src="${horseImgUrl}" alt="Лошадь">
+          <div class="horse-info">
+            <h2>${horse.name}</h2>
+            <div class="stats">
+              <div><span class="stat-label">Скорость:</span> <span class="stat-bar"><span style="width:${horse.speed}%"></span></span></div>
+              <div><span class="stat-label">Выносливость:</span> <span class="stat-bar"><span style="width:${horse.stamina}%"></span></span></div>
+              <div><span class="stat-label">Ускорение:</span> <span class="stat-bar"><span style="width:${horse.acceleration}%"></span></span></div>
+              <div><span class="stat-label">Манёвренность:</span> <span class="stat-bar"><span style="width:${horse.agility}%"></span></span></div>
+              <div><span class="stat-label">Сила:</span> <span class="stat-bar"><span style="width:${horse.power}%"></span></span></div>
+              <div><span class="stat-label">Интеллект:</span> <span class="stat-bar"><span style="width:${horse.intelligence}%"></span></span></div>
+              <div><span class="stat-label">Темперамент:</span> ${horse.temperament}</div>
+              <div><span class="stat-label">Потенциал:</span> <span class="stat-bar"><span style="width:${horse.potential}%"></span></span></div>
+              <div><span class="stat-label">Энергия:</span> <span class="stat-bar"><span style="width:${horse.energy}%"></span></span></div>
+            </div>
+            <button class="train-btn" onclick="trainHorse('${horse.id}')">Тренировать</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+      updateBreedSelectors();
+    }
+    // Тренировка лошади
+    window.trainHorse = function(id) {
+      const horse = horses.find(h => h.id === id);
+      if (!horse) return;
+      if (horse.energy <= 0 || horse.potential <= 0) {
+        alert('Лошадь устала или исчерпала потенциал.');
+        return;
+      }
+      const stats = ['speed','stamina','acceleration','agility','power','intelligence'];
+      const stat = stats[randInt(0, stats.length - 1)];
+      const gain = Math.min(randInt(1, 3), horse.potential);
+      horse[stat] += gain;
+      horse.potential -= gain;
+      horse.energy = Math.max(0, horse.energy - randInt(5, 15));
+      renderHorseCards();
+    };
+    // Обновление списков для разведения
+    function updateBreedSelectors() {
+      const p1 = document.getElementById('parent1');
+      const p2 = document.getElementById('parent2');
+      p1.innerHTML = '';
+      p2.innerHTML = '';
+      horses.forEach(horse => {
+        const option1 = document.createElement('option');
+        option1.value = horse.id;
+        option1.textContent = horse.name;
+        const option2 = option1.cloneNode(true);
+        p1.appendChild(option1);
+        p2.appendChild(option2);
+      });
+    }
+    // Скрещивание
+    function breed() {
+      const id1 = document.getElementById('parent1').value;
+      const id2 = document.getElementById('parent2').value;
+      if (!id1 || !id2 || id1 === id2) {
+        alert('Выберите разных родителей.');
+        return;
+      }
+      const parent1 = horses.find(h => h.id === id1);
+      const parent2 = horses.find(h => h.id === id2);
+      if (!parent1 || !parent2) return;
+      const foal = {
+        id: Date.now() + Math.random().toString(36).substring(2, 6),
+        name: 'Жеребёнок ' + (horses.length + 1),
+        speed: (parent1.speed + parent2.speed) / 2 + randInt(-3, 3),
+        stamina: (parent1.stamina + parent2.stamina) / 2 + randInt(-3, 3),
+        acceleration: (parent1.acceleration + parent2.acceleration) / 2 + randInt(-3, 3),
+        agility: (parent1.agility + parent2.agility) / 2 + randInt(-3, 3),
+        power: (parent1.power + parent2.power) / 2 + randInt(-3, 3),
+        intelligence: (parent1.intelligence + parent2.intelligence) / 2 + randInt(-3, 3),
+        temperament: Math.random() < 0.5 ? parent1.temperament : parent2.temperament,
+        potential: Math.floor((parent1.potential + parent2.potential) / 2),
+        energy: 100
+      };
+      // Ограничение характеристик
+      ['speed','stamina','acceleration','agility','power','intelligence'].forEach(stat => {
+        foal[stat] = Math.min(100, Math.max(10, Math.round(foal[stat])));
+      });
+      horses.push(foal);
+      renderHorseCards();
+    }
+    document.getElementById('breedButton').addEventListener('click', breed);
+    // Начальная отрисовка
+    renderHorseCards();
+  </script>
+</body>
+</html>
