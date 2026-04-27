@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Skachki</title>
+  <style>
+    :root{
+      --bg:#071323;--panel:#10263d;--panel2:#15314d;--text:#f4f8fc;--muted:#9fb3c8;
+      --line:rgba(255,255,255,.08);--shadow:0 10px 30px rgba(0,0,0,.28);
+      --safe-bottom:env(safe-area-inset-bottom,0px);--safe-top:env(safe-area-inset-top,0px);
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+    button{font-family:inherit}
+    .screen{position:absolute;inset:0;display:none;flex-direction:column;background:linear-gradient(180deg,#0b1d30,#07111d)}
+    .screen.active{display:flex}
+    .topbar{padding:calc(10px + var(--safe-top)) 14px 12px;background:linear-gradient(180deg,#132c46,#0e1f31);border-bottom:1px solid var(--line)}
+    .toprow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .title{text-align:center;flex:1}
+    .title h1{margin:0;font-size:18px;font-weight:900;letter-spacing:.04em}
+    .title p{margin:4px 0 0;color:var(--muted);font-size:12px}
+    .icon-btn{width:38px;height:38px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:white;border-radius:12px;font-weight:900}
+    .scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px calc(124px + var(--safe-bottom))}
+    .summary,.card{background:linear-gradient(180deg,rgba(16,38,61,.98),rgba(11,25,41,.98));border:1px solid rgba(125,176,229,.16);border-radius:20px;box-shadow:var(--shadow)}
+    .summary{padding:14px;margin-bottom:14px}
+    .sum-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .pill{display:inline-flex;align-items:center;gap:6px;padding:8px 10px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--line);font-weight:900;font-size:13px}
+    .sum-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+    .chip{padding:10px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.05);text-align:center}
+    .chip .v{font-size:18px;font-weight:900}.chip .l{font-size:11px;color:var(--muted);margin-top:4px}
+    .card{padding:14px;margin-bottom:14px}
+    .head{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px}
+    .avatar{width:68px;height:68px;border-radius:16px;background:linear-gradient(180deg,#20415f,#142b41);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;overflow:hidden;flex:0 0 auto}
+    .avatar img{width:56px;height:56px;object-fit:contain}
+    .meta{flex:1;min-width:0}
+    .name-row{display:flex;justify-content:space-between;gap:8px}
+    .name{font-size:18px;font-weight:900;line-height:1.15}
+    .tag{border-radius:999px;padding:6px 10px;font-size:11px;font-weight:800;background:rgba(255,255,255,.06);border:1px solid var(--line);white-space:nowrap}
+    .sub{margin-top:6px;font-size:12px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap}
+    .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}
+    .stat-top{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;color:#d8e4ef}
+    .bar{height:9px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}.bar span{display:block;height:100%;border-radius:999px}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+    .btn{border:0;border-radius:14px;min-height:44px;padding:12px 14px;color:white;font-size:15px;font-weight:900;box-shadow:var(--shadow)}
+    .btn:active{transform:translateY(1px)}
+    .blue{background:linear-gradient(180deg,#5c6cff,#4a58d4)}.green{background:linear-gradient(180deg,#13bca7,#099786)}.pink{background:linear-gradient(180deg,#ff4c94,#e42471)}.dark{background:linear-gradient(180deg,#304964,#21364c)}.ghost{background:rgba(255,255,255,.07);border:1px solid var(--line)}
+    .footer{position:absolute;left:0;right:0;bottom:0;padding:12px 14px calc(14px + var(--safe-bottom));background:linear-gradient(180deg,rgba(8,20,35,.05),rgba(8,20,35,.98) 25%,#081423);border-top:1px solid rgba(255,255,255,.04)}
+    .footer-grid{display:grid;grid-template-columns:1fr;gap:10px}
+    @media(min-width:700px){.footer-grid{grid-template-columns:1fr 1fr}.scroll{padding-left:18px;padding-right:18px}}
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.58);z-index:30;backdrop-filter:blur(5px)}
+    .modal.active{display:flex}.modal-card{width:min(430px,100%);max-height:84vh;overflow:auto;background:linear-gradient(180deg,#142b42,#0f1f31);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:16px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+    .modal-card h3{margin:0 0 10px}.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.detail{padding:10px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.06)}.detail .l{font-size:11px;color:var(--muted);margin-bottom:5px}.detail .v{font-size:18px;font-weight:900}
+    .select,.train-option{width:100%;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:rgba(255,255,255,.06);color:#fff}
+    .select{min-height:46px;padding:0 12px;font-size:15px}.select option{background:#10263d}.select-label{font-size:12px;color:var(--muted);margin:12px 0 5px}
+    .train-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.train-option{text-align:left;padding:12px;min-height:76px}.train-option strong{display:block;margin-bottom:5px}.train-option span{font-size:11px;color:var(--muted);line-height:1.35}
+    .toast{position:fixed;left:14px;right:14px;bottom:calc(100px + var(--safe-bottom));z-index:40;display:none;padding:12px 14px;border-radius:16px;background:rgba(17,35,54,.96);border:1px solid rgba(255,255,255,.1);box-shadow:var(--shadow);font-weight:800;text-align:center}.toast.active{display:block}
+    #raceWrap{flex:1;min-height:0;padding:12px}#phaserBox{width:100%;height:100%;min-height:380px;border-radius:18px;overflow:hidden;background:#14273b;border:1px solid var(--line);box-shadow:var(--shadow)}#phaser-game,#phaser-game canvas{width:100%!important;height:100%!important;display:block}
+    .race-panel{padding:0 14px calc(14px + var(--safe-bottom));background:#081423}.race-status{padding:12px;border-radius:16px;background:linear-gradient(180deg,#142c44,#0f2032);border:1px solid var(--line);margin-bottom:10px}.race-status b{display:block;margin-bottom:5px}.race-status div{color:var(--muted);font-size:13px}
+    #fatal{position:fixed;inset:0;background:#0b1724;color:white;display:none;z-index:100;padding:18px;overflow:auto}#fatal pre{white-space:pre-wrap;font-size:12px;background:rgba(255,255,255,.07);padding:12px;border-radius:12px}
+  </style>
+  <script>
+    window.addEventListener('error',e=>{const f=document.getElementById('fatal');if(f){f.style.display='block';f.innerHTML='<h2>Ошибка</h2><pre>'+String(e.message)+'\\n'+String(e.filename)+':'+String(e.lineno)+'</pre>'}})
+  </script>
+  <script src="./phaser.min.js"></script>
+</head>
+<body>
+<div id="stable" class="screen active">
+  <div class="topbar"><div class="toprow"><button class="icon-btn" id="resetBtn">↻</button><div class="title"><h1>СКАЧКИ</h1><p>Конюшня, тренировки и разведение</p></div><button class="icon-btn" id="infoBtn">i</button></div></div>
+  <div class="scroll" id="scroll">
+    <div class="summary">
+      <div class="sum-head"><div><b>Ваша конюшня</b><div style="color:var(--muted);font-size:13px;margin-top:5px">Тренируйте, скрещивайте и запускайте гонки.</div></div><div class="pill" id="coinsPill">🪙 0</div></div>
+      <div class="sum-grid" id="summary"></div>
+    </div>
+    <div id="horseList"></div>
+  </div>
+  <div class="footer"><div class="footer-grid"><button class="btn green" id="breedBtn">Выбрать родителей</button><button class="btn pink" id="raceBtn">Запустить гонку</button></div></div>
+</div>
+
+<div id="race" class="screen">
+  <div class="topbar"><div class="toprow"><button class="icon-btn" id="backBtn">←</button><div class="title"><h1>ГОНКА</h1><p>Заезд на ипподроме</p></div><div style="width:38px"></div></div></div>
+  <div id="raceWrap"><div id="phaserBox"><div id="phaser-game"></div></div></div>
+  <div class="race-panel"><div class="race-status"><b>Статус</b><div id="raceStatus">Готово к старту.</div></div><button class="btn dark" id="restartBtn" style="width:100%">Запустить заново</button></div>
+</div>
+
+<div class="modal" id="horseModal"><div class="modal-card"><h3 id="horseTitle"></h3><div id="horseBody"></div><button class="btn blue" id="detailTrainBtn" style="width:100%;margin-top:12px">Тренировать</button><button class="btn dark" id="closeHorse" style="width:100%;margin-top:10px">Закрыть</button></div></div>
+<div class="modal" id="trainModal"><div class="modal-card"><h3 id="trainTitle">Тренировка</h3><div style="color:var(--muted);font-size:14px">Выберите параметр. Тренировка стоит монеты и тратит энергию.</div><div class="train-grid" id="trainOptions"></div><button class="btn dark" id="closeTrain" style="width:100%;margin-top:12px">Закрыть</button></div></div>
+<div class="modal" id="breedModal"><div class="modal-card"><h3>Выбор родителей</h3><div style="color:var(--muted);font-size:14px">Потомок наследует средние параметры с шансом мутации.</div><div class="select-label">Родитель 1</div><select class="select" id="p1"></select><div class="select-label">Родитель 2</div><select class="select" id="p2"></select><button class="btn green" id="breedConfirm" style="width:100%;margin-top:12px">Скрестить</button><button class="btn dark" id="breedClose" style="width:100%;margin-top:10px">Закрыть</button></div></div>
+<div class="modal" id="resultsModal"><div class="modal-card"><h3>Результаты гонки</h3><div id="results"></div><button class="btn dark" id="resultsClose" style="width:100%;margin-top:12px">Закрыть</button></div></div>
+<div class="modal" id="infoModal"><div class="modal-card"><h3>Прототип</h3><div style="color:var(--muted);font-size:14px;line-height:1.5">Теперь есть монеты, сохранение, выбор тренировки, награды за гонку и выбор родителей.</div><button class="btn dark" id="infoClose" style="width:100%;margin-top:12px">Ок</button></div></div>
+<div class="toast" id="toast"></div><div id="fatal"></div>
+
+<script>
+(function(){try{Telegram.WebApp.ready();Telegram.WebApp.expand();Telegram.WebApp.disableVerticalSwipes?.()}catch(e){}})();
+if(!window.Phaser){const f=document.getElementById('fatal');f.style.display='block';f.innerHTML='<h2>Phaser не загрузился</h2><p>Проверьте phaser.min.js рядом с index.html</p>';throw new Error('no phaser')}
+
+const SAVE_KEY='skachki_save_v2';
+const names=['Буран','Молния','Ветерок'];
+const tempers=['Смелая','Пугливая','Упрямая','Быстрая','Ночная'];
+let horses=[],coins=250,raceGame=null,currentRace=[],raceResults=[],raceRunning=false,audioCtx=null,hoofTimer=null,selectedHorse=null,selectedTrainHorse=null;
+
+function r(min,max){return Math.floor(Math.random()*(max-min+1))+min}
+function newHorse(name){return{id:Date.now()+Math.random().toString(36).slice(2,8),name,speed:r(52,78),stamina:r(52,78),acceleration:r(52,78),agility:r(45,75),power:r(45,75),intelligence:r(45,75),potential:r(80,100),energy:r(72,100),temperament:tempers[r(0,tempers.length-1)]}}
+function init(){horses=names.map(newHorse)}
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify({horses,coins}))}catch(e){}}
+function load(){try{const d=JSON.parse(localStorage.getItem(SAVE_KEY)||'{}');if(Array.isArray(d.horses)&&d.horses.length)horses=d.horses;else init();if(Number.isFinite(d.coins))coins=d.coins}catch(e){init()}}
+function avg(){return Math.round(horses.reduce((s,h)=>s+(h.speed+h.stamina+h.acceleration)/3,0)/horses.length)}
+function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('active');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('active'),1800)}
+function ctx(){if(!audioCtx){const AC=window.AudioContext||window.webkitAudioContext;if(AC)audioCtx=new AC()} if(audioCtx?.state==='suspended')audioCtx.resume().catch(()=>{});return audioCtx}
+function tone(f=440,d=.08,type='sine',v=.07){const c=ctx();if(!c)return;const o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+d)}
+function success(){tone(660,.07);setTimeout(()=>tone(880,.09),80)}
+function hoofStart(){hoofStop();hoofTimer=setInterval(()=>{tone(90+Math.random()*30,.035,'triangle',.045);setTimeout(()=>tone(78+Math.random()*20,.03,'triangle',.035),70)},180)}
+function hoofStop(){if(hoofTimer)clearInterval(hoofTimer);hoofTimer=null}
+function finishSound(){hoofStop();tone(700,.08);setTimeout(()=>tone(900,.08),90);setTimeout(()=>tone(1100,.12),180)}
+
+function stat(label,val,color){return `<div><div class="stat-top"><span>${label}</span><b>${Math.round(val)}</b></div><div class="bar"><span style="width:${Math.min(100,val)}%;background:${color}"></span></div></div>`}
+function render(){
+ document.getElementById('coinsPill').textContent='🪙 '+coins;
+ document.getElementById('summary').innerHTML=`<div class="chip"><div class="v">${horses.length}</div><div class="l">Лошадей</div></div><div class="chip"><div class="v">${avg()}</div><div class="l">Средний класс</div></div><div class="chip"><div class="v">${coins}</div><div class="l">Монеты</div></div>`;
+ document.getElementById('horseList').innerHTML=horses.map((h,i)=>`<article class="card"><div class="head"><div class="avatar"><img src="./horse_icon.png"></div><div class="meta"><div class="name-row"><div class="name">${h.name}</div><div class="tag">#${i+1}</div></div><div class="sub"><span>Характер: <b>${h.temperament}</b></span><span>Потенциал: <b>${h.potential}</b></span><span>Энергия: <b>${h.energy}</b></span></div></div></div><div class="stats">${stat('Скорость',h.speed,'linear-gradient(90deg,#33d17a,#24b862)')}${stat('Выносливость',h.stamina,'linear-gradient(90deg,#44b6ff,#2b8df0)')}${stat('Ускорение',h.acceleration,'linear-gradient(90deg,#ffd34d,#f3b900)')}${stat('Манёвренность',h.agility,'linear-gradient(90deg,#ffa163,#ff7f38)')}${stat('Сила',h.power,'linear-gradient(90deg,#9d8dff,#7869ff)')}${stat('Интеллект',h.intelligence,'linear-gradient(90deg,#ff7ab8,#f64d94)')}</div><div class="actions"><button class="btn blue" data-act="train" data-id="${h.id}">Тренировать</button><button class="btn ghost" data-act="detail" data-id="${h.id}">Подробнее</button></div></article>`).join('');
+}
+const trainTypes=[['speed','Скорость',25,10,'Максимальная скорость'],['stamina','Выносливость',25,10,'Темп до финиша'],['acceleration','Ускорение',20,8,'Старт и рывки'],['agility','Манёвренность',18,7,'Будущие сложные трассы'],['power','Сила',18,7,'Грязь и тяжёлые условия'],['intelligence','Интеллект',18,6,'Тактика и жокей']];
+function openTrain(id){const h=horses.find(x=>x.id===id);if(!h)return;selectedTrainHorse=id;document.getElementById('trainTitle').textContent='Тренировка: '+h.name;document.getElementById('trainOptions').innerHTML=trainTypes.map(t=>`<button class="train-option" data-key="${t[0]}"><strong>${t[1]}</strong><span>+2–6 • 🪙 ${t[2]} • ⚡ ${t[3]}<br>${t[4]}</span></button>`).join('');document.getElementById('trainModal').classList.add('active')}
+function train(key){const h=horses.find(x=>x.id===selectedTrainHorse),t=trainTypes.find(x=>x[0]===key);if(!h||!t)return;if(coins<t[2])return toast('Недостаточно монет');if(h.energy<t[3])return toast('Недостаточно энергии');const gain=r(2,6);h[key]=Math.min(100,h[key]+gain);h.energy=Math.max(0,h.energy-t[3]);h.potential=Math.max(50,h.potential-r(1,2));coins-=t[2];save();render();success();toast(`${h.name}: ${t[1]} +${gain}`);document.getElementById('trainModal').classList.remove('active');if(document.getElementById('horseModal').classList.contains('active'))details(h.id)}
+function details(id){const h=horses.find(x=>x.id===id);if(!h)return;selectedHorse=id;document.getElementById('horseTitle').textContent=h.name;document.getElementById('horseBody').innerHTML=`<div style="display:flex;gap:12px;align-items:center"><div class="avatar"><img src="./horse_icon.png"></div><div><div style="color:var(--muted);font-size:13px">Характер</div><b style="font-size:18px">${h.temperament}</b></div></div><div class="detail-grid">${['speed:Скорость','stamina:Выносливость','acceleration:Ускорение','agility:Манёвренность','power:Сила','intelligence:Интеллект','potential:Потенциал','energy:Энергия'].map(s=>{const [k,l]=s.split(':');return`<div class="detail"><div class="l">${l}</div><div class="v">${h[k]}</div></div>`}).join('')}</div>`;document.getElementById('horseModal').classList.add('active')}
+function openBreed(){const opts=horses.map(h=>`<option value="${h.id}">${h.name} — СК ${Math.round((h.speed+h.stamina+h.acceleration)/3)}</option>`).join('');p1.innerHTML=opts;p2.innerHTML=opts;if(horses[1])p2.value=horses[1].id;breedModal.classList.add('active')}
+function breed(){const a=horses.find(h=>h.id===p1.value),b=horses.find(h=>h.id===p2.value);if(!a||!b||a.id===b.id)return toast('Выберите разных родителей');const av=(x,y)=>(x+y)/2;const child={id:Date.now()+Math.random().toString(36).slice(2,8),name:'Жеребёнок '+(horses.length+1),speed:Math.min(100,Math.max(10,Math.round(av(a.speed,b.speed)+r(-5,6)))),stamina:Math.min(100,Math.max(10,Math.round(av(a.stamina,b.stamina)+r(-5,6)))),acceleration:Math.min(100,Math.max(10,Math.round(av(a.acceleration,b.acceleration)+r(-5,6)))),agility:Math.min(100,Math.max(10,Math.round(av(a.agility,b.agility)+r(-5,6)))),power:Math.min(100,Math.max(10,Math.round(av(a.power,b.power)+r(-5,6)))),intelligence:Math.min(100,Math.max(10,Math.round(av(a.intelligence,b.intelligence)+r(-5,6)))),potential:Math.min(100,Math.max(65,Math.round(av(a.potential,b.potential)+r(-3,5)))),energy:100,temperament:Math.random()<.5?a.temperament:b.temperament};horses.push(child);save();render();success();toast('Родился '+child.name);breedModal.classList.remove('active');scroll.scrollTo({top:scroll.scrollHeight,behavior:'smooth'})}
+
+function show(s){stable.classList.toggle('active',s==='stable');race.classList.toggle('active',s==='race')}
+class RaceScene extends Phaser.Scene{
+ preload(){this.load.image('horse','./horse_icon.png');this.load.audio('beep','./beep.wav')}
+ create(){raceRunning=false;const w=this.scale.width,h=this.scale.height;this.add.rectangle(0,0,w,h,0x183754).setOrigin(0);this.add.rectangle(0,0,w,56,0x10263d).setOrigin(0);this.add.text(w/2,28,'Скачки — заезд',{fontFamily:'Arial',fontSize:'20px',fontStyle:'bold',color:'#fff'}).setOrigin(.5);const top=110,gap=Math.max(58,Math.min(74,(h-145)/Math.max(3,currentRace.length))),laneH=42,finish=w-62;this.add.rectangle(0,top-22,w,gap*currentRace.length+30,0x3a7a2b,.25).setOrigin(0);for(let i=0;i<currentRace.length;i++){const y=top+i*gap;this.add.rectangle(14,y,w-28,laneH,0x88643f,.95).setOrigin(0).setStrokeStyle(1,0xb98b5c,.35);this.add.text(18,y-18,`${i+1}. ${currentRace[i].name}`,{fontFamily:'Arial',fontSize:'13px',fontStyle:'bold',color:'#eaf3fb'})}this.add.rectangle(finish,top-8,4,gap*currentRace.length,0xffffff,.95).setOrigin(0);this.runners=currentRace.map((horse,i)=>{const y=top+i*gap+laneH/2;const shadow=this.add.ellipse(50,y+14,34,10,0x000000,.18);const spr=this.add.image(50,y,'horse').setDisplaySize(42,42).setFlipX(true);const label=this.add.text(16,y-7,'',{fontFamily:'Arial',fontSize:'11px',color:'#d4e3f1'});return{horse,spr,shadow,label,y,bob:Math.random()*6.28,done:false}});this.cd=this.add.text(w/2,h/2,'',{fontFamily:'Arial',fontSize:'54px',fontStyle:'bold',color:'#fff',stroke:'#0c1d2d',strokeThickness:6}).setOrigin(.5);this.count()}
+ count(){let arr=['3','2','1','СТАРТ'],i=0,beep=this.sound.add('beep',{volume:.35});raceStatus.textContent='Подготовка к старту...';const step=()=>{if(i>=arr.length){this.cd.setVisible(false);this.startRace();return}this.cd.setText(arr[i++]);try{beep.play()}catch(e){}tone(520,.07,'square',.06);this.time.delayedCall(700,step)};step()}
+ startRace(){raceRunning=true;raceResults=[];this.startTime=this.time.now;raceStatus.textContent='Гонка началась!';hoofStart()}
+ update(time,delta){if(!raceRunning)return;const finish=this.scale.width-66;this.runners.forEach(rn=>{if(rn.done)return;const h=rn.horse,m=(.72+(h.speed*.05+h.acceleration*.03+h.stamina*.02)/10)*(0.7+h.energy/100*.5)*(0.9+Math.random()*.3)*(delta/16.6667)*2.2;rn.spr.x+=m;rn.shadow.x=rn.spr.x;const bob=Math.sin(time/70+rn.bob)*2.3;rn.spr.y=rn.y+bob;rn.label.setText(`${Math.max(0,Math.round(finish-rn.spr.x))} м`);if(rn.spr.x>=finish){rn.spr.x=finish;rn.done=true;rn.time=((time-this.startTime)/1000).toFixed(2);raceResults.push({name:h.name,time:rn.time,horse:h});if(raceResults.length===currentRace.length){raceRunning=false;finishSound();raceStatus.textContent='Гонка завершена';this.time.delayedCall(500,showResults)}}})}}
+function startRace(){destroyRace();currentRace=horses.slice(0,Math.min(5,horses.length)).map(h=>({...h}));show('race');raceStatus.textContent='Инициализация...';setTimeout(()=>{const box=phaserBox;raceGame=new Phaser.Game({type:Phaser.AUTO,parent:'phaser-game',width:Math.max(320,box.clientWidth),height:Math.max(380,box.clientHeight),resolution:Math.max(1,devicePixelRatio||1),scale:{mode:Phaser.Scale.RESIZE,autoCenter:Phaser.Scale.CENTER_BOTH},scene:[RaceScene]})},30)}
+function destroyRace(){hoofStop();if(raceGame){try{raceGame.destroy(true)}catch(e){}raceGame=null;document.getElementById('phaser-game').innerHTML=''}}
+function showResults(){raceResults.sort((a,b)=>parseFloat(a.time)-parseFloat(b.time));const rew=[90,55,30,15,10];let total=0;raceResults.forEach((it,i)=>{it.reward=rew[i]||5;total+=it.reward;const h=horses.find(x=>x.name===it.name);if(h)h.energy=Math.max(0,h.energy-r(4,8))});coins+=total;save();render();toast('Награда за гонку: 🪙 '+total);results.innerHTML=raceResults.map((it,i)=>`<div class="detail" style="margin-bottom:8px"><b>${i+1}. ${it.name}</b><div style="color:var(--muted);font-size:13px">${it.time} сек • +${it.reward} 🪙</div></div>`).join('');resultsModal.classList.add('active')}
+
+horseList.addEventListener('click',e=>{const b=e.target.closest('button[data-act]');if(!b)return;b.dataset.act==='train'?openTrain(b.dataset.id):details(b.dataset.id)});
+trainOptions.addEventListener('click',e=>{const b=e.target.closest('[data-key]');if(b)train(b.dataset.key)});
+breedBtn.onclick=openBreed;breedConfirm.onclick=breed;raceBtn.onclick=startRace;restartBtn.onclick=startRace;backBtn.onclick=()=>{destroyRace();show('stable')};
+detailTrainBtn.onclick=()=>{horseModal.classList.remove('active');openTrain(selectedHorse)};
+resetBtn.onclick=()=>{if(confirm('Сбросить прогресс?')){localStorage.removeItem(SAVE_KEY);coins=250;init();save();render();toast('Прогресс сброшен')}};
+infoBtn.onclick=()=>infoModal.classList.add('active');infoClose.onclick=()=>infoModal.classList.remove('active');
+closeHorse.onclick=()=>horseModal.classList.remove('active');closeTrain.onclick=()=>trainModal.classList.remove('active');breedClose.onclick=()=>breedModal.classList.remove('active');resultsClose.onclick=()=>resultsModal.classList.remove('active');
+[horseModal,trainModal,breedModal,resultsModal,infoModal].forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('active')}));
+load();render();
+</script>
+</body>
+</html>
