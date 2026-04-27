@@ -1,6 +1,6 @@
 (function(){
 var R=[
-{id:'rookie',name:'Новичковый заезд',level:'Низкая',fee:10,prizeMin:30,prizeMax:60,distance:1000,opponents:3,classOffset:-12,desc:'Простой старт для молодой или слабой лошади.'},
+{id:'rookie',name:'Новичковый заезд',level:'Низкая',fee:0,prizeMin:30,prizeMax:60,distance:1000,opponents:3,classOffset:-12,desc:'Простой старт для молодой или слабой лошади.'},
 {id:'standard',name:'Обычный заезд',level:'Средняя',fee:25,prizeMin:80,prizeMax:150,distance:1600,opponents:5,classOffset:0,desc:'Базовый формат: нормальные соперники и честный приз.'},
 {id:'strong',name:'Сильный заезд',level:'Высокая',fee:50,prizeMin:180,prizeMax:300,distance:2000,opponents:6,classOffset:10,desc:'Серьёзная проверка для прокачанных лошадей.'},
 {id:'elite',name:'Элитный заезд',level:'Очень высокая',fee:100,prizeMin:400,prizeMax:700,distance:2400,opponents:7,classOffset:20,desc:'Большой риск и большой приз. Нужна сильная конюшня.'}
