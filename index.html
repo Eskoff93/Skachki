@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Скачки — мини‑игра на Phaser 4</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!--
+    Данный файл реализует более продвинутый прототип игры «Скачки» на базе Phaser 4.
+    Здесь присутствуют две основные сцены: «Конюшня» и «Гонка». Конюшня позволяет
+    просматривать лошадей, тренировать их характеристики и скрещивать двух
+    родителей для получения потомка. Сцена гонки отображает анимированную
+    дорожку, на которой несколько лошадей бегут на основе своих скоростных
+    параметров. Перед стартом отображается обратный отсчёт, сопровождаемый
+    коротким звуковым сигналом. По окончании гонки выводится таблица
+    результатов и предоставляется кнопка для возврата в конюшню.
+
+    Внимание: для корректной работы мини‑приложения в Telegram необходимо
+    разместить все файлы — сам HTML, phaser.min.js, изображения и звук — на
+    домене, указанном в настройках бота. Кроме того, метод tg.ready() и
+    tg.expand() вызываются в начале, чтобы подстроить игру под оболочку
+    Telegram Web App.
+  -->
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #f5f5f5;
+    }
+    /* Небольшой стиль для всплывающих окон (результаты гонки) */
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      font-size: 18px;
+      text-align: center;
+    }
+    .overlay .dialog {
+      background: #2c3e50;
+      padding: 20px;
+      border-radius: 8px;
+      max-width: 90%;
+    }
+    .overlay button {
+      margin-top: 16px;
+      padding: 10px 20px;
+      background: #3498db;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+  </style>
+  <!-- Подключаем локальную копию Phaser 4. Не забудьте добавить phaser.min.js в репозиторий. -->
+  <script src="./phaser.min.js"></script>
+</head>
+<body>
+  <div id="overlay" style="display:none" class="overlay"></div>
+  <script>
+  // Обеспечиваем интеграцию с Telegram WebApp
+  (function() {
+    if (window.Telegram && window.Telegram.WebApp) {
+      try {
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+      } catch (e) {
+        console.log('Telegram WebApp API unavailable: ', e);
+      }
+    }
+  })();
+
+  // Вспомогательная функция генерации случайного целого
+  function randInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  // Темпераменты для лошадей
+  const TEMPERAMENTS = ['Смелая', 'Пугливая', 'Упрямая', 'Быстрая', 'Ночная'];
+
+  // Функция создания новой лошади с рандомными параметрами
+  function createHorse(name) {
+    return {
+      id: Date.now() + Math.random().toString(36).substr(2, 6),
+      name,
+      speed: randInt(50, 80),
+      stamina: randInt(50, 80),
+      acceleration: randInt(50, 80),
+      agility: randInt(50, 80),
+      power: randInt(50, 80),
+      intelligence: randInt(50, 80),
+      temperament: TEMPERAMENTS[randInt(0, TEMPERAMENTS.length - 1)],
+      potential: 100,
+      energy: 100
+    };
+  }
+
+  // Начальный набор лошадей
+  let horses = [
+    createHorse('Буран'),
+    createHorse('Молния'),
+    createHorse('Ветерок')
+  ];
+
+  // Переменная для хранения результатов последней гонки
+  let raceResults = [];
+
+  // Конфигурация Phaser
+  const config = {
+    type: Phaser.AUTO,
+    backgroundColor: '#f5f5f5',
+    parent: null,
+    width: window.innerWidth,
+    height: window.innerHeight,
+    scene: [PreloadScene, StableScene, RaceScene]
+  };
+
+  // Создаём игру
+  const game = new Phaser.Game(config);
+
+  /**
+   * Сцена PreloadScene — отвечает за предварительную загрузку ресурсов.
+   */
+  function PreloadScene() {
+    Phaser.Scene.call(this, { key: 'PreloadScene' });
+  }
+  PreloadScene.prototype = Object.create(Phaser.Scene.prototype);
+  PreloadScene.prototype.constructor = PreloadScene;
+
+  PreloadScene.prototype.preload = function() {
+    // Загружаем спрайт лист бега лошади (5 кадров, каждый 82x66)
+    this.load.spritesheet('horse_run', './horse_run_cycle.png', {
+      frameWidth: 82,
+      frameHeight: 66
+    });
+    // Статичная иконка для карточек
+    this.load.image('horse_icon', './horse_icon.png');
+    // Звук для обратного отсчёта
+    this.load.audio('beep', './beep.wav');
+  };
+  PreloadScene.prototype.create = function() {
+    // Переходим в конюшню после загрузки
+    this.scene.start('StableScene');
+  };
+
+  /**
+   * Сцена StableScene — отображает список лошадей, позволяет тренировать
+   * характеристики и создавать потомство. Также от сюда запускается гонка.
+   */
+  function StableScene() {
+    Phaser.Scene.call(this, { key: 'StableScene' });
+  }
+  StableScene.prototype = Object.create(Phaser.Scene.prototype);
+  StableScene.prototype.constructor = StableScene;
+
+  StableScene.prototype.create = function() {
+    const scene = this;
+    // Очистка результата прошлой гонки
+    raceResults = [];
+    // Заголовок
+    this.add.text(scene.game.config.width / 2, 20, 'Конюшня', {
+      fontFamily: 'Arial', fontSize: '24px', color: '#333'
+    }).setOrigin(0.5);
+    // Контейнер для списка лошадей
+    this.horseContainer = this.add.container(0, 60);
+    // Кнопка запуска гонки
+    const raceBtn = this.add.text(scene.game.config.width / 2, scene.game.config.height - 40,
+      'Запустить гонку', {
+        fontFamily: 'Arial', fontSize: '20px', color: '#fff', backgroundColor: '#e91e63', padding: { x: 12, y: 8 }
+      })
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true });
+    raceBtn.on('pointerdown', () => {
+      // Передаём копию массива лошадей в гонку
+      this.scene.start('RaceScene', { horses: horses });
+    });
+    // Кнопка «Скрестить родителей»
+    const breedBtn = this.add.text(scene.game.config.width / 2, scene.game.config.height - 80,
+      'Скрестить первых 2 лошадей', {
+        fontFamily: 'Arial', fontSize: '18px', color: '#fff', backgroundColor: '#009688', padding: { x: 10, y: 6 }
+      })
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true });
+    breedBtn.on('pointerdown', () => {
+      if (horses.length < 2) return;
+      const parent1 = horses[0];
+      const parent2 = horses[1];
+      const foal = {
+        id: Date.now() + Math.random().toString(36).substr(2, 6),
+        name: 'Жеребёнок ' + (horses.length + 1),
+        speed: (parent1.speed + parent2.speed) / 2 + randInt(-3, 3),
+        stamina: (parent1.stamina + parent2.stamina) / 2 + randInt(-3, 3),
+        acceleration: (parent1.acceleration + parent2.acceleration) / 2 + randInt(-3, 3),
+        agility: (parent1.agility + parent2.agility) / 2 + randInt(-3, 3),
+        power: (parent1.power + parent2.power) / 2 + randInt(-3, 3),
+        intelligence: (parent1.intelligence + parent2.intelligence) / 2 + randInt(-3, 3),
+        temperament: Math.random() < 0.5 ? parent1.temperament : parent2.temperament,
+        potential: Math.floor((parent1.potential + parent2.potential) / 2),
+        energy: 100
+      };
+      ['speed','stamina','acceleration','agility','power','intelligence'].forEach(stat => {
+        foal[stat] = Math.min(100, Math.max(10, Math.round(foal[stat])));
+      });
+      horses.push(foal);
+      renderHorsesList(scene);
+    });
+    // Первичная отрисовка списка
+    renderHorsesList(scene);
+  };
+
+  // Отрисовывает список лошадей в конюшне
+  function renderHorsesList(scene) {
+    // Очищаем предыдущие элементы
+    if (scene.horseContainer) {
+      scene.horseContainer.removeAll(true);
+    }
+    const cardPadding = 10;
+    const cardHeight = 120;
+    const cardWidth = scene.game.config.width - 2 * cardPadding;
+    horses.forEach((horse, index) => {
+      const y = index * (cardHeight + cardPadding);
+      // Карточка
+      const bg = scene.add.rectangle(cardPadding, y, cardWidth, cardHeight, 0xffffff, 1)
+        .setOrigin(0,0)
+        .setStrokeStyle(1, 0xd0d0d0);
+      // Иконка
+      const iconSize = 64;
+      const icon = scene.add.image(cardPadding + 10 + iconSize / 2, y + iconSize / 2 + 10, 'horse_icon')
+        .setDisplaySize(iconSize, iconSize);
+      // Имя
+      const name = scene.add.text(cardPadding + 20 + iconSize, y + 8, horse.name, {
+        fontFamily: 'Arial', fontSize: '20px', color: '#333'
+      });
+      // Подзаголовок темперамента
+      const temper = scene.add.text(cardPadding + 20 + iconSize, y + 30, 'Характер: ' + horse.temperament, {
+        fontFamily: 'Arial', fontSize: '12px', color: '#666'
+      });
+      // Функция для создания полосы
+      function createBar(label, value, posIndex) {
+        const barX = cardPadding + 20 + iconSize;
+        const barY = y + 45 + posIndex * 12;
+        const lbl = scene.add.text(barX, barY, label + ':', { fontFamily: 'Arial', fontSize: '11px', color: '#555' })
+          .setOrigin(0, 0.5);
+        const barW = cardWidth - (barX - cardPadding) - 80;
+        const bgRect = scene.add.rectangle(barX + 40, barY, barW, 6, 0xe0e0e0)
+          .setOrigin(0, 0.5);
+        const fillRect = scene.add.rectangle(barX + 40, barY, barW * (value / 100), 6, 0x4caf50)
+          .setOrigin(0, 0.5);
+        scene.horseContainer.add([lbl, bgRect, fillRect]);
+        return { fillRect, barW };
+      }
+      // Отображаем основные характеристики (можно увеличить список)
+      const stats = [
+        { key: 'speed', label: 'Скорость' },
+        { key: 'stamina', label: 'Вынос.' },
+        { key: 'acceleration', label: 'Ускор.' }
+      ];
+      stats.forEach((stat, i) => {
+        createBar(stat.label, horse[stat.key], i);
+      });
+      // Кнопка тренировки
+      const trainBtn = scene.add.text(cardWidth - 90, y + cardHeight - 28, 'Тренировать', {
+        fontFamily: 'Arial', fontSize: '12px', color: '#fff', backgroundColor: '#3f51b5', padding: { x: 6, y: 4 }
+      })
+        .setOrigin(0.5)
+        .setInteractive({ useHandCursor: true });
+      trainBtn.on('pointerdown', () => {
+        // Тренировка увеличивает случайную характеристику и снижает потенциал и энергию
+        const keys = ['speed', 'stamina', 'acceleration'];
+        const k = keys[randInt(0, keys.length - 1)];
+        if (horse.potential > 0 && horse.energy > 0) {
+          horse[k] = Math.min(100, horse[k] + randInt(1, 4));
+          horse.potential = Math.max(0, horse.potential - randInt(1, 3));
+          horse.energy = Math.max(0, horse.energy - randInt(5, 10));
+        }
+        renderHorsesList(scene);
+      });
+      // Добавляем элементы в контейнер
+      scene.horseContainer.add([bg, icon, name, temper, trainBtn]);
+    });
+  }
+
+  /**
+   * Сцена RaceScene — отвечает за отображение гонки. Получает массив
+   * объектов лошадей через data.horses. Визуально отображает дорожку,
+   * анимирует лошадей и выполняет обратный отсчёт. По окончании гонки
+   * отображает результаты.
+   */
+  function RaceScene() {
+    Phaser.Scene.call(this, { key: 'RaceScene' });
+  }
+  RaceScene.prototype = Object.create(Phaser.Scene.prototype);
+  RaceScene.prototype.constructor = RaceScene;
+
+  RaceScene.prototype.init = function(data) {
+    // Копия лошадей, чтобы не менять глобальный массив во время гонки
+    this.raceHorses = data.horses.map(h => Object.assign({}, h));
+  };
+
+  RaceScene.prototype.create = function() {
+    const scene = this;
+    const { width, height } = scene.game.config;
+    // Отрисовываем фон дорожки
+    scene.cameras.main.setBackgroundColor('#fafafa');
+    // Высота каждой дорожки
+    const laneHeight = height / (this.raceHorses.length + 1);
+    // Создаём анимацию бега
+    scene.anims.create({
+      key: 'run',
+      frames: scene.anims.generateFrameNumbers('horse_run', { start: 0, end: 4 }),
+      frameRate: 10,
+      repeat: -1
+    });
+    // Создаём спрайты лошадей
+    this.horseSprites = [];
+    this.raceHorses.forEach((horse, index) => {
+      const y = laneHeight * (index + 1);
+      const sprite = scene.add.sprite(50, y, 'horse_run').setScale(1.5);
+      sprite.play('run');
+      // Сохраняем ссылку на данные
+      sprite.horseData = horse;
+      sprite.finishTime = null;
+      this.horseSprites.push(sprite);
+    });
+    // Рисуем дорожки (тонкие линии)
+    const graphics = scene.add.graphics({ lineStyle: { width: 1, color: 0xcccccc } });
+    for (let i = 1; i <= this.raceHorses.length; i++) {
+      const y = laneHeight * i;
+      graphics.strokeLineShape(new Phaser.Geom.Line(0, y + laneHeight / 2, width, y + laneHeight / 2));
+    }
+    // Стартовая позиция X для всех лошадей
+    this.startX = 50;
+    // Финальная линия
+    this.finishX = width - 50;
+    // Обратный отсчёт
+    this.countdown = 3;
+    this.countText = scene.add.text(width / 2, height / 2, '', {
+      fontFamily: 'Arial', fontSize: '64px', color: '#e91e63'
+    }).setOrigin(0.5);
+    this.soundBeep = scene.sound.add('beep');
+    this.time.addEvent({ delay: 1000, repeat: 3, callback: () => {
+      if (this.countdown > 0) {
+        this.countText.setText(this.countdown);
+        this.soundBeep.play();
+        this.countdown--;
+      } else if (this.countdown === 0) {
+        this.countText.setText('Старт!');
+        this.soundBeep.play();
+        this.countdown--;
+      } else {
+        this.countText.setVisible(false);
+        this.startRace();
+      }
+    } });
+    // Флаг начала гонки
+    this.raceStarted = false;
+    this.raceCompleted = false;
+  };
+
+  // Запускает гонку после завершения обратного отсчёта
+  RaceScene.prototype.startRace = function() {
+    this.raceStarted = true;
+    this.raceStartTime = this.time.now;
+  };
+
+  RaceScene.prototype.update = function(time, delta) {
+    if (!this.raceStarted || this.raceCompleted) return;
+    const dt = delta / 1000; // секундная дельта
+    let finishedCount = 0;
+    this.horseSprites.forEach((sprite) => {
+      // Если уже финишировал, пропускаем
+      if (sprite.finishTime !== null) {
+        finishedCount++;
+        return;
+      }
+      // Скорость в пикселях за секунду, пропорциональна характеристике скорости
+      const baseSpeed = 100 + sprite.horseData.speed * 2; // базовая скорость
+      // Добавляем небольшую случайность и коррекцию на выносливость (уставание уменьшает скорость)
+      const staminaFactor = sprite.horseData.stamina / 100;
+      const variability = 0.8 + Math.random() * 0.4;
+      const pxPerSecond = baseSpeed * staminaFactor * variability;
+      sprite.x += pxPerSecond * dt;
+      // Проверка финиша
+      if (sprite.x >= this.finishX) {
+        sprite.x = this.finishX;
+        sprite.finishTime = time;
+        sprite.play({ key: 'run', repeat: 0 });
+        // Сохраняем результат
+        raceResults.push({ name: sprite.horseData.name, time: (sprite.finishTime - this.raceStartTime) / 1000 });
+        // Если все финишировали — завершаем гонку
+        if (raceResults.length === this.horseSprites.length) {
+          this.endRace();
+        }
+      }
+    });
+  };
+
+  // Завершает гонку и показывает результаты
+  RaceScene.prototype.endRace = function() {
+    this.raceCompleted = true;
+    // Сортируем результаты по времени
+    raceResults.sort((a, b) => a.time - b.time);
+    // Создаём HTML-контейнер для результатов
+    const overlay = document.getElementById('overlay');
+    const dialog = document.createElement('div');
+    dialog.className = 'dialog';
+    let html = '<h3>Результаты гонки</h3><ol style="text-align:left">';
+    raceResults.forEach(res => {
+      html += `<li>${res.name} – ${res.time.toFixed(2)} с</li>`;
+    });
+    html += '</ol>';
+    html += '<button id="returnStable">Вернуться в конюшню</button>';
+    dialog.innerHTML = html;
+    // Очищаем и вставляем
+    overlay.innerHTML = '';
+    overlay.appendChild(dialog);
+    overlay.style.display = 'flex';
+    // Обработчик кнопки возврата
+    dialog.querySelector('#returnStable').onclick = () => {
+      overlay.style.display = 'none';
+      this.scene.start('StableScene');
+    };
+  };
+  </script>
+</body>
+</html>
