@@ -66,6 +66,13 @@ window.SKACHKI_RESULTS = (function () {
     setTimeout(bindDynamicResultButtons, 0);
   }
 
+  function closeResultsToRaceMenu() {
+    var G = game();
+    var modal = G.byId('resultsModal');
+    if (modal) modal.classList.remove('active');
+    G.showScreen('raceMenu');
+  }
+
   function bindDynamicResultButtons() {
     var G = game();
     var raceMenuButton = G.byId('resultRaceMenuBtn');
@@ -73,10 +80,7 @@ window.SKACHKI_RESULTS = (function () {
     var modal = G.byId('resultsModal');
 
     if (raceMenuButton) {
-      raceMenuButton.onclick = function () {
-        if (modal) modal.classList.remove('active');
-        G.showScreen('raceMenu');
-      };
+      raceMenuButton.onclick = closeResultsToRaceMenu;
     }
 
     if (mainMenuButton) {
@@ -90,10 +94,7 @@ window.SKACHKI_RESULTS = (function () {
   function bind() {
     var G = game();
     var closeResults = G.byId('closeResultsBtn');
-    var modal = G.byId('resultsModal');
-    if (closeResults) closeResults.onclick = function () {
-      if (modal) modal.classList.remove('active');
-    };
+    if (closeResults) closeResults.onclick = closeResultsToRaceMenu;
   }
 
   return {
