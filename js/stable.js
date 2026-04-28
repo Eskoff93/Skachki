@@ -45,7 +45,8 @@ window.SKACHKI_STABLE = (function () {
             '</div>' +
             '<div class="horse-tags">' +
               '<span class="mini-tag">Класс: ' + G.horseClass(horse) + '</span>' +
-              '<span class="mini-tag">Энергия: ' + horse.energy + '</span>' +
+              '<span class="mini-tag">Форма: ' + G.formLabel(horse.form) + '</span>' +
+              '<span class="mini-tag">Карьера: ' + horse.racesRun + '/' + horse.careerLimit + '</span>' +
               '<span class="mini-tag">Потенциал: ' + horse.potential + '</span>' +
               '<span class="mini-tag">Характер: ' + horse.temperament + '</span>' +
             '</div>' +
@@ -122,7 +123,13 @@ window.SKACHKI_STABLE = (function () {
       ['Сила', horse.power],
       ['Интеллект', horse.intelligence],
       ['Потенциал', horse.potential],
-      ['Энергия', horse.energy],
+      ['Форма', G.formLabel(horse.form) + ' ×' + G.formMultiplier(horse.form)],
+      ['Карьера', horse.racesRun + '/' + horse.careerLimit],
+      ['Потомство', horse.offspringCount + '/' + horse.offspringLimit],
+      ['Гонок', horse.racesRun],
+      ['Побед', horse.wins],
+      ['Призовых', horse.podiums],
+      ['Заработано', horse.earnings],
       ['Характер', horse.temperament],
       ['Класс', G.horseClass(horse)]
     ];
