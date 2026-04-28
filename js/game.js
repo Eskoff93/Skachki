@@ -45,10 +45,33 @@ window.SKACHKI_GAME = (function () {
     }, 1800);
   }
 
+  function normalizeHorse(horse) {
+    if (HORSE.normalizeHorse) return HORSE.normalizeHorse(horse, randInt);
+    if (!horse.form) horse.form = 'normal';
+    if (!Number.isFinite(horse.trainingStreakDays)) horse.trainingStreakDays = 0;
+    if (typeof horse.lastTrainingDate === 'undefined') horse.lastTrainingDate = null;
+    if (!Number.isFinite(horse.careerLimit)) horse.careerLimit = randInt(15, 35);
+    if (!Number.isFinite(horse.racesRun)) horse.racesRun = 0;
+    if (!Number.isFinite(horse.wins)) horse.wins = 0;
+    if (!Number.isFinite(horse.podiums)) horse.podiums = 0;
+    if (!Number.isFinite(horse.earnings)) horse.earnings = 0;
+    if (!Number.isFinite(horse.offspringLimit)) horse.offspringLimit = randInt(1, 5);
+    if (!Number.isFinite(horse.offspringCount)) horse.offspringCount = 0;
+    if (!horse.status) horse.status = 'active';
+    if (typeof horse.energy !== 'undefined') delete horse.energy;
+    return horse;
+  }
+
+  function normalizeHorses(horses) {
+    if (HORSE.normalizeHorses) return HORSE.normalizeHorses(horses, randInt);
+    if (!Array.isArray(horses)) return [];
+    return horses.map(normalizeHorse);
+  }
+
   function createHorse(name) {
     if (HORSE.createHorse) return HORSE.createHorse(name, randInt);
     var temperaments = DATA.temperaments || ['Смелая', 'Пугливая', 'Упрямая', 'Резкая', 'Быстрая'];
-    return {
+    return normalizeHorse({
       id: Date.now() + Math.random().toString(36).slice(2, 8),
       name: name,
       speed: randInt(54, 78),
@@ -58,14 +81,27 @@ window.SKACHKI_GAME = (function () {
       power: randInt(48, 74),
       intelligence: randInt(50, 76),
       potential: randInt(84, 100),
-      energy: randInt(74, 100),
       temperament: temperaments[randInt(0, temperaments.length - 1)]
-    };
+    });
   }
 
   function horseClass(horse) {
     if (HORSE.horseClass) return HORSE.horseClass(horse);
     return Math.round((horse.speed + horse.stamina + horse.acceleration + horse.agility + horse.power + horse.intelligence) / 6);
+  }
+
+  function formLabel(form) {
+    if (HORSE.formLabel) return HORSE.formLabel(form);
+    if (form === 'excellent') return 'Отличная';
+    if (form === 'bad') return 'Плохая';
+    return 'Нормальная';
+  }
+
+  function formMultiplier(form) {
+    if (HORSE.formMultiplier) return HORSE.formMultiplier(form);
+    if (form === 'excellent') return 1;
+    if (form === 'bad') return 0.6;
+    return 0.8;
   }
 
   function behaviorLabel(temperament) {
@@ -101,8 +137,9 @@ window.SKACHKI_GAME = (function () {
       }
     }
     if (!data || !Array.isArray(data.horses) || !data.horses.length) return newGame();
-    state.horses = data.horses;
+    state.horses = normalizeHorses(data.horses);
     state.coins = Number.isFinite(data.coins) ? data.coins : 250;
+    saveGame();
   }
 
   function averageClass() {
@@ -210,7 +247,11 @@ window.SKACHKI_GAME = (function () {
     clamp: clamp,
     showToast: showToast,
     createHorse: createHorse,
+    normalizeHorse: normalizeHorse,
+    normalizeHorses: normalizeHorses,
     horseClass: horseClass,
+    formLabel: formLabel,
+    formMultiplier: formMultiplier,
     behaviorLabel: behaviorLabel,
     saveGame: saveGame,
     loadGame: loadGame,
