@@ -1,6 +1,8 @@
 // Stable and main menu rendering.
 
 window.SKACHKI_STABLE = (function () {
+  var selectedDetailsHorseId = null;
+
   function game() { return window.SKACHKI_GAME; }
 
   function renderSummary() {
@@ -103,6 +105,8 @@ window.SKACHKI_STABLE = (function () {
     var horse = G.state.horses.find(function (h) { return String(h.id) === String(id); });
     if (!horse) return;
 
+    selectedDetailsHorseId = horse.id;
+
     var modal = G.byId('horseModal');
     var title = G.byId('horseModalTitle');
     var body = G.byId('horseModalBody');
@@ -132,9 +136,30 @@ window.SKACHKI_STABLE = (function () {
       '</div>' +
       '<div class="detail-grid">' + params.map(function (p) {
         return '<div class="detail-box"><div class="label helpable" data-help="' + p[0] + '">' + p[0] + '</div><div class="value">' + p[1] + '</div></div>';
-      }).join('') + '</div>';
+      }).join('') + '</div>' +
+      '<div id="paramHelpOverlay" class="param-help-overlay" aria-live="polite"></div>';
+
+    var trainButton = G.byId('horseModalTrainBtn');
+    if (trainButton) trainButton.dataset.id = horse.id;
 
     modal.classList.add('active');
+  }
+
+  function closeParamHelp() {
+    var overlay = document.getElementById('paramHelpOverlay');
+    if (!overlay) return;
+    overlay.classList.remove('active');
+    overlay.innerHTML = '';
+  }
+
+  function showParamHelp(target) {
+    var G = game();
+    var overlay = document.getElementById('paramHelpOverlay');
+    if (!overlay || !target) return;
+
+    var key = target.dataset.help;
+    overlay.innerHTML = '<button class="param-help-close" type="button" aria-label="Закрыть">×</button><b>' + key + '</b><span>' + ((G.DATA.parameterHelp || {})[key] || 'Описание появится позже.') + '</span>';
+    overlay.classList.add('active');
   }
 
   function bind() {
@@ -152,22 +177,34 @@ window.SKACHKI_STABLE = (function () {
     }
 
     var closeHorse = G.byId('closeHorseBtn');
-    if (closeHorse) closeHorse.onclick = function () { G.byId('horseModal').classList.remove('active'); };
+    if (closeHorse) closeHorse.onclick = function () {
+      closeParamHelp();
+      selectedDetailsHorseId = null;
+      G.byId('horseModal').classList.remove('active');
+    };
+
+    var trainButton = G.byId('horseModalTrainBtn');
+    if (trainButton) {
+      trainButton.onclick = function () {
+        var id = this.dataset.id || selectedDetailsHorseId;
+        if (!id || !window.SKACHKI_TRAINING) return;
+        closeParamHelp();
+        G.byId('horseModal').classList.remove('active');
+        window.SKACHKI_TRAINING.openTraining(id);
+      };
+    }
 
     document.addEventListener('click', function (event) {
-      var help = event.target.closest('#horseModal .helpable');
-      if (!help) return;
-      var box = help.closest('.detail-box');
-      var old = box.querySelector('.inline-param-help');
-      if (old) {
-        old.remove();
+      var close = event.target.closest('.param-help-close');
+      if (close) {
+        closeParamHelp();
         return;
       }
-      Array.prototype.forEach.call(document.querySelectorAll('.inline-param-help'), function (el) { el.remove(); });
-      var note = document.createElement('div');
-      note.className = 'inline-param-help';
-      note.innerHTML = '<b>' + help.dataset.help + '</b>' + ((G.DATA.parameterHelp || {})[help.dataset.help] || 'Описание появится позже.');
-      box.appendChild(note);
+
+      var help = event.target.closest('#horseModal .helpable');
+      if (!help) return;
+      event.preventDefault();
+      showParamHelp(help);
     }, true);
   }
 
