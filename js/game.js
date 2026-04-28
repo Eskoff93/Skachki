@@ -197,6 +197,7 @@ window.SKACHKI_GAME = (function () {
     if (window.SKACHKI_TRAINING) window.SKACHKI_TRAINING.bind();
     if (window.SKACHKI_BREEDING) window.SKACHKI_BREEDING.bind();
     if (window.SKACHKI_RACE_MENU) window.SKACHKI_RACE_MENU.bind();
+    if (window.SKACHKI_RACE_ENGINE) window.SKACHKI_RACE_ENGINE.bind();
     if (window.SKACHKI_RESULTS) window.SKACHKI_RESULTS.bind();
     showScreen('menu');
   }
