@@ -7,11 +7,21 @@ window.SKACHKI_BREEDING = (function () {
   var latestFoalId = null;
 
   function game() { return window.SKACHKI_GAME; }
+  function horseUi() { return window.SKACHKI_HORSE_UI || {}; }
 
   function genderLabel(horse) {
     var tools = window.SKACHKI_HORSE || {};
     if (tools.genderLabel) return tools.genderLabel(horse.gender);
     return horse.gender === 'mare' ? 'Кобыла' : 'Жеребец';
+  }
+
+  function horsePortrait(horse) {
+    var UI = horseUi();
+    return UI.horsePortrait ? UI.horsePortrait(horse) : '';
+  }
+
+  function renderAvatar(horse, className) {
+    return '<div class="horse-avatar detail-horse-avatar ' + (className || '') + '">' + horsePortrait(horse) + '</div>';
   }
 
   function availableParents(gender) {
@@ -31,11 +41,18 @@ window.SKACHKI_BREEDING = (function () {
   }
 
   function starRating(horse) {
+    var UI = horseUi();
     var G = game();
+    var cls;
+    var rounded;
+    var percent;
+
     if (!horse) return '';
-    var cls = G.horseClass(horse);
-    var rounded = Math.round(cls / 10) * 10;
-    var percent = Math.max(0, Math.min(100, rounded));
+    if (UI.starRating) return UI.starRating(horse).replace('class="star-rating"', 'class="star-rating breed-stars"');
+
+    cls = G.horseClass(horse);
+    rounded = Math.round(cls / 10) * 10;
+    percent = Math.max(0, Math.min(100, rounded));
     return '<div class="star-rating breed-stars" title="Уровень"><span class="star-rating-bg">★★★★★</span><span class="star-rating-fill" style="width:' + percent + '%">★★★★★</span></div>';
   }
 
@@ -102,12 +119,14 @@ window.SKACHKI_BREEDING = (function () {
     }
 
     return '<div class="breed-selected-head">' +
-      '<div class="horse-avatar breed-avatar"><img src="./horse_icon.png" alt="horse"></div>' +
+      renderAvatar(horse, 'breed-avatar') +
       '<div class="breed-selected-main">' +
         '<div class="breed-selected-role">' + symbol + ' ' + title + '</div>' +
         '<div class="breed-selected-name">' + horse.name + '</div>' +
         starRating(horse) +
         '<div class="breed-selected-tags">' +
+          '<span>' + horse.breed + '</span>' +
+          '<span>' + horse.coat + '</span>' +
           '<span>Потомство: ' + horse.offspringCount + '/' + horse.offspringLimit + '</span>' +
           '<span>Карьера: ' + horse.racesRun + '/' + horse.careerLimit + '</span>' +
         '</div>' +
@@ -133,12 +152,12 @@ window.SKACHKI_BREEDING = (function () {
       '<div class="breed-picker-grid">' + list.map(function (horse) {
         var selected = String(horse.id) === String(selectedId);
         return '<button class="breed-candidate ' + (selected ? 'selected' : '') + '" data-select-' + gender + '="' + horse.id + '">' +
-          '<div class="horse-avatar breed-candidate-avatar"><img src="./horse_icon.png" alt="horse"></div>' +
+          renderAvatar(horse, 'breed-candidate-avatar') +
           '<div class="breed-candidate-main">' +
             '<div class="breed-candidate-name">' + horse.name + '</div>' +
             starRating(horse) +
-            '<div class="breed-candidate-meta">' + genderLabel(horse) + ' • Потомство ' + horse.offspringCount + '/' + horse.offspringLimit + '</div>' +
-            '<div class="breed-candidate-stats">' + horse.speed + ' СКР • ' + horse.stamina + ' ВЫН • ' + horse.acceleration + ' УСК</div>' +
+            '<div class="breed-candidate-meta">' + genderLabel(horse) + ' • ' + horse.breed + ' • ' + horse.coat + '</div>' +
+            '<div class="breed-candidate-stats">Потомство ' + horse.offspringCount + '/' + horse.offspringLimit + ' • Карьера ' + horse.racesRun + '/' + horse.careerLimit + '</div>' +
           '</div>' +
           '<div class="breed-candidate-check">' + (selected ? '✓' : '+') + '</div>' +
         '</button>';
@@ -225,7 +244,7 @@ window.SKACHKI_BREEDING = (function () {
     card.innerHTML =
       '<div class="foal-card-top">' +
         '<div class="foal-gender-badge">' + (child.gender === 'mare' ? '♀' : '♂') + '</div>' +
-        '<div class="horse-avatar foal-avatar"><img src="./horse_icon.png" alt="horse"></div>' +
+        renderAvatar(child, 'foal-avatar') +
         '<div class="foal-name-display">' + child.name + '</div>' +
         starRating(child) +
       '</div>' +
