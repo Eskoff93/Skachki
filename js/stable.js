@@ -65,12 +65,12 @@ window.SKACHKI_STABLE = (function () {
 
   function horsePalette(coat) {
     var palettes = {
-      bay: { base: '#985320', mid: '#bb6b2f', light: '#e2a15a', dark: '#351810', mane: '#101216', muzzle: '#8f7467', blaze: '#fff8ec' },
-      black: { base: '#202127', mid: '#333841', light: '#737986', dark: '#07080b', mane: '#050609', muzzle: '#454149', blaze: '#f4f4ee' },
-      chestnut: { base: '#b75b23', mid: '#d07331', light: '#eda25d', dark: '#4c1f10', mane: '#713016', muzzle: '#a27666', blaze: '#fff5e8' },
-      gray: { base: '#bcc3c7', mid: '#d8dde0', light: '#f5f6f4', dark: '#5f6870', mane: '#636c73', muzzle: '#918b89', blaze: '#ffffff' },
-      buckskin: { base: '#c89743', mid: '#d8aa55', light: '#f1cc77', dark: '#5f4017', mane: '#11100d', muzzle: '#957b67', blaze: '#fff7df' },
-      palomino: { base: '#d4ad55', mid: '#e3c36a', light: '#ffe6a4', dark: '#75571f', mane: '#eadbb8', muzzle: '#ad8870', blaze: '#fff8e8' }
+      bay: { base: '#9B5421', mid: '#BE7034', light: '#E4A762', dark: '#351810', mane: '#101216', blaze: '#FFF4DC' },
+      black: { base: '#202127', mid: '#363B44', light: '#777E8B', dark: '#07080B', mane: '#050609', blaze: '#F2F2EC' },
+      chestnut: { base: '#B75B23', mid: '#D37633', light: '#EFA461', dark: '#4C1F10', mane: '#713016', blaze: '#FFF3E4' },
+      gray: { base: '#BCC3C7', mid: '#D8DDE0', light: '#F4F6F4', dark: '#5F6870', mane: '#626A70', blaze: '#FFFFFF' },
+      buckskin: { base: '#C99A45', mid: '#DBAF59', light: '#F2CF7D', dark: '#5F4017', mane: '#11100D', blaze: '#FFF4D9' },
+      palomino: { base: '#D4AD55', mid: '#E4C66E', light: '#FFE6A4', dark: '#765720', mane: '#EADBB8', blaze: '#FFF8E8' }
     };
     return palettes[coat] || palettes.bay;
   }
@@ -78,9 +78,9 @@ window.SKACHKI_STABLE = (function () {
   function breedProfile(breed) {
     var profiles = {
       english: { sx: 1, sy: 1, dx: 0, dy: 0, ear: 1 },
-      arabian: { sx: 0.96, sy: 0.99, dx: 1, dy: -1, ear: 1.08 },
+      arabian: { sx: 0.96, sy: 0.98, dx: 1, dy: -1, ear: 1.08 },
       akhal: { sx: 0.94, sy: 1.08, dx: 2, dy: -4, ear: 1.1 },
-      quarter: { sx: 1.06, sy: 1.01, dx: -1, dy: 1, ear: 0.94 },
+      quarter: { sx: 1.07, sy: 1.02, dx: -2, dy: 1, ear: 0.94 },
       standard: { sx: 1.01, sy: 1, dx: 0, dy: 0, ear: 0.98 }
     };
     return profiles[breed] || profiles.english;
@@ -97,23 +97,23 @@ window.SKACHKI_STABLE = (function () {
     };
   }
 
-  function manePath(type) {
-    var paths = [
-      'M34 115C30 88 35 64 49 47C59 35 72 29 88 31C76 37 67 48 61 65C55 82 56 100 63 117Z',
-      'M31 116C26 88 33 61 50 43C64 28 84 25 99 35C80 36 67 48 59 66C51 84 51 101 58 118Z',
-      'M35 116C28 88 35 60 55 40C70 25 91 26 103 40C85 35 70 44 60 62C48 83 47 101 54 118Z'
+  function maneShape(type) {
+    var shapes = [
+      'M42 116C35 94 37 74 48 58C58 43 71 36 86 38C73 45 64 58 61 76C58 93 63 107 74 120Z',
+      'M38 116C30 90 36 63 55 45C69 32 88 31 101 43C82 40 68 51 61 70C55 88 59 104 70 120Z',
+      'M44 116C36 89 43 61 64 40C77 29 95 32 105 48C88 42 72 52 64 70C57 88 61 105 75 120Z'
     ];
-    return paths[type] || paths[0];
+    return shapes[type] || shapes[0];
   }
 
-  function blazeMarkup(type, color) {
-    var map = [
+  function blazeShape(type, color) {
+    var shapes = [
       '',
-      '<path d="M66 40C73 48 81 62 89 82C86 86 82 88 77 88C71 68 63 54 55 47C58 43 62 41 66 40Z" fill="' + color + '" opacity=".92"/>',
-      '<path d="M64 39C74 49 85 68 97 95C92 101 84 101 77 94C70 73 60 57 49 49C53 43 58 40 64 39Z" fill="' + color + '" opacity=".94"/>',
-      '<path d="M66 43C70 47 72 52 72 58C68 61 62 61 58 58C59 51 62 46 66 43Z" fill="' + color + '" opacity=".9"/><ellipse cx="91" cy="88" rx="5" ry="3.6" fill="' + color + '" opacity=".86"/>'
+      '<path d="M72 40C79 48 87 64 96 84C92 89 87 91 81 88C74 69 65 54 55 47C60 42 66 40 72 40Z" fill="' + color + '" opacity=".94"/>',
+      '<path d="M70 39C80 50 91 70 103 96C98 104 88 104 80 96C72 75 61 58 49 49C54 43 61 39 70 39Z" fill="' + color + '" opacity=".94"/>',
+      '<path d="M69 43C74 47 76 53 75 59C70 63 63 63 58 59C60 51 63 46 69 43Z" fill="' + color + '" opacity=".92"/><ellipse cx="94" cy="88" rx="5" ry="3.4" fill="' + color + '" opacity=".86"/>'
     ];
-    return map[type] || map[0];
+    return shapes[type] || shapes[0];
   }
 
   function horsePortrait(horse) {
@@ -123,44 +123,40 @@ window.SKACHKI_STABLE = (function () {
     var profile = breedProfile(breed);
     var genes = avatarGenes(horse);
     var uid = 'hp' + hashString(horse.id || horse.name);
+    var horseShape = 'M35 116C31 95 34 76 45 61C51 53 58 47 67 44C65 34 68 24 76 17C83 25 85 35 82 44C94 48 105 58 111 72C117 86 116 99 107 106C99 113 87 108 78 98C69 88 63 77 52 78C42 79 37 92 39 116Z';
     var dapples = coat === 'gray'
-      ? '<ellipse cx="56" cy="52" rx="2" ry="1.1" fill="#fff" opacity=".22"/><ellipse cx="70" cy="64" rx="1.8" ry="1" fill="#fff" opacity=".2"/><ellipse cx="82" cy="76" rx="2.2" ry="1.2" fill="#fff" opacity=".18"/><ellipse cx="44" cy="82" rx="1.8" ry="1" fill="#fff" opacity=".16"/>'
+      ? '<ellipse cx="58" cy="60" rx="2" ry="1.2" fill="#fff" opacity=".22"/><ellipse cx="71" cy="72" rx="1.8" ry="1" fill="#fff" opacity=".2"/><ellipse cx="85" cy="82" rx="2.2" ry="1.2" fill="#fff" opacity=".18"/><ellipse cx="45" cy="91" rx="1.8" ry="1" fill="#fff" opacity=".16"/>'
       : '';
 
     return '<div class="breed-emblem breed-' + breed + '">' + breedShort(horse.breed) + '</div>' +
       '<svg class="horse-portrait-svg generated-horse-avatar coat-' + coat + ' breed-' + breed + '" viewBox="0 0 120 120" aria-hidden="true">' +
         '<defs>' +
           '<radialGradient id="' + uid + 'Bg" cx="50%" cy="36%" r="74%"><stop offset="0" stop-color="#29415f"/><stop offset=".58" stop-color="#101b2b"/><stop offset="1" stop-color="#040914"/></radialGradient>' +
-          '<linearGradient id="' + uid + 'Coat" x1="36" y1="30" x2="101" y2="112"><stop offset="0" stop-color="' + palette.light + '"/><stop offset=".48" stop-color="' + palette.base + '"/><stop offset="1" stop-color="' + palette.dark + '"/></linearGradient>' +
-          '<linearGradient id="' + uid + 'Light" x1="43" y1="37" x2="82" y2="103"><stop offset="0" stop-color="' + palette.light + '"/><stop offset="1" stop-color="' + palette.mid + '"/></linearGradient>' +
-          '<linearGradient id="' + uid + 'Mane" x1="38" y1="25" x2="65" y2="116"><stop offset="0" stop-color="' + palette.mane + '"/><stop offset=".55" stop-color="#06070a"/><stop offset="1" stop-color="' + palette.mane + '"/></linearGradient>' +
-          '<linearGradient id="' + uid + 'Muzzle" x1="82" y1="74" x2="113" y2="103"><stop offset="0" stop-color="' + palette.muzzle + '"/><stop offset="1" stop-color="#2b2323"/></linearGradient>' +
+          '<linearGradient id="' + uid + 'Coat" x1="39" y1="24" x2="103" y2="113"><stop offset="0" stop-color="' + palette.light + '"/><stop offset=".48" stop-color="' + palette.base + '"/><stop offset="1" stop-color="' + palette.dark + '"/></linearGradient>' +
+          '<linearGradient id="' + uid + 'Light" x1="43" y1="39" x2="85" y2="104"><stop offset="0" stop-color="' + palette.light + '"/><stop offset="1" stop-color="' + palette.mid + '"/></linearGradient>' +
+          '<linearGradient id="' + uid + 'Mane" x1="37" y1="34" x2="70" y2="118"><stop offset="0" stop-color="' + palette.mane + '"/><stop offset=".55" stop-color="#06070a"/><stop offset="1" stop-color="' + palette.mane + '"/></linearGradient>' +
           '<clipPath id="' + uid + 'Round"><circle cx="60" cy="60" r="55"/></clipPath>' +
-          '<clipPath id="' + uid + 'HorseClip"><path d="M36 115C34 94 37 74 47 59C54 49 63 43 75 43C87 43 99 51 107 65C114 76 118 90 114 99C110 108 97 109 86 102C76 96 68 86 60 78C53 71 44 68 35 69C28 70 25 66 29 60C33 54 39 50 47 48C51 41 58 37 66 36C80 34 93 41 103 54C96 45 84 39 72 39C56 39 45 48 38 63C29 80 29 99 36 115Z"/></clipPath>' +
+          '<clipPath id="' + uid + 'HorseClip"><path d="' + horseShape + '"/></clipPath>' +
         '</defs>' +
         '<circle cx="60" cy="60" r="57" fill="url(#' + uid + 'Bg)"/>' +
         '<g clip-path="url(#' + uid + 'Round)">' +
           '<path d="M60 10v100M33 22l54 78M87 22l-54 78M12 60h96M21 36l78 48M99 36L21 84" stroke="#8f682e" stroke-width=".55" opacity=".18"/>' +
           '<g transform="translate(60 63) rotate(' + genes.tilt + ') scale(' + profile.sx + ' ' + profile.sy + ') translate(' + (-60 + profile.dx) + ' ' + (-63 + profile.dy) + ')">' +
-            '<path d="' + manePath(genes.mane) + '" fill="url(#' + uid + 'Mane)" opacity=".98"/>' +
-            '<path d="M36 115C34 94 37 74 47 59C54 49 63 43 75 43C87 43 99 51 107 65C114 76 118 90 114 99C110 108 97 109 86 102C76 96 68 86 60 78C53 71 44 68 35 69C28 70 25 66 29 60C33 54 39 50 47 48C51 41 58 37 66 36C80 34 93 41 103 54C96 45 84 39 72 39C56 39 45 48 38 63C29 80 29 99 36 115Z" fill="url(#' + uid + 'Coat)"/>' +
+            '<path d="' + maneShape(genes.mane) + '" fill="url(#' + uid + 'Mane)" opacity=".98"/>' +
+            '<path d="' + horseShape + '" fill="url(#' + uid + 'Coat)"/>' +
             '<g clip-path="url(#' + uid + 'HorseClip)">' +
-              '<path d="M44 61C52 47 66 40 83 43C72 49 64 58 61 71C58 85 62 99 73 111C57 112 45 106 37 94C29 82 32 71 44 61Z" fill="url(#' + uid + 'Light)" opacity=".62"/>' +
-              '<path d="M78 77C91 82 105 79 116 69C114 84 106 96 94 102C80 109 65 105 51 92C59 83 68 78 78 77Z" fill="' + palette.dark + '" opacity=".24"/>' +
-              '<path d="M88 76C99 72 111 77 116 87C118 94 112 101 102 103C91 105 82 100 80 92C78 84 81 79 88 76Z" fill="url(#' + uid + 'Muzzle)"/>' +
-              '<path d="M91 89C98 86 107 87 113 92C109 98 101 101 93 99C86 98 82 95 80 90C83 90 87 90 91 89Z" fill="#20191b" opacity=".34"/>' +
-              blazeMarkup(genes.blaze, palette.blaze) +
+              '<path d="M45 62C54 48 68 42 84 46C73 53 67 63 65 75C63 89 68 101 80 112C64 114 50 108 42 96C33 83 35 72 45 62Z" fill="url(#' + uid + 'Light)" opacity=".58"/>' +
+              '<path d="M76 77C90 82 104 79 114 70C113 86 105 98 92 104C78 110 63 105 50 92C58 84 66 79 76 77Z" fill="' + palette.dark + '" opacity=".24"/>' +
+              blazeShape(genes.blaze, palette.blaze) +
               dapples +
             '</g>' +
-            '<path d="M61 37C58 26 60 18 67 13C73 20 73 31 68 41C65 41 63 40 61 37Z" fill="url(#' + uid + 'Coat)" transform="scale(' + profile.ear + ') translate(' + (profile.ear > 1 ? -3 : 0) + ' ' + (profile.ear > 1 ? -2 : 0) + ')"/>' +
-            '<path d="M75 39C73 28 76 20 84 16C89 25 87 35 80 43C78 42 76 41 75 39Z" fill="url(#' + uid + 'Coat)" transform="scale(' + profile.ear + ') translate(' + (profile.ear > 1 ? -4 : 0) + ' ' + (profile.ear > 1 ? -2 : 0) + ')"/>' +
-            '<path d="M73 58C78 53 86 53 92 58C87 64 78 64 73 58Z" fill="#171015"/>' +
-            '<ellipse cx="83" cy="58" rx="5.3" ry="3.8" fill="#4b2b18"/><circle cx="83" cy="58" r="2.2" fill="#100807"/><circle cx="85.1" cy="56.6" r="1" fill="#fff4df"/>' +
+            '<path d="M42 54C51 43 62 37 77 36" fill="none" stroke="' + palette.mane + '" stroke-width="4" stroke-linecap="round" opacity=".75"/>' +
+            '<path d="M75 56C80 51 89 51 95 57C89 64 80 64 75 56Z" fill="#171015"/>' +
+            '<ellipse cx="85" cy="56" rx="5.3" ry="3.8" fill="#4b2b18"/><circle cx="85" cy="56" r="2.2" fill="#100807"/><circle cx="87.1" cy="54.6" r="1" fill="#fff4df"/>' +
             '<ellipse cx="103" cy="92" rx="4.7" ry="6" fill="#111116"/><ellipse cx="104" cy="93" rx="2.6" ry="3.7" fill="#2d292d"/>' +
-            '<path d="M48 93C59 101 73 102 86 95" fill="none" stroke="#1b0d08" stroke-width="2.1" stroke-linecap="round" opacity=".34"/>' +
-            '<path d="M48 51C59 40 78 39 96 51" fill="none" stroke="#fff" stroke-width="2.1" opacity="' + (0.07 + genes.shade * 0.09).toFixed(2) + '" stroke-linecap="round"/>' +
-            '<path d="M40 75C41 63 48 53 58 46" fill="none" stroke="#fff" stroke-width="1.6" opacity=".08" stroke-linecap="round"/>' +
-            '<path d="M48 47C38 58 34 75 36 94" fill="none" stroke="#000" stroke-width="2.1" opacity=".16" stroke-linecap="round"/>' +
+            '<path d="M49 93C61 101 75 102 88 95" fill="none" stroke="#1b0d08" stroke-width="2.1" stroke-linecap="round" opacity=".34"/>' +
+            '<path d="M49 51C61 40 80 40 98 52" fill="none" stroke="#fff" stroke-width="2.1" opacity="' + (0.07 + genes.shade * 0.09).toFixed(2) + '" stroke-linecap="round"/>' +
+            '<path d="' + horseShape + '" fill="none" stroke="#07090d" stroke-width="2.2" opacity=".36"/>' +
           '</g>' +
         '</g>' +
       '</svg>';
