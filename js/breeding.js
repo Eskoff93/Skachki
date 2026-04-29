@@ -78,6 +78,8 @@ window.SKACHKI_BREEDING = (function () {
     return '<div class="parent-card">' +
       '<div class="parent-card-title">' + title + ': ' + horse.name + '</div>' +
       '<div class="mini-tag">Класс ' + G.horseClass(horse) + '</div>' +
+      '<div class="mini-tag">Форма ' + G.formLabel(horse.form) + '</div>' +
+      '<div class="mini-tag">Потомство ' + horse.offspringCount + '/' + horse.offspringLimit + '</div>' +
       '<div class="parent-mini-row"><span>Скорость</span><b>' + horse.speed + '</b></div>' +
       '<div class="parent-mini-row"><span>Выносливость</span><b>' + horse.stamina + '</b></div>' +
       '<div class="parent-mini-row"><span>Ускорение</span><b>' + horse.acceleration + '</b></div>' +
@@ -95,12 +97,13 @@ window.SKACHKI_BREEDING = (function () {
     var h2 = G.state.horses.find(function (h) { return String(h.id) === String(parentTwo.value); });
 
     if (!h1 || !h2 || String(h1.id) === String(h2.id)) return G.showToast('Выберите разных родителей');
+    if (h1.offspringCount >= h1.offspringLimit || h2.offspringCount >= h2.offspringLimit) return G.showToast('У одного из родителей исчерпан лимит потомства');
 
     function avg(key) {
       return G.clamp(Math.round((h1[key] + h2[key]) / 2) + G.randInt(-5, 6), 10, 100);
     }
 
-    var child = {
+    var child = G.normalizeHorse({
       id: Date.now() + Math.random().toString(36).slice(2, 8),
       name: 'Жеребёнок ' + (G.state.horses.length + 1),
       speed: avg('speed'),
@@ -110,9 +113,13 @@ window.SKACHKI_BREEDING = (function () {
       power: avg('power'),
       intelligence: avg('intelligence'),
       potential: G.clamp(Math.round((h1.potential + h2.potential) / 2) + G.randInt(-3, 5), 65, 100),
-      energy: 100,
       temperament: Math.random() < 0.5 ? h1.temperament : h2.temperament
-    };
+    });
+
+    h1.offspringCount += 1;
+    h2.offspringCount += 1;
+    if (h1.offspringCount >= h1.offspringLimit && h1.status === 'retired') h1.status = 'archived';
+    if (h2.offspringCount >= h2.offspringLimit && h2.status === 'retired') h2.status = 'archived';
 
     G.state.horses.push(child);
     G.saveGame();
