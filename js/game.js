@@ -9,6 +9,8 @@ window.SKACHKI_GAME = (function () {
   var state = {
     horses: [],
     coins: 250,
+    stableLevel: 1,
+    stableXp: 0,
     selectedTrainingHorseId: null,
     selectedPlayerHorseId: null,
     selectedRaceTypeId: 'rookie',
@@ -110,7 +112,7 @@ window.SKACHKI_GAME = (function () {
   }
 
   function saveGame() {
-    var payload = { horses: state.horses, coins: state.coins };
+    var payload = { horses: state.horses, coins: state.coins, stableLevel: state.stableLevel, stableXp: state.stableXp };
     if (STORE.save) return STORE.save(payload);
     try {
       localStorage.setItem('skachki_proto_toptrack_v2', JSON.stringify(payload));
@@ -124,6 +126,8 @@ window.SKACHKI_GAME = (function () {
     var names = DATA.stableNames || ['Буран', 'Молния', 'Ветерок'];
     state.horses = names.map(createHorse);
     state.coins = 250;
+    state.stableLevel = 1;
+    state.stableXp = 0;
     saveGame();
   }
 
@@ -139,6 +143,8 @@ window.SKACHKI_GAME = (function () {
     if (!data || !Array.isArray(data.horses) || !data.horses.length) return newGame();
     state.horses = normalizeHorses(data.horses);
     state.coins = Number.isFinite(data.coins) ? data.coins : 250;
+    state.stableLevel = Number.isFinite(data.stableLevel) ? data.stableLevel : 1;
+    state.stableXp = Number.isFinite(data.stableXp) ? data.stableXp : 0;
     saveGame();
   }
 
@@ -165,6 +171,20 @@ window.SKACHKI_GAME = (function () {
       raceMenu.innerHTML = '<div class="topbar"><div class="topbar-row"><button class="icon-btn" id="raceMenuBackBtn">←</button><div class="topbar-title"><h1>ГОНКИ</h1><p>Выберите заезд и свою лошадь</p></div><div style="width:38px;flex:0 0 auto"></div></div></div><div class="content-scroll" id="raceMenuScroll"></div><div class="race-start-panel"><button class="btn btn-gold" id="raceMenuStartBtn" style="width:100%">Начать заезд</button></div>';
       document.body.insertBefore(raceMenu, document.body.firstChild);
     }
+
+    if (!byId('ratingScreen')) {
+      var rating = document.createElement('div');
+      rating.id = 'ratingScreen';
+      rating.className = 'screen';
+      rating.innerHTML = '<div class="topbar"><div class="topbar-row"><button class="icon-btn" id="ratingBackBtn">←</button><div class="topbar-title"><h1>РЕЙТИНГ</h1><p>Лидеры сезона</p></div><div style="width:38px;flex:0 0 auto"></div></div></div><div class="content-scroll"><section class="summary-card"><div class="summary-title">Рейтинг</div><div class="summary-desc">Скоро здесь появятся лидеры сезона, друзья и награды.</div></section></div>';
+      document.body.insertBefore(rating, document.body.firstChild);
+    }
+  }
+
+  function setActiveBottomNav(name) {
+    Array.prototype.forEach.call(document.querySelectorAll('.bottom-nav-btn'), function (btn) {
+      btn.classList.toggle('active', btn.dataset.menu === name || (name === 'raceMenu' && btn.dataset.menu === 'races'));
+    });
   }
 
   function showScreen(name) {
@@ -178,7 +198,8 @@ window.SKACHKI_GAME = (function () {
       training: 'trainingScreen',
       breed: 'breedScreen',
       race: 'raceScreen',
-      raceMenu: 'raceMenuScreen'
+      raceMenu: 'raceMenuScreen',
+      rating: 'ratingScreen'
     };
 
     if (UI.showScreenById) UI.showScreenById(map[name] || 'mainMenuScreen');
@@ -189,6 +210,8 @@ window.SKACHKI_GAME = (function () {
       var target = byId(map[name] || 'mainMenuScreen');
       if (target) target.classList.add('active');
     }
+
+    setActiveBottomNav(name);
 
     if (name === 'menu' && window.SKACHKI_STABLE) window.SKACHKI_STABLE.renderMainMenu();
     if (name === 'stable' && window.SKACHKI_STABLE) window.SKACHKI_STABLE.renderStable();
@@ -207,11 +230,12 @@ window.SKACHKI_GAME = (function () {
       if (action === 'stable') showScreen('stable');
       else if (action === 'races') showScreen('raceMenu');
       else if (action === 'breed' && window.SKACHKI_BREEDING) window.SKACHKI_BREEDING.openBreedScreen();
+      else if (action === 'rating') showScreen('rating');
       else showToast('Скоро');
     });
 
     document.addEventListener('click', function (event) {
-      if (event.target && event.target.id === 'stableBackMenuBtn') {
+      if (event.target && (event.target.id === 'stableBackMenuBtn' || event.target.id === 'ratingBackBtn')) {
         event.preventDefault();
         showScreen('menu');
       }
