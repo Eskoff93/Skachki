@@ -83,9 +83,11 @@ window.SKACHKI_BREEDING = (function () {
         '<div class="summary-title">Выберите жеребца и кобылу</div>' +
         '<div class="summary-desc">Потомок наследует параметры, характер и потенциал родителей с небольшой мутацией.</div>' +
       '</section>' +
-      '<section class="breed-choice-card breed-stallion-card" data-picker="stallion">' + renderSelectedHorse('Жеребец', '♂', stallion, 'stallion') + '</section>' +
+      '<section class="breed-pair-row">' +
+        '<div class="breed-choice-card breed-stallion-card" data-picker="stallion">' + renderSelectedHorse('Жеребец', '♂', stallion, 'stallion') + '</div>' +
+        '<div class="breed-choice-card breed-mare-card" data-picker="mare">' + renderSelectedHorse('Кобыла', '♀', mare, 'mare') + '</div>' +
+      '</section>' +
       renderPicker('stallion') +
-      '<section class="breed-choice-card breed-mare-card" data-picker="mare">' + renderSelectedHorse('Кобыла', '♀', mare, 'mare') + '</section>' +
       renderPicker('mare') +
       renderComparison(stallion, mare) +
       renderForecast(stallion, mare);
@@ -105,7 +107,6 @@ window.SKACHKI_BREEDING = (function () {
         '<div class="breed-selected-name">' + horse.name + '</div>' +
         starRating(horse) +
         '<div class="breed-selected-tags">' +
-          '<span>Форма: ' + game().formLabel(horse.form) + '</span>' +
           '<span>Потомство: ' + horse.offspringCount + '/' + horse.offspringLimit + '</span>' +
           '<span>Карьера: ' + horse.racesRun + '/' + horse.careerLimit + '</span>' +
         '</div>' +
@@ -135,7 +136,7 @@ window.SKACHKI_BREEDING = (function () {
           '<div class="breed-candidate-main">' +
             '<div class="breed-candidate-name">' + horse.name + '</div>' +
             starRating(horse) +
-            '<div class="breed-candidate-meta">' + genderLabel(horse) + ' • ' + game().formLabel(horse.form) + ' • Потомство ' + horse.offspringCount + '/' + horse.offspringLimit + '</div>' +
+            '<div class="breed-candidate-meta">' + genderLabel(horse) + ' • Потомство ' + horse.offspringCount + '/' + horse.offspringLimit + '</div>' +
             '<div class="breed-candidate-stats">' + horse.speed + ' СКР • ' + horse.stamina + ' ВЫН • ' + horse.acceleration + ' УСК</div>' +
           '</div>' +
           '<div class="breed-candidate-check">' + (selected ? '✓' : '+') + '</div>' +
