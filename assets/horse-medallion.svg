@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-label="Horse medallion portrait">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="68%">
+      <stop offset="0" stop-color="#233f55"/>
+      <stop offset="0.54" stop-color="#0b1b2b"/>
+      <stop offset="1" stop-color="#030911"/>
+    </radialGradient>
+    <linearGradient id="horse" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#fff2bf"/>
+      <stop offset="0.4" stop-color="#ddb75f"/>
+      <stop offset="0.72" stop-color="#9c681f"/>
+      <stop offset="1" stop-color="#fff5c8"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#fff5bd"/>
+      <stop offset="0.33" stop-color="#d7a948"/>
+      <stop offset="0.66" stop-color="#704314"/>
+      <stop offset="1" stop-color="#ffe79e"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="9" stdDeviation="8" flood-color="#000" flood-opacity="0.5"/>
+    </filter>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="2.6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="240" height="240" rx="120" fill="url(#bg)"/>
+  <circle cx="120" cy="120" r="109" fill="none" stroke="url(#rim)" stroke-width="7"/>
+  <circle cx="120" cy="120" r="96" fill="none" stroke="#fff0ad" stroke-width="1.4" opacity=".35"/>
+  <path d="M48 186c34-9 62-29 77-61 13-28 34-48 67-57-12 16-17 35-15 57 10 7 19 18 24 33-12-7-27-8-43-3 0 27-14 45-42 55-22 8-45 1-68-24Z" fill="#ffffff" opacity=".08"/>
+  <g filter="url(#shadow)">
+    <path d="M71 178c18-25 28-52 29-82 1-33 20-57 55-71 10-4 20-5 31-4-15 11-24 25-27 43 21 3 36 15 46 36-18-8-35-8-50 0 9 15 12 31 8 48-7 31-34 49-79 55-5-7-9-15-13-25Z" fill="url(#horse)"/>
+    <path d="M103 79c-11-20-11-40 2-61 9 15 13 32 12 51" fill="#ffe6a4"/>
+    <path d="M136 62c2-20 12-35 29-45 1 18-4 33-16 45" fill="#e0b757"/>
+    <path d="M109 96c20-22 44-31 72-27 7 28-2 58-24 82-20 22-46 32-78 30 14-23 24-51 30-85Z" fill="url(#horse)"/>
+    <path d="M128 93c11-9 25-12 43-9 3 12 2 25-4 39-18-6-31-16-39-30Z" fill="#7b4c16" opacity=".32"/>
+    <circle cx="156" cy="98" r="5" fill="#07121e"/>
+    <path d="M127 140c15 10 30 12 46 6" fill="none" stroke="#5d3712" stroke-width="4" stroke-linecap="round" opacity=".5"/>
+    <path d="M92 184c28-7 51-20 70-39" fill="none" stroke="#fff1b9" stroke-width="4" stroke-linecap="round" opacity=".6"/>
+  </g>
+  <path d="M54 57c36-20 80-26 132-18" fill="none" stroke="#fff6c2" stroke-width="1.2" opacity=".16"/>
+  <path d="M53 203c48 15 96 12 143-9" fill="none" stroke="#d8a943" stroke-width="2" opacity=".25"/>
+  <path d="M64 206c-12-10-20-22-24-35 10 8 21 13 34 14" fill="none" stroke="#d8a943" stroke-width="2.4" opacity=".38"/>
+  <path d="M176 206c12-10 20-22 24-35-10 8-21 13-34 14" fill="none" stroke="#d8a943" stroke-width="2.4" opacity=".38"/>
+</svg>
