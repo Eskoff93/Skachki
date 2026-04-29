@@ -21,6 +21,12 @@ window.SKACHKI_STABLE = (function () {
     return '<div class="star-rating" title="Уровень"><span class="star-rating-bg">★★★★★</span><span class="star-rating-fill" style="width:' + percent + '%">★★★★★</span></div>';
   }
 
+  function averageStars() {
+    var G = game();
+    var percent = Math.max(0, Math.min(100, Math.round(G.averageClass() / 10) * 10));
+    return '<div class="star-rating stable-average-stars" title="Средний уровень"><span class="star-rating-bg">★★★★★</span><span class="star-rating-fill" style="width:' + percent + '%">★★★★★</span></div>';
+  }
+
   function horseStatLine(horse) {
     return 'Гонки ' + (horse.racesRun || 0) + ' • Призы ' + (horse.podiums || 0) + ' • Победы ' + (horse.wins || 0);
   }
@@ -53,9 +59,8 @@ window.SKACHKI_STABLE = (function () {
     if (coinsPill) coinsPill.innerHTML = '🪙 ' + G.state.coins + '<small>Монеты</small>';
     if (summaryGrid) {
       summaryGrid.innerHTML =
-        '<div class="chip-box"><div class="value">' + G.state.horses.length + '</div><div class="label">Лошадей</div></div>' +
-        '<div class="chip-box"><div class="value">' + G.averageClass() + '</div><div class="label">Средний уровень</div></div>' +
-        '<div class="chip-box"><div class="value">' + G.state.coins + '</div><div class="label">Монеты</div></div>';
+        '<div class="stable-summary-mini"><span>Уровень конюшни</span><b>' + (G.state.stableLevel || 1) + '</b></div>' +
+        '<div class="stable-summary-mini"><span>Средний уровень</span>' + averageStars() + '</div>';
     }
   }
 
@@ -64,7 +69,7 @@ window.SKACHKI_STABLE = (function () {
     renderSummary();
 
     var footer = document.querySelector('#stableScreen .footer-actions');
-    if (footer) footer.style.display = 'none';
+    if (footer) footer.style.display = '';
 
     var back = G.byId('resetBtn');
     if (back) {
@@ -90,7 +95,12 @@ window.SKACHKI_STABLE = (function () {
               starRating(horse) +
             '</div>' +
             '<div class="horse-stat-line luxury-record">' + horseStatLine(horse) + '</div>' +
-            '<div class="luxury-meta-row"><span>' + genderLabel(horse) + '</span><span>Карьера ' + horse.racesRun + '/' + horse.careerLimit + '</span><span>Потомство ' + horse.offspringCount + '/' + horse.offspringLimit + '</span></div>' +
+            '<div class="luxury-meta-row">' +
+              '<span>Карьера ' + horse.racesRun + '/' + horse.careerLimit + '</span>' +
+              '<span>Потомство ' + horse.offspringCount + '/' + horse.offspringLimit + '</span>' +
+              '<span>' + horse.breed + '</span>' +
+              '<span>' + horse.coat + '</span>' +
+            '</div>' +
           '</div>' +
         '</div>' +
         '<div class="football-stats">' +
@@ -119,13 +129,13 @@ window.SKACHKI_STABLE = (function () {
         '<div class="main-menu-stats">' +
           '<div class="chip-box"><div class="value">🪙 ' + G.state.coins + '</div><div class="label">Баланс</div></div>' +
           '<div class="chip-box"><div class="value">' + G.state.horses.length + '</div><div class="label">Лошадей</div></div>' +
-          '<div class="chip-box"><div class="value">' + G.averageClass() + '</div><div class="label">Уровень</div></div>' +
+          '<div class="chip-box"><div class="value">' + (G.state.stableLevel || 1) + '</div><div class="label">Конюшня</div></div>' +
         '</div>' +
       '</section>' +
       menuTile('stable', '🐴', 'Конюшня', 'Ваши лошади и тренировки') +
       menuTile('races', '🏁', 'Гонки', 'Заезды, взносы и призы') +
       menuTile('breed', '🧬', 'Разведение', 'Новые потомки') +
-      menuTile('rating', '🏆', 'Рейтинг', 'Скоро', true);
+      menuTile('rating', '🏆', 'Рейтинг', 'Скоро');
   }
 
   function menuTile(action, icon, title, desc, disabled) {
@@ -151,6 +161,8 @@ window.SKACHKI_STABLE = (function () {
 
     var overview = [
       ['Пол', genderLabel(horse)],
+      ['Порода', horse.breed],
+      ['Масть', horse.coat],
       ['Форма', G.formLabel(horse.form)],
       ['Карьера', horse.racesRun + '/' + horse.careerLimit],
       ['Потомство', horse.offspringCount + '/' + horse.offspringLimit],
