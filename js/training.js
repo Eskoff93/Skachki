@@ -7,6 +7,12 @@ window.SKACHKI_TRAINING = (function () {
     return new Date().toISOString().slice(0, 10);
   }
 
+  function progressText(horse) {
+    var horseTools = window.SKACHKI_HORSE || {};
+    if (horseTools.trainingProgressText) return horseTools.trainingProgressText(horse);
+    return 'Серия тренировок: ' + (horse.trainingStreakDays || 0) + ' дн.';
+  }
+
   function openTraining(id) {
     var G = game();
     var horse = G.state.horses.find(function (h) { return String(h.id) === String(id); });
@@ -23,8 +29,8 @@ window.SKACHKI_TRAINING = (function () {
           '<div class="horse-avatar"><img src="./horse_icon.png" alt="horse"></div>' +
           '<div style="flex:1;min-width:0">' +
             '<div class="training-hero-title">' + horse.name + '</div>' +
-            '<div class="training-hero-sub">Класс ' + G.horseClass(horse) + ' • Форма ' + G.formLabel(horse.form) + ' • Потенциал ' + horse.potential + '</div>' +
-            '<span class="behavior-chip">Серия тренировок: ' + horse.trainingStreakDays + ' дн. • ' + G.behaviorLabel(horse.temperament) + '</span>' +
+            '<div class="training-hero-sub">Форма ' + G.formLabel(horse.form) + ' • Потенциал ' + horse.potential + ' • Серия ' + (horse.trainingStreakDays || 0) + ' дн.</div>' +
+            '<span class="behavior-chip">' + progressText(horse) + '</span>' +
           '</div>' +
         '</div>';
     }
@@ -56,7 +62,7 @@ window.SKACHKI_TRAINING = (function () {
     horse.lastTrainingDate = today;
 
     if (horse.trainingStreakDays >= 7) horse.form = 'excellent';
-    else if (horse.trainingStreakDays >= 3 && horse.form === 'bad') horse.form = 'normal';
+    else if (horse.trainingStreakDays >= 3) horse.form = 'normal';
     else if (!horse.form) horse.form = 'normal';
 
     return true;
