@@ -5,6 +5,17 @@ window.SKACHKI_STABLE = (function () {
 
   function game() { return window.SKACHKI_GAME; }
 
+  function starRating(horse) {
+    var G = game();
+    var cls = G.horseClass(horse);
+    var percent = Math.max(0, Math.min(100, cls));
+    return '<div class="star-rating" title="Класс ' + cls + '"><span class="star-rating-bg">★★★★★</span><span class="star-rating-fill" style="width:' + percent + '%">★★★★★</span></div>';
+  }
+
+  function horseStatLine(horse) {
+    return 'Гонки: ' + (horse.racesRun || 0) + ' • Победы: ' + (horse.wins || 0) + ' • Призы: ' + (horse.podiums || 0);
+  }
+
   function renderSummary() {
     var G = game();
     var coinsPill = G.byId('coinsPill');
@@ -40,11 +51,10 @@ window.SKACHKI_STABLE = (function () {
           '<div class="horse-avatar"><img src="./horse_icon.png" alt="horse"></div>' +
           '<div class="horse-meta">' +
             '<div class="horse-name-row">' +
-              '<div class="horse-name">' + horse.name + '</div>' +
-              '<div class="horse-rank">#' + (index + 1) + '</div>' +
+              '<div class="horse-name-wrap"><div class="horse-name">' + horse.name + '</div><div class="horse-stat-line">' + horseStatLine(horse) + '</div></div>' +
+              starRating(horse) +
             '</div>' +
             '<div class="horse-tags">' +
-              '<span class="mini-tag">Класс: ' + G.horseClass(horse) + '</span>' +
               '<span class="mini-tag">Форма: ' + G.formLabel(horse.form) + '</span>' +
               '<span class="mini-tag">Карьера: ' + horse.racesRun + '/' + horse.careerLimit + '</span>' +
               '<span class="mini-tag">Потенциал: ' + horse.potential + '</span>' +
@@ -123,7 +133,7 @@ window.SKACHKI_STABLE = (function () {
       ['Сила', horse.power],
       ['Интеллект', horse.intelligence],
       ['Потенциал', horse.potential],
-      ['Форма', G.formLabel(horse.form) + ' ×' + G.formMultiplier(horse.form)],
+      ['Форма', G.formLabel(horse.form)],
       ['Карьера', horse.racesRun + '/' + horse.careerLimit],
       ['Потомство', horse.offspringCount + '/' + horse.offspringLimit],
       ['Гонок', horse.racesRun],
