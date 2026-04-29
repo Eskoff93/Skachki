@@ -156,14 +156,6 @@ window.SKACHKI_GAME = (function () {
   }
 
   function addScreens() {
-    if (!byId('mainMenuScreen')) {
-      var main = document.createElement('div');
-      main.id = 'mainMenuScreen';
-      main.className = 'screen';
-      main.innerHTML = '<div class="topbar"><div class="topbar-row"><div style="width:38px;flex:0 0 auto"></div><div class="topbar-title"><h1>ГЛАВНОЕ МЕНЮ</h1><p>Конюшня, гонки и развитие</p></div><button class="icon-btn" id="mainInfoBtn">i</button></div></div><div class="content-scroll" id="mainMenuScroll"></div>';
-      document.body.insertBefore(main, document.body.firstChild);
-    }
-
     if (!byId('raceMenuScreen')) {
       var raceMenu = document.createElement('div');
       raceMenu.id = 'raceMenuScreen';
@@ -176,7 +168,7 @@ window.SKACHKI_GAME = (function () {
       var rating = document.createElement('div');
       rating.id = 'ratingScreen';
       rating.className = 'screen';
-      rating.innerHTML = '<div class="topbar"><div class="topbar-row"><button class="icon-btn" id="ratingBackBtn">←</button><div class="topbar-title"><h1>РЕЙТИНГ</h1><p>Лидеры сезона</p></div><div style="width:38px;flex:0 0 auto"></div></div></div><div class="content-scroll"><section class="summary-card"><div class="summary-title">Рейтинг</div><div class="summary-desc">Скоро здесь появятся лидеры сезона, друзья и награды.</div></section></div>';
+      rating.innerHTML = '<div class="topbar"><div class="topbar-row"><button class="icon-btn" id="ratingBackBtn">←</button><div class="topbar-title"><h1>РЕЙТИНГ</h1><p>Лидеры сезона</p></div><div style="width:38px;flex:0 0 auto"></div></div></div><div class="content-scroll"><section class="summary-card"><div class="summary-title">Рейтинг</div><div class="summary-desc">Скоро здесь появятся лидеры сезона, друзья и награды.</div></section></div><div class="footer-actions"><div class="bottom-nav"><button class="bottom-nav-btn" data-menu="stable"><span>🐴</span><b>Конюшня</b></button><button class="bottom-nav-btn" data-menu="races"><span>🏁</span><b>Гонки</b></button><button class="bottom-nav-btn" data-menu="breed"><span>🧬</span><b>Разведение</b></button><button class="bottom-nav-btn active" data-menu="rating"><span>🏆</span><b>Рейтинг</b></button></div></div>';
       document.body.insertBefore(rating, document.body.firstChild);
     }
   }
@@ -192,8 +184,8 @@ window.SKACHKI_GAME = (function () {
       window.SKACHKI_RACE_ENGINE.destroyRaceGame();
     }
 
+    var safeName = name === 'menu' ? 'stable' : name;
     var map = {
-      menu: 'mainMenuScreen',
       stable: 'stableScreen',
       training: 'trainingScreen',
       breed: 'breedScreen',
@@ -202,20 +194,19 @@ window.SKACHKI_GAME = (function () {
       rating: 'ratingScreen'
     };
 
-    if (UI.showScreenById) UI.showScreenById(map[name] || 'mainMenuScreen');
+    if (UI.showScreenById) UI.showScreenById(map[safeName] || 'stableScreen');
     else {
       Array.prototype.forEach.call(document.querySelectorAll('.screen'), function (screen) {
         screen.classList.remove('active');
       });
-      var target = byId(map[name] || 'mainMenuScreen');
+      var target = byId(map[safeName] || 'stableScreen');
       if (target) target.classList.add('active');
     }
 
-    setActiveBottomNav(name);
+    setActiveBottomNav(safeName);
 
-    if (name === 'menu' && window.SKACHKI_STABLE) window.SKACHKI_STABLE.renderMainMenu();
-    if (name === 'stable' && window.SKACHKI_STABLE) window.SKACHKI_STABLE.renderStable();
-    if (name === 'raceMenu' && window.SKACHKI_RACE_MENU) window.SKACHKI_RACE_MENU.renderRaceMenu();
+    if (safeName === 'stable' && window.SKACHKI_STABLE) window.SKACHKI_STABLE.renderStable();
+    if (safeName === 'raceMenu' && window.SKACHKI_RACE_MENU) window.SKACHKI_RACE_MENU.renderRaceMenu();
   }
 
   function statBlock(label, value, color) {
@@ -237,16 +228,14 @@ window.SKACHKI_GAME = (function () {
     document.addEventListener('click', function (event) {
       if (event.target && (event.target.id === 'stableBackMenuBtn' || event.target.id === 'ratingBackBtn')) {
         event.preventDefault();
-        showScreen('menu');
+        showScreen('stable');
       }
     });
 
     var info = byId('infoBtn');
-    var mainInfo = byId('mainInfoBtn');
     var closeInfo = byId('closeInfoBtn');
     var infoModal = byId('infoModal');
     if (info) info.onclick = function () { infoModal.classList.add('active'); };
-    if (mainInfo) mainInfo.onclick = function () { infoModal.classList.add('active'); };
     if (closeInfo) closeInfo.onclick = function () { infoModal.classList.remove('active'); };
   }
 
@@ -260,7 +249,7 @@ window.SKACHKI_GAME = (function () {
     if (window.SKACHKI_RACE_MENU) window.SKACHKI_RACE_MENU.bind();
     if (window.SKACHKI_RACE_ENGINE) window.SKACHKI_RACE_ENGINE.bind();
     if (window.SKACHKI_RESULTS) window.SKACHKI_RESULTS.bind();
-    showScreen('menu');
+    showScreen('stable');
   }
 
   return {
