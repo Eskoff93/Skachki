@@ -13,7 +13,7 @@ window.SKACHKI_GAME = (function () {
     stableXp: 0,
     selectedTrainingHorseId: null,
     selectedPlayerHorseId: null,
-    selectedRaceTypeId: 'rookie',
+    selectedRaceTypeId: null,
     currentRaceHorses: [],
     raceResults: [],
     activeRaceType: null,
@@ -169,7 +169,7 @@ window.SKACHKI_GAME = (function () {
       var raceMenu = document.createElement('div');
       raceMenu.id = 'raceMenuScreen';
       raceMenu.className = 'screen';
-      raceMenu.innerHTML = '<div class="topbar"><div class="topbar-row"><button class="icon-btn" id="raceMenuBackBtn">←</button><div class="topbar-title"><h1>ГОНКИ</h1><p>Выберите заезд и свою лошадь</p></div><div style="width:38px;flex:0 0 auto"></div></div></div><div class="content-scroll" id="raceMenuScroll"></div><div class="race-start-panel"><button class="btn btn-gold" id="raceMenuStartBtn" style="width:100%">Начать заезд</button>' + bottomNav('races') + '</div>';
+      raceMenu.innerHTML = '<div class="topbar"><div class="topbar-row"><button class="icon-btn" id="raceMenuBackBtn">←</button><div class="topbar-title"><h1>ГОНКИ</h1><p>Выберите заезд и свою лошадь</p></div><div style="width:38px;flex:0 0 auto"></div></div></div><div class="content-scroll" id="raceMenuScroll"></div><div class="race-start-panel"><button class="btn btn-gold" id="raceMenuStartBtn" style="width:100%">Выберите заезд</button>' + bottomNav('races') + '</div>';
       document.body.insertBefore(raceMenu, document.body.firstChild);
     }
 
@@ -180,6 +180,14 @@ window.SKACHKI_GAME = (function () {
       rating.innerHTML = '<div class="topbar"><div class="topbar-row"><button class="icon-btn" id="ratingBackBtn">←</button><div class="topbar-title"><h1>РЕЙТИНГ</h1><p>Лидеры сезона</p></div><div style="width:38px;flex:0 0 auto"></div></div></div><div class="content-scroll"><section class="summary-card"><div class="summary-title">Рейтинг</div><div class="summary-desc">Скоро здесь появятся лидеры сезона, друзья и награды.</div></section></div><div class="footer-actions">' + bottomNav('rating') + '</div>';
       document.body.insertBefore(rating, document.body.firstChild);
     }
+  }
+
+  function openRaceMenu() {
+    if (window.SKACHKI_RACE_MENU && window.SKACHKI_RACE_MENU.openRaceMenu) {
+      window.SKACHKI_RACE_MENU.openRaceMenu();
+      return;
+    }
+    showScreen('raceMenu');
   }
 
   function setActiveBottomNav(name) {
@@ -228,7 +236,7 @@ window.SKACHKI_GAME = (function () {
       if (!tile) return;
       var action = tile.getAttribute('data-menu');
       if (action === 'stable') showScreen('stable');
-      else if (action === 'races') showScreen('raceMenu');
+      else if (action === 'races') openRaceMenu();
       else if (action === 'breed' && window.SKACHKI_BREEDING) window.SKACHKI_BREEDING.openBreedScreen();
       else if (action === 'rating') showScreen('rating');
       else showToast('Скоро');
@@ -280,6 +288,7 @@ window.SKACHKI_GAME = (function () {
     newGame: newGame,
     averageClass: averageClass,
     showScreen: showScreen,
+    openRaceMenu: openRaceMenu,
     statBlock: statBlock,
     init: init
   };
