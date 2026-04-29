@@ -29,6 +29,23 @@ window.SKACHKI_HORSE = (function () {
     return rand(0, 1) === 0 ? 'stallion' : 'mare';
   }
 
+  function horseRankFromRating(rating) {
+    var score = Number.isFinite(rating) ? rating : 0;
+    if (score >= 650) return 'diamond';
+    if (score >= 400) return 'platinum';
+    if (score >= 220) return 'gold';
+    if (score >= 100) return 'silver';
+    return 'bronze';
+  }
+
+  function horseRankLabel(rank) {
+    if (rank === 'diamond') return 'Алмаз';
+    if (rank === 'platinum') return 'Платина';
+    if (rank === 'gold') return 'Золото';
+    if (rank === 'silver') return 'Серебро';
+    return 'Бронза';
+  }
+
   function hiddenRankFromValue(value) {
     var score = Number.isFinite(value) ? value : 8;
     if (score >= 16) return 'diamond';
@@ -112,6 +129,11 @@ window.SKACHKI_HORSE = (function () {
         agility: randomHiddenQuality(rand, agility),
         instinct: randomHiddenQuality(rand, intelligence)
       },
+      rating: 0,
+      bestRank: 'bronze',
+      demotionShield: 0,
+      practiceStarts: 0,
+      practiceBestPlace: null,
       potential: rand(84, 100),
       temperament: temperaments[rand(0, temperaments.length - 1)],
       form: 'normal',
@@ -136,6 +158,12 @@ window.SKACHKI_HORSE = (function () {
     if (!horse.gender) horse.gender = randomGender(rand);
     if (!horse.breed) horse.breed = pick(HORSE_BREEDS, rand);
     if (!horse.coat) horse.coat = pick(HORSE_COATS, rand);
+    if (!Number.isFinite(horse.rating)) horse.rating = 0;
+    if (!horse.currentRank) horse.currentRank = horseRankFromRating(horse.rating);
+    if (!horse.bestRank) horse.bestRank = horse.currentRank || 'bronze';
+    if (!Number.isFinite(horse.demotionShield)) horse.demotionShield = 0;
+    if (!Number.isFinite(horse.practiceStarts)) horse.practiceStarts = 0;
+    if (typeof horse.practiceBestPlace === 'undefined') horse.practiceBestPlace = null;
     if (!horse.form) horse.form = 'normal';
     if (!Number.isFinite(horse.trainingStreakDays)) horse.trainingStreakDays = 0;
     if (typeof horse.lastTrainingDate === 'undefined') horse.lastTrainingDate = null;
@@ -157,6 +185,7 @@ window.SKACHKI_HORSE = (function () {
 
     if (typeof horse.energy !== 'undefined') delete horse.energy;
 
+    horse.currentRank = horseRankFromRating(horse.rating);
     applyFormDecay(horse);
 
     return horse;
@@ -244,6 +273,8 @@ window.SKACHKI_HORSE = (function () {
     trainingProgressText: trainingProgressText,
     horseClass: horseClass,
     genderLabel: genderLabel,
+    horseRankFromRating: horseRankFromRating,
+    horseRankLabel: horseRankLabel,
     hiddenRankFromValue: hiddenRankFromValue,
     rankLabel: rankLabel,
     hiddenQualityLabel: hiddenQualityLabel,
