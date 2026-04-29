@@ -4,6 +4,7 @@ window.SKACHKI_BREEDING = (function () {
   var selectedStallionId = null;
   var selectedMareId = null;
   var activePicker = null;
+  var latestFoalId = null;
 
   function game() { return window.SKACHKI_GAME; }
 
@@ -207,6 +208,53 @@ window.SKACHKI_BREEDING = (function () {
     '</section>';
   }
 
+  function showStandaloneScreen(screenId) {
+    Array.prototype.forEach.call(document.querySelectorAll('.screen'), function (screen) {
+      screen.classList.remove('active');
+    });
+    var target = document.getElementById(screenId);
+    if (target) target.classList.add('active');
+  }
+
+  function renderFoalResult(child, stallion, mare) {
+    var G = game();
+    var card = G.byId('breedResultCard');
+    var input = G.byId('foalNameInput');
+    if (!card || !input) return;
+
+    card.innerHTML =
+      '<div class="foal-card-top">' +
+        '<div class="foal-gender-badge">' + (child.gender === 'mare' ? '♀' : '♂') + '</div>' +
+        '<div class="horse-avatar foal-avatar"><img src="./horse_icon.png" alt="horse"></div>' +
+        '<div class="foal-name-display">' + child.name + '</div>' +
+        starRating(child) +
+      '</div>' +
+      '<div class="foal-info-lines">' +
+        '<div><span>Пол</span><b>' + genderLabel(child) + '</b></div>' +
+        '<div><span>Характер</span><b>' + child.temperament + '</b></div>' +
+        '<div><span>Потенциал</span><b>' + child.potential + '</b></div>' +
+      '</div>' +
+      '<div class="foal-stat-grid">' +
+        statShort('Скорость', child.speed) +
+        statShort('Выносливость', child.stamina) +
+        statShort('Ускорение', child.acceleration) +
+      '</div>' +
+      '<div class="foal-parents">' +
+        '<div><span>Жеребец</span><b>' + stallion.name + '</b></div>' +
+        '<div class="foal-heart">♡</div>' +
+        '<div><span>Кобыла</span><b>' + mare.name + '</b></div>' +
+      '</div>';
+
+    input.value = child.name;
+    input.oninput = function () {
+      var cleanName = input.value.trim().slice(0, 18);
+      child.name = cleanName || 'Жеребёнок';
+      var display = card.querySelector('.foal-name-display');
+      if (display) display.textContent = child.name;
+      G.saveGame();
+    };
+  }
+
   function updateBreedButton() {
     var G = game();
     var button = G.byId('confirmBreedScreenBtn');
@@ -251,13 +299,14 @@ window.SKACHKI_BREEDING = (function () {
     if (mare.offspringCount >= mare.offspringLimit && mare.status === 'retired') mare.status = 'archived';
 
     G.state.horses.push(child);
+    latestFoalId = String(child.id);
     selectedStallionId = String(stallion.id);
     selectedMareId = String(mare.id);
     activePicker = null;
 
     G.saveGame();
-    G.showToast('Новый потомок: ' + child.name);
-    renderBreedScreen();
+    showStandaloneScreen('breedResultScreen');
+    renderFoalResult(child, stallion, mare);
   }
 
   function bind() {
@@ -266,6 +315,8 @@ window.SKACHKI_BREEDING = (function () {
     var back = G.byId('breedBackBtn');
     var cancel = G.byId('breedCancelBtn');
     var confirm = G.byId('confirmBreedScreenBtn');
+    var stableBtn = G.byId('breedResultStableBtn');
+    var againBtn = G.byId('breedResultAgainBtn');
 
     if (scroll) {
       scroll.addEventListener('click', function (event) {
@@ -298,6 +349,8 @@ window.SKACHKI_BREEDING = (function () {
     if (back) back.onclick = function () { G.showScreen('menu'); };
     if (cancel) cancel.onclick = function () { G.showScreen('menu'); };
     if (confirm) confirm.onclick = breedSelected;
+    if (stableBtn) stableBtn.onclick = function () { G.showScreen('stable'); };
+    if (againBtn) againBtn.onclick = function () { openBreedScreen(); };
   }
 
   return {
