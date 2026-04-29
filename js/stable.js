@@ -125,33 +125,38 @@ window.SKACHKI_STABLE = (function () {
 
     title.textContent = horse.name;
 
-    var params = [
+    var overview = [
+      ['Форма', G.formLabel(horse.form)],
+      ['Карьера', horse.racesRun + '/' + horse.careerLimit],
+      ['Потомство', horse.offspringCount + '/' + horse.offspringLimit],
+      ['Потенциал', horse.potential]
+    ];
+
+    var stats = [
       ['Скорость', horse.speed],
       ['Выносливость', horse.stamina],
       ['Ускорение', horse.acceleration],
       ['Манёвренность', horse.agility],
       ['Сила', horse.power],
       ['Интеллект', horse.intelligence],
-      ['Потенциал', horse.potential],
-      ['Форма', G.formLabel(horse.form)],
-      ['Карьера', horse.racesRun + '/' + horse.careerLimit],
-      ['Потомство', horse.offspringCount + '/' + horse.offspringLimit],
-      ['Гонок', horse.racesRun],
-      ['Побед', horse.wins],
-      ['Призовых', horse.podiums],
-      ['Заработано', horse.earnings],
-      ['Характер', horse.temperament],
-      ['Класс', G.horseClass(horse)]
+      ['Характер', horse.temperament]
     ];
 
     body.innerHTML =
-      '<div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">' +
+      '<div class="details-hero">' +
         '<div class="horse-avatar"><img src="./horse_icon.png" alt="horse"></div>' +
-        '<div><div style="font-size:13px;color:var(--muted)">Характер</div>' +
-        '<div style="font-size:18px;font-weight:900">' + horse.temperament + '</div>' +
-        '<div style="font-size:13px;color:var(--muted);margin-top:4px">' + G.behaviorLabel(horse.temperament) + '</div></div>' +
+        '<div class="details-hero-main">' +
+          '<div class="details-name-row"><div class="details-name">' + horse.name + '</div>' + starRating(horse) + '</div>' +
+          '<div class="horse-stat-line details-stat-line">' + horseStatLine(horse) + ' • Заработано: ' + (horse.earnings || 0) + ' 🪙</div>' +
+          '<div class="details-behavior">' + horse.temperament + ' — ' + G.behaviorLabel(horse.temperament) + '</div>' +
+        '</div>' +
       '</div>' +
-      '<div class="detail-grid">' + params.map(function (p) {
+      '<div class="detail-section-title">Состояние</div>' +
+      '<div class="detail-grid">' + overview.map(function (p) {
+        return '<div class="detail-box"><div class="label helpable" data-help="' + p[0] + '">' + p[0] + '</div><div class="value">' + p[1] + '</div></div>';
+      }).join('') + '</div>' +
+      '<div class="detail-section-title">Характеристики</div>' +
+      '<div class="detail-grid">' + stats.map(function (p) {
         return '<div class="detail-box"><div class="label helpable" data-help="' + p[0] + '">' + p[0] + '</div><div class="value">' + p[1] + '</div></div>';
       }).join('') + '</div>' +
       '<div id="paramHelpOverlay" class="param-help-overlay" aria-live="polite"></div>';
