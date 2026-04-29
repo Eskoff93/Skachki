@@ -140,6 +140,13 @@ window.SKACHKI_RACE_MENU = (function () {
     '</button>';
   }
 
+  function applySelectedHorseStyle(card) {
+    return card.replace(
+      '<article class="',
+      '<article style="border-color:rgba(255,210,93,.76)!important;box-shadow:0 0 0 1px rgba(255,210,93,.24) inset,0 18px 52px rgba(0,0,0,.46)!important;" class="'
+    );
+  }
+
   function renderPlayerHorseCard(horse) {
     var G = game();
     var selected = String(horse.id) === String(G.state.selectedPlayerHorseId);
@@ -150,13 +157,11 @@ window.SKACHKI_RACE_MENU = (function () {
 
     card = UI.renderHorseCard(horse, {
       dataHorse: true,
-      selected: false,
+      selected: selected,
       extraClass: 'race-horse-choice'
     });
 
-    if (!selected) return card;
-
-    return '<div data-horse="' + horse.id + '" class="race-horse-choice-frame" style="border:2px solid rgba(255,210,93,.76);border-radius:28px;padding:3px;margin-bottom:12px;box-shadow:0 0 0 1px rgba(255,210,93,.22) inset,0 0 28px rgba(255,210,93,.14);">' + card + '</div>';
+    return selected ? applySelectedHorseStyle(card) : card;
   }
 
   function updatePrimaryButton() {
