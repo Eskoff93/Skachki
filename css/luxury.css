@@ -11,16 +11,24 @@
   --lux-pink:#ff72b2;
 }
 
-#stableScreen{background:radial-gradient(circle at 50% -10%,rgba(45,84,119,.5),transparent 38%),linear-gradient(180deg,#061526,#030812 70%)}
-#stableScreen .topbar{display:none!important}
-#stableScreen .content-scroll,#breedScreen .content-scroll,#ratingScreen .content-scroll{padding-top:calc(8px + var(--safe-top))!important;padding-bottom:calc(98px + var(--safe-bottom))!important}
+#stableScreen,#raceMenuScreen,#breedScreen,#ratingScreen{background:radial-gradient(circle at 50% -10%,rgba(45,84,119,.5),transparent 38%),linear-gradient(180deg,#061526,#030812 70%)}
+#stableScreen .topbar,#raceMenuScreen .topbar,#breedScreen .topbar,#ratingScreen .topbar{display:none!important}
+#stableScreen .content-scroll,#raceMenuScreen .content-scroll,#breedScreen .content-scroll,#ratingScreen .content-scroll{padding-top:calc(var(--safe-top) + 12px)!important;padding-bottom:calc(104px + var(--safe-bottom))!important}
 #stableScreen .footer-actions,#breedScreen .footer-actions,#ratingScreen .footer-actions{display:block!important;padding:10px 14px calc(10px + var(--safe-bottom))!important;background:linear-gradient(180deg,rgba(4,11,20,0),rgba(4,11,20,.92) 28%,rgba(4,11,20,.98));border-top:1px solid rgba(216,169,67,.18)}
-#stableScreen .summary-card{background:linear-gradient(180deg,rgba(11,31,49,.78),rgba(5,16,29,.9));border:1px solid rgba(216,169,67,.2);box-shadow:0 10px 28px rgba(0,0,0,.28),inset 0 0 0 1px rgba(255,255,255,.025)}
+#stableScreen .summary-card,#ratingScreen .summary-card,.selection-summary,.breed-intro-card{background:linear-gradient(180deg,rgba(11,31,49,.78),rgba(5,16,29,.9));border:1px solid rgba(216,169,67,.2);box-shadow:0 10px 28px rgba(0,0,0,.28),inset 0 0 0 1px rgba(255,255,255,.025)}
 #stableScreen .summary-head{display:none!important}
 #stableScreen .summary-title,#stableScreen .summary-desc,#stableScreen .coin-bubble{display:none!important}
 .stable-hero-card{padding:8px!important;border-radius:18px!important;margin-bottom:9px!important}.stable-summary-grid{display:grid!important;grid-template-columns:.8fr 1.2fr 1fr!important;gap:6px!important;margin:0!important}.stable-summary-mini{min-height:42px;border-radius:13px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:6px}.stable-summary-mini span{font-size:9px;color:var(--lux-muted);font-weight:900;text-transform:uppercase;letter-spacing:.03em}.stable-summary-mini b{font-size:18px;color:#fff;line-height:1.05;margin-top:2px}.stable-summary-mini.stable-coins-mini b{font-size:15px}.stable-average-stars{font-size:13px!important;width:70px!important;height:15px!important;margin-top:3px}
 
 .bottom-nav{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;width:100%}.bottom-nav-btn{height:58px;border-radius:18px;border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(18,41,63,.96),rgba(8,21,36,.98));color:#afc1d2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;box-shadow:0 10px 26px rgba(0,0,0,.26)}.bottom-nav-btn span{font-size:20px;line-height:1}.bottom-nav-btn b{font-size:10px;line-height:1;font-weight:950}.bottom-nav-btn.active{border-color:rgba(216,169,67,.58);color:var(--lux-gold-soft);background:radial-gradient(circle at 50% 0,rgba(216,169,67,.18),transparent 52%),linear-gradient(180deg,rgba(28,49,69,.98),rgba(9,22,37,.98));box-shadow:0 0 0 1px rgba(216,169,67,.13) inset,0 12px 28px rgba(0,0,0,.32)}
+
+#raceMenuScreen .race-start-panel{padding:12px 14px calc(10px + var(--safe-bottom))!important;background:linear-gradient(180deg,rgba(4,11,20,0),rgba(4,11,20,.92) 22%,rgba(4,11,20,.98))!important;border-top:1px solid rgba(216,169,67,.18)!important}
+#raceMenuScreen .race-start-panel .btn{min-height:46px;margin-bottom:10px}
+#raceMenuScreen .race-start-panel .bottom-nav{margin-top:0}
+#raceMenuScreen .content-scroll{padding-bottom:calc(174px + var(--safe-bottom))!important}
+#ratingScreen .summary-card{border-radius:22px;padding:16px}
+#ratingScreen .summary-title{font-size:22px;font-weight:950;color:#fff;margin-bottom:8px}
+#ratingScreen .summary-desc{font-size:14px;color:var(--lux-muted);line-height:1.4}
 
 .luxury-horse-card{position:relative;overflow:hidden;padding:12px!important;border-radius:24px!important;background:radial-gradient(circle at 12% 4%,rgba(216,169,67,.16),transparent 28%),linear-gradient(180deg,rgba(12,33,52,.98),rgba(4,15,28,.98))!important;border:1px solid rgba(216,169,67,.36)!important;box-shadow:0 18px 52px rgba(0,0,0,.46),inset 0 0 0 1px rgba(255,255,255,.035)!important}
 .luxury-horse-card:before{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(135deg,rgba(255,235,170,.12),transparent 18%,transparent 78%,rgba(216,169,67,.1));opacity:.8}
@@ -28,4 +36,4 @@
 
 .locked-traits{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}.locked-traits div{min-height:58px;border-radius:16px;border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(0,0,0,.12));display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.62);font-weight:950;font-size:20px}.details-hero .horse-avatar{border:1px solid rgba(216,169,67,.4);background:linear-gradient(135deg,#fff0a8,#d4a341,#5a340f);padding:3px}.details-hero .horse-avatar img{border-radius:18px}.detail-horse-avatar{position:relative;overflow:hidden;border-radius:18px}.detail-horse-avatar .horse-portrait-svg{position:relative;inset:auto;width:100%;height:100%}.detail-horse-avatar .breed-emblem{display:none}
 
-@media(max-width:420px){#stableScreen .content-scroll{padding-top:calc(6px + var(--safe-top))!important}.stable-hero-card{padding:7px!important}.stable-summary-mini{min-height:38px}.stable-summary-mini b{font-size:16px}.horse-medallion{width:82px;height:82px}.luxury-name{font-size:22px!important}.football-stat b{font-size:23px}.quality-badge{gap:5px;padding:7px 5px}.quality-icon{width:24px;height:24px;font-size:14px}.quality-name{font-size:9px}.quality-rank{font-size:10px}.bottom-nav-btn{height:54px;border-radius:16px}.bottom-nav-btn span{font-size:18px}.bottom-nav-btn b{font-size:9px}}
+@media(max-width:420px){#stableScreen .content-scroll,#raceMenuScreen .content-scroll,#breedScreen .content-scroll,#ratingScreen .content-scroll{padding-top:calc(var(--safe-top) + 10px)!important}.stable-hero-card{padding:7px!important}.stable-summary-mini{min-height:38px}.stable-summary-mini b{font-size:16px}.horse-medallion{width:82px;height:82px}.luxury-name{font-size:22px!important}.football-stat b{font-size:23px}.quality-badge{gap:5px;padding:7px 5px}.quality-icon{width:24px;height:24px;font-size:14px}.quality-name{font-size:9px}.quality-rank{font-size:10px}.bottom-nav-btn{height:54px;border-radius:16px}.bottom-nav-btn span{font-size:18px}.bottom-nav-btn b{font-size:9px}}
