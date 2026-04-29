@@ -74,13 +74,14 @@ window.SKACHKI_RACE_ENGINE = (function () {
       }).setOrigin(0.5).setDepth(200);
 
       var cls = G.horseClass(horse);
+      var form = G.formMultiplier ? G.formMultiplier(horse.form) : 0.8;
       scene.runners.push({
         horse: horse,
         sprite: sprite,
         label: label,
         progress: 0.002 - index * 0.012,
         lane: lane,
-        pace: (0.00048 + cls * 0.0000075) * (0.96 + Math.random() * 0.08),
+        pace: (0.00048 + cls * 0.0000075) * form * (0.96 + Math.random() * 0.08),
         finished: false,
         finishTime: null,
         nextEvent: scene.time.now + G.randInt(3000, 7000)
@@ -113,8 +114,8 @@ window.SKACHKI_RACE_ENGINE = (function () {
       if (runner.finished) return;
 
       var stamina = 0.72 + runner.horse.stamina / 360;
-      var energy = 0.72 + runner.horse.energy / 360;
-      var speed = runner.pace * stamina * energy * (1 + Math.sin(time / 520 + G.horseClass(runner.horse)) * 0.012);
+      var form = G.formMultiplier ? G.formMultiplier(runner.horse.form) : 0.8;
+      var speed = runner.pace * stamina * form * (1 + Math.sin(time / 520 + G.horseClass(runner.horse)) * 0.012);
 
       if (time > runner.nextEvent) {
         if (Math.random() < 0.45) {
