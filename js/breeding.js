@@ -245,9 +245,9 @@ window.SKACHKI_BREEDING = (function () {
   }
 
   function renderFoalPreview() {
-    return '<div class="breed-foal-preview-avatar">' +
-      '<div class="breed-foal-glow"></div>' +
-      '<svg class="horse-portrait-svg" viewBox="0 0 120 120" aria-hidden="true">' +
+    return '<div class="breed-foal-preview-avatar" style="position:relative;width:86px;height:86px;flex:0 0 86px;border-radius:26px;overflow:hidden;background:linear-gradient(180deg,rgba(16,36,56,.98),rgba(5,14,26,.98));box-shadow:0 0 0 1px rgba(216,169,67,.28) inset,0 12px 28px rgba(0,0,0,.28);">' +
+      '<div class="breed-foal-glow" style="position:absolute;inset:8px;border-radius:50%;background:radial-gradient(circle,rgba(255,211,77,.2),rgba(95,184,255,.08) 55%,transparent 72%);pointer-events:none;"></div>' +
+      '<svg class="breed-foal-preview-svg" style="position:relative;display:block;width:100%;height:100%;border-radius:26px;" viewBox="0 0 120 120" aria-hidden="true">' +
         '<defs><radialGradient id="breedFoalPreviewBg" cx="50%" cy="36%" r="74%"><stop offset="0" stop-color="#2a4363"/><stop offset=".62" stop-color="#101b2b"/><stop offset="1" stop-color="#040914"/></radialGradient></defs>' +
         '<circle cx="60" cy="60" r="57" fill="url(#breedFoalPreviewBg)"/>' +
         '<path d="M43 96C40 78 43 64 53 53C59 47 66 44 75 44C73 35 76 28 82 22C88 30 90 38 87 46C98 51 105 61 108 73C112 88 104 100 91 101C81 102 74 94 67 84C60 74 53 76 50 88C49 92 49 95 50 100Z" fill="#d8a943" opacity=".9"/>' +
