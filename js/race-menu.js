@@ -144,14 +144,19 @@ window.SKACHKI_RACE_MENU = (function () {
     var G = game();
     var selected = String(horse.id) === String(G.state.selectedPlayerHorseId);
     var UI = horseUi();
+    var card;
 
     if (!UI.renderHorseCard) return '';
 
-    return UI.renderHorseCard(horse, {
+    card = UI.renderHorseCard(horse, {
       dataHorse: true,
-      selected: selected,
+      selected: false,
       extraClass: 'race-horse-choice'
     });
+
+    if (!selected) return card;
+
+    return '<div data-horse="' + horse.id + '" class="race-horse-choice-frame" style="border:2px solid rgba(255,210,93,.76);border-radius:28px;padding:3px;margin-bottom:12px;box-shadow:0 0 0 1px rgba(255,210,93,.22) inset,0 0 28px rgba(255,210,93,.14);">' + card + '</div>';
   }
 
   function updatePrimaryButton() {
