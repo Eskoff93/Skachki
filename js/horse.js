@@ -2,6 +2,9 @@
 // Pure functions only: no DOM, no Phaser, no localStorage.
 
 window.SKACHKI_HORSE = (function () {
+  var HORSE_BREEDS = ['Английская', 'Арабская', 'Ахалтекинская', 'Квотерхорс', 'Стандартбредная'];
+  var HORSE_COATS = ['Гнедая', 'Вороная', 'Рыжая', 'Серая', 'Буланая', 'Соловая'];
+
   function todayKey() {
     return new Date().toISOString().slice(0, 10);
   }
@@ -12,6 +15,10 @@ window.SKACHKI_HORSE = (function () {
     var b = new Date(dateB + 'T00:00:00');
     if (Number.isNaN(a.getTime()) || Number.isNaN(b.getTime())) return 0;
     return Math.floor((b.getTime() - a.getTime()) / 86400000);
+  }
+
+  function pick(list, rand) {
+    return list[rand(0, list.length - 1)];
   }
 
   function genderLabel(gender) {
@@ -92,6 +99,8 @@ window.SKACHKI_HORSE = (function () {
       id: Date.now() + Math.random().toString(36).slice(2, 8),
       name: name,
       gender: randomGender(rand),
+      breed: pick(HORSE_BREEDS, rand),
+      coat: pick(HORSE_COATS, rand),
       speed: rand(54, 78),
       stamina: rand(52, 76),
       acceleration: rand(52, 78),
@@ -125,6 +134,8 @@ window.SKACHKI_HORSE = (function () {
     };
 
     if (!horse.gender) horse.gender = randomGender(rand);
+    if (!horse.breed) horse.breed = pick(HORSE_BREEDS, rand);
+    if (!horse.coat) horse.coat = pick(HORSE_COATS, rand);
     if (!horse.form) horse.form = 'normal';
     if (!Number.isFinite(horse.trainingStreakDays)) horse.trainingStreakDays = 0;
     if (typeof horse.lastTrainingDate === 'undefined') horse.lastTrainingDate = null;
