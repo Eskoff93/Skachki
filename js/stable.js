@@ -8,12 +8,13 @@ window.SKACHKI_STABLE = (function () {
   function starRating(horse) {
     var G = game();
     var cls = G.horseClass(horse);
-    var percent = Math.max(0, Math.min(100, cls));
+    var rounded = Math.round(cls / 10) * 10;
+    var percent = Math.max(0, Math.min(100, rounded));
     return '<div class="star-rating" title="Класс ' + cls + '"><span class="star-rating-bg">★★★★★</span><span class="star-rating-fill" style="width:' + percent + '%">★★★★★</span></div>';
   }
 
   function horseStatLine(horse) {
-    return 'Гонки: ' + (horse.racesRun || 0) + ' • Победы: ' + (horse.wins || 0) + ' • Призы: ' + (horse.podiums || 0);
+    return 'Гонки ' + (horse.racesRun || 0) + ' • Победы ' + (horse.wins || 0) + ' • Призы ' + (horse.podiums || 0);
   }
 
   function renderSummary() {
@@ -51,9 +52,10 @@ window.SKACHKI_STABLE = (function () {
           '<div class="horse-avatar"><img src="./horse_icon.png" alt="horse"></div>' +
           '<div class="horse-meta">' +
             '<div class="horse-name-row">' +
-              '<div class="horse-name-wrap"><div class="horse-name">' + horse.name + '</div><div class="horse-stat-line">' + horseStatLine(horse) + '</div></div>' +
+              '<div class="horse-name-wrap"><div class="horse-name">' + horse.name + '</div></div>' +
               starRating(horse) +
             '</div>' +
+            '<div class="horse-stat-line">' + horseStatLine(horse) + '</div>' +
             '<div class="horse-tags">' +
               '<span class="mini-tag">Форма: ' + G.formLabel(horse.form) + '</span>' +
               '<span class="mini-tag">Карьера: ' + horse.racesRun + '/' + horse.careerLimit + '</span>' +
@@ -147,7 +149,7 @@ window.SKACHKI_STABLE = (function () {
         '<div class="horse-avatar"><img src="./horse_icon.png" alt="horse"></div>' +
         '<div class="details-hero-main">' +
           '<div class="details-name-row"><div class="details-name">' + horse.name + '</div>' + starRating(horse) + '</div>' +
-          '<div class="horse-stat-line details-stat-line">' + horseStatLine(horse) + ' • Заработано: ' + (horse.earnings || 0) + ' 🪙</div>' +
+          '<div class="horse-stat-line details-stat-line">' + horseStatLine(horse) + ' • Заработано ' + (horse.earnings || 0) + ' 🪙</div>' +
           '<div class="details-behavior">' + horse.temperament + ' — ' + G.behaviorLabel(horse.temperament) + '</div>' +
         '</div>' +
       '</div>' +
