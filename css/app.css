@@ -1,21 +1,1034 @@
 @import url('../style.css?v=cleanup2');
 
-/* Shared screens */
-.main-menu-hero,.menu-card{background:linear-gradient(180deg,rgba(20,44,68,.98),rgba(15,32,50,.96));border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:var(--shadow);margin-bottom:14px}.main-menu-title{font-size:28px;font-weight:900;letter-spacing:.08em;margin-bottom:6px}.main-menu-sub{color:var(--muted);font-size:14px;line-height:1.35}.main-menu-stats,.race-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.menu-tile,.race-card,.my-horse-card{width:100%;text-align:left;color:var(--text);background:linear-gradient(180deg,rgba(16,38,61,.98),rgba(11,25,41,.98));border:1px solid rgba(125,176,229,.16);border-radius:20px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow)}.menu-tile{display:flex;gap:12px;align-items:center}.menu-icon{width:52px;height:52px;border-radius:17px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:28px;flex:0 0 auto}.menu-title,.race-title,.my-horse-name{font-size:18px;font-weight:900;margin-bottom:4px}.menu-desc,.race-desc,.my-horse-note{font-size:13px;color:var(--muted);line-height:1.35}.menu-tile.disabled{opacity:.55}.horse-name-wrap{min-width:0;flex:1}.horse-name-row{align-items:flex-start!important;gap:10px}.horse-stat-line{font-size:12px;color:var(--muted);line-height:1.25;margin-top:2px;white-space:normal}.star-rating{position:relative;display:inline-block;flex:0 0 auto;font-size:18px;line-height:1;letter-spacing:1px;width:94px;height:20px;overflow:hidden;text-align:left}.star-rating-bg{color:rgba(255,255,255,.18);position:absolute;left:0;top:0}.star-rating-fill{color:#ffd34d;position:absolute;left:0;top:0;overflow:hidden;white-space:nowrap;text-shadow:0 1px 8px rgba(255,211,77,.22)}.section-label{font-size:13px;color:var(--muted);font-weight:800;margin:16px 0 8px}.player-badge{display:inline-flex;border-radius:999px;padding:5px 9px;background:rgba(255,210,93,.14);border:1px solid rgba(255,210,93,.28);color:#ffe7a6;font-size:11px;font-weight:900}
+/* Shared cards and text */
+.race-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.race-card,
+.my-horse-card {
+  width: 100%;
+  text-align: left;
+  color: var(--text);
+  background: linear-gradient(180deg, rgba(16, 38, 61, .98), rgba(11, 25, 41, .98));
+  border: 1px solid rgba(125, 176, 229, .16);
+  border-radius: 20px;
+  padding: 14px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+
+.race-title,
+.my-horse-name {
+  font-size: 18px;
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+
+.race-desc,
+.my-horse-note {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.horse-name-wrap {
+  min-width: 0;
+  flex: 1;
+}
+
+.horse-name-row {
+  align-items: flex-start !important;
+  gap: 10px;
+}
+
+.horse-stat-line {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.25;
+  margin-top: 2px;
+  white-space: normal;
+}
+
+.star-rating {
+  position: relative;
+  display: inline-block;
+  flex: 0 0 auto;
+  font-size: 18px;
+  line-height: 1;
+  letter-spacing: 1px;
+  width: 94px;
+  height: 20px;
+  overflow: hidden;
+  text-align: left;
+}
+
+.star-rating-bg {
+  color: rgba(255, 255, 255, .18);
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.star-rating-fill {
+  color: #ffd34d;
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-shadow: 0 1px 8px rgba(255, 211, 77, .22);
+}
+
+.section-label {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 800;
+  margin: 16px 0 8px;
+}
+
+.player-badge {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 5px 9px;
+  background: rgba(255, 210, 93, .14);
+  border: 1px solid rgba(255, 210, 93, .28);
+  color: #ffe7a6;
+  font-size: 11px;
+  font-weight: 900;
+}
 
 /* Horse details */
-.details-hero{display:flex;gap:12px;align-items:center;margin-bottom:14px;padding:12px;border-radius:16px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08)}.details-hero-main{flex:1;min-width:0}.details-name-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.details-name{font-size:20px;font-weight:900;line-height:1.1}.details-stat-line{margin-top:5px}.details-behavior{margin-top:8px;color:var(--muted);font-size:13px;line-height:1.35}.detail-section-title{margin:14px 0 8px;color:#fff;font-size:13px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}#horseModal .modal-card{position:relative}#horseModal .helpable{cursor:pointer;position:relative}#horseModal .helpable:after{content:'?';display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;margin-left:6px;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);color:#fff;font-size:11px;font-weight:900}.inline-param-help{display:none!important}.param-help-overlay{display:none;position:absolute;left:14px;right:14px;bottom:82px;z-index:50;padding:13px 42px 13px 14px;border-radius:16px;background:rgba(8,20,35,.96);border:1px solid rgba(255,210,93,.34);box-shadow:0 18px 50px rgba(0,0,0,.46);color:#d7e4ef;font-size:13px;line-height:1.35;text-align:left}.param-help-overlay.active{display:block}.param-help-overlay b{display:block;color:#fff;margin-bottom:5px;font-size:14px}.param-help-close{position:absolute;right:10px;top:9px;width:26px;height:26px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.08);color:#fff;font-size:18px;line-height:20px}
+.details-hero {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 14px;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .045);
+  border: 1px solid rgba(255, 255, 255, .08);
+}
+
+.details-hero-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.details-name-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.details-name {
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.details-stat-line {
+  margin-top: 5px;
+}
+
+.details-behavior {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.detail-section-title {
+  margin: 14px 0 8px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+#horseModal .modal-card {
+  position: relative;
+}
+
+#horseModal .helpable {
+  cursor: pointer;
+  position: relative;
+}
+
+#horseModal .helpable::after {
+  content: '?';
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-left: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .1);
+  border: 1px solid rgba(255, 255, 255, .16);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.inline-param-help {
+  display: none !important;
+}
+
+.param-help-overlay {
+  display: none;
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 82px;
+  z-index: 50;
+  padding: 13px 42px 13px 14px;
+  border-radius: 16px;
+  background: rgba(8, 20, 35, .96);
+  border: 1px solid rgba(255, 210, 93, .34);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .46);
+  color: #d7e4ef;
+  font-size: 13px;
+  line-height: 1.35;
+  text-align: left;
+}
+
+.param-help-overlay.active {
+  display: block;
+}
+
+.param-help-overlay b {
+  display: block;
+  color: #fff;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.param-help-close {
+  position: absolute;
+  right: 10px;
+  top: 9px;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, .16);
+  background: rgba(255, 255, 255, .08);
+  color: #fff;
+  font-size: 18px;
+  line-height: 20px;
+}
+
+/* Bottom navigation */
+.bottom-nav {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+  width: 100%;
+}
+
+.bottom-nav-btn {
+  height: 58px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, .08);
+  background: linear-gradient(180deg, rgba(18, 41, 63, .96), rgba(8, 21, 36, .98));
+  color: #afc1d2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, .26);
+}
+
+.bottom-nav-btn span {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.bottom-nav-btn b {
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 950;
+}
+
+.bottom-nav-btn.active {
+  border-color: rgba(216, 169, 67, .58);
+  color: #ffe6a2;
+  background: radial-gradient(circle at 50% 0, rgba(216, 169, 67, .18), transparent 52%), linear-gradient(180deg, rgba(28, 49, 69, .98), rgba(9, 22, 37, .98));
+  box-shadow: 0 0 0 1px rgba(216, 169, 67, .13) inset, 0 12px 28px rgba(0, 0, 0, .32);
+}
 
 /* Race menu and race */
-.race-card.selected,.my-horse-card.selected{border-color:rgba(255,210,93,.62);box-shadow:0 0 0 1px rgba(255,210,93,.26) inset,var(--shadow)}.race-top{display:flex;justify-content:space-between;gap:10px}.race-fee{color:#ffd34d;font-weight:900;white-space:nowrap}.race-box{border-radius:14px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.06);padding:9px;text-align:center}.race-box b{display:block;font-size:15px}.race-box span{display:block;margin-top:3px;font-size:10px;color:var(--muted)}.my-horse-card{display:flex;gap:12px;align-items:center}.my-horse-info{flex:1;min-width:0}.race-start-panel{position:absolute;left:0;right:0;bottom:0;padding:12px 14px calc(14px + var(--safe-bottom));background:linear-gradient(180deg,rgba(8,20,35,.06),rgba(8,20,35,.98) 25%,#081423);border-top:1px solid rgba(255,255,255,.04)}.race-viewport{padding:8px 10px 6px!important;flex:1 1 auto!important}.race-status{font-size:15px;margin-top:8px!important}.race-status b{font-size:16px}.race-status div{font-size:14px!important;color:#d8e6f2!important}.race-panel{padding:0 10px calc(12px + var(--safe-bottom))!important}.race-panel .btn{display:none}#phaserBox{border-radius:18px!important;min-height:500px!important;background:#0f263b!important;box-shadow:0 14px 40px rgba(0,0,0,.38),0 0 0 1px rgba(255,255,255,.08) inset}
+.race-card.selected,
+.my-horse-card.selected {
+  border-color: rgba(255, 210, 93, .62);
+  box-shadow: 0 0 0 1px rgba(255, 210, 93, .26) inset, var(--shadow);
+}
+
+.race-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.race-fee {
+  color: #ffd34d;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.race-box {
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .045);
+  border: 1px solid rgba(255, 255, 255, .06);
+  padding: 9px;
+  text-align: center;
+}
+
+.race-box b {
+  display: block;
+  font-size: 15px;
+}
+
+.race-box span {
+  display: block;
+  margin-top: 3px;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.my-horse-card {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.my-horse-info {
+  flex: 1;
+  min-width: 0;
+}
+
+#raceMenuScreen .content-scroll {
+  padding-bottom: calc(180px + var(--safe-bottom)) !important;
+}
+
+.race-start-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 12px 14px calc(10px + var(--safe-bottom));
+  background: linear-gradient(180deg, rgba(8, 20, 35, .06), rgba(8, 20, 35, .98) 22%, #081423);
+  border-top: 1px solid rgba(255, 255, 255, .04);
+  z-index: 10;
+}
+
+.race-start-panel .bottom-nav {
+  margin-top: 10px;
+}
+
+.race-viewport {
+  padding: 8px 10px 6px !important;
+  flex: 1 1 auto !important;
+}
+
+.race-status {
+  font-size: 15px;
+  margin-top: 8px !important;
+}
+
+.race-status b {
+  font-size: 16px;
+}
+
+.race-status div {
+  font-size: 14px !important;
+  color: #d8e6f2 !important;
+}
+
+.race-panel {
+  padding: 0 10px calc(12px + var(--safe-bottom)) !important;
+}
+
+.race-panel .btn {
+  display: none;
+}
+
+#phaserBox {
+  border-radius: 18px !important;
+  min-height: 500px !important;
+  background: #0f263b !important;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, .38), 0 0 0 1px rgba(255, 255, 255, .08) inset;
+}
 
 /* Stable */
-#stableScreen .footer-actions{display:none!important}#stableScreen .content-scroll{padding-bottom:calc(24px + var(--safe-bottom))!important}
+#stableScreen .content-scroll {
+  padding-bottom: calc(112px + var(--safe-bottom)) !important;
+}
 
 /* Breeding screen */
-#breedScreen .content-scroll{padding-bottom:calc(112px + var(--safe-bottom))}.breed-intro-card,.breed-choice-card,.breed-picker-panel,.breed-compare-panel,.breed-forecast-panel{border-radius:22px;padding:15px;margin-bottom:14px;background:linear-gradient(180deg,rgba(20,44,68,.98),rgba(10,25,42,.98));border:1px solid rgba(125,176,229,.16);box-shadow:var(--shadow)}.breed-intro-card{background:radial-gradient(circle at 20% 0,rgba(255,211,77,.14),transparent 36%),linear-gradient(180deg,rgba(20,44,68,.98),rgba(10,25,42,.98))}.breed-pair-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}.breed-pair-row .breed-choice-card{margin-bottom:0;padding:11px;min-width:0}.breed-choice-card{position:relative;overflow:hidden}.breed-choice-card:before{content:'';position:absolute;inset:0;pointer-events:none;opacity:.22;background:radial-gradient(circle at 0 0,rgba(255,255,255,.25),transparent 34%)}.breed-stallion-card{border-color:rgba(73,169,255,.28)}.breed-mare-card{border-color:rgba(255,106,167,.28)}.breed-selected-head{display:flex;align-items:flex-start;gap:9px;position:relative;z-index:1}.breed-pair-row .breed-selected-head{display:block}.breed-avatar{width:70px;height:70px;border-radius:22px}.breed-pair-row .breed-avatar{width:58px;height:58px;border-radius:18px;margin-bottom:8px}.breed-selected-main{flex:1;min-width:0}.breed-selected-role{font-size:13px;font-weight:900;color:#ffd34d;letter-spacing:.03em}.breed-stallion-card .breed-selected-role{color:#7cc8ff}.breed-mare-card .breed-selected-role{color:#ff8cc1}.breed-selected-name{font-size:22px;font-weight:950;line-height:1.05;margin-top:2px;word-break:break-word}.breed-pair-row .breed-selected-name{font-size:17px;min-height:36px}.breed-selected-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}.breed-selected-tags span,.breed-temper-note,.breed-forecast-note{font-size:11px;color:#d6e4f0;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:5px 8px}.breed-stars{margin-top:5px}.breed-pair-row .breed-stars{font-size:14px;width:74px;height:16px}.breed-change-btn{flex:0 0 auto;border:1px solid rgba(255,211,77,.24);background:rgba(255,211,77,.1);color:#ffe7a6;border-radius:999px;padding:9px 11px;font-weight:900}.breed-pair-row .breed-change-btn{width:100%;margin-top:9px;padding:8px 8px;font-size:12px}.breed-key-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:11px;position:relative;z-index:1}.breed-stat-chip,.breed-forecast-stat{border-radius:14px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08);padding:8px;text-align:center}.breed-stat-chip b,.breed-forecast-stat b{display:block;font-size:17px;color:#fff}.breed-stat-chip span,.breed-forecast-stat span{display:block;font-size:9px;color:var(--muted);margin-top:2px}.breed-pair-row .breed-stat-chip{padding:7px 2px}.breed-pair-row .breed-stat-chip b{font-size:14px}.breed-selected-empty{position:relative;z-index:1;text-align:center;padding:16px 6px}.breed-selected-title{font-size:18px;font-weight:950;margin-bottom:6px}.breed-picker-panel{padding:12px}.breed-picker-blue{border-color:rgba(73,169,255,.28)}.breed-picker-pink{border-color:rgba(255,106,167,.28)}.breed-picker-title{font-size:14px;font-weight:950;color:#fff;margin-bottom:9px}.breed-picker-grid{display:grid;gap:9px}.breed-candidate{display:flex;align-items:center;gap:10px;width:100%;text-align:left;color:var(--text);border-radius:18px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.045);padding:10px}.breed-candidate.selected{border-color:rgba(255,211,77,.52);box-shadow:0 0 0 1px rgba(255,211,77,.2) inset}.breed-candidate-avatar{width:54px;height:54px;border-radius:17px}.breed-candidate-main{flex:1;min-width:0}.breed-candidate-name{font-size:15px;font-weight:950}.breed-candidate .breed-stars{font-size:13px;width:70px;height:15px;margin-top:3px}.breed-candidate-meta,.breed-candidate-stats{font-size:11px;color:var(--muted);line-height:1.25;margin-top:3px}.breed-candidate-check{width:30px;height:30px;border-radius:999px;background:rgba(255,211,77,.12);border:1px solid rgba(255,211,77,.24);display:flex;align-items:center;justify-content:center;color:#ffd34d;font-weight:950}.breed-compare-table{display:grid;gap:9px;margin-top:12px}.breed-compare-row{display:grid;grid-template-columns:38px 1fr 38px;align-items:center;gap:9px}.breed-compare-value{font-weight:950;color:#fff;text-align:center}.breed-compare-mid span{display:block;text-align:center;font-size:12px;color:var(--muted);margin-bottom:5px}.breed-compare-mid div{height:10px;border-radius:999px;background:rgba(255,255,255,.08);position:relative;overflow:hidden}.breed-compare-mid i,.breed-compare-mid b{position:absolute;top:0;bottom:0;max-width:100%;border-radius:999px}.breed-compare-mid i{left:0;background:linear-gradient(90deg,#37a7ff,#79d2ff);opacity:.95}.breed-compare-mid b{right:0;background:linear-gradient(90deg,#ff8cc1,#ff5b99);opacity:.82}.breed-temper-note{margin-top:12px;text-align:center;border-radius:16px}.breed-forecast-panel{background:radial-gradient(circle at 0 0,rgba(255,211,77,.16),transparent 38%),linear-gradient(180deg,rgba(20,44,68,.98),rgba(10,25,42,.98))}.breed-forecast-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.breed-forecast-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:13px}.breed-forecast-stat b{font-size:16px;color:#ffd34d}.breed-forecast-note{margin-top:12px;border-radius:16px;text-align:center}
+#breedScreen .content-scroll {
+  padding-bottom: calc(112px + var(--safe-bottom));
+}
+
+.breed-intro-card,
+.breed-choice-card,
+.breed-picker-panel,
+.breed-compare-panel,
+.breed-forecast-panel {
+  border-radius: 22px;
+  padding: 15px;
+  margin-bottom: 14px;
+  background: linear-gradient(180deg, rgba(20, 44, 68, .98), rgba(10, 25, 42, .98));
+  border: 1px solid rgba(125, 176, 229, .16);
+  box-shadow: var(--shadow);
+}
+
+.breed-intro-card {
+  background: radial-gradient(circle at 20% 0, rgba(255, 211, 77, .14), transparent 36%), linear-gradient(180deg, rgba(20, 44, 68, .98), rgba(10, 25, 42, .98));
+}
+
+.breed-pair-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.breed-pair-row .breed-choice-card {
+  margin-bottom: 0;
+  padding: 11px;
+  min-width: 0;
+}
+
+.breed-choice-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.breed-choice-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: .22;
+  background: radial-gradient(circle at 0 0, rgba(255, 255, 255, .25), transparent 34%);
+}
+
+.breed-stallion-card {
+  border-color: rgba(73, 169, 255, .28);
+}
+
+.breed-mare-card {
+  border-color: rgba(255, 106, 167, .28);
+}
+
+.breed-selected-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  position: relative;
+  z-index: 1;
+}
+
+.breed-pair-row .breed-selected-head {
+  display: block;
+}
+
+.breed-avatar {
+  width: 70px;
+  height: 70px;
+  border-radius: 22px;
+}
+
+.breed-pair-row .breed-avatar {
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  margin-bottom: 8px;
+}
+
+.breed-selected-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.breed-selected-role {
+  font-size: 13px;
+  font-weight: 900;
+  color: #ffd34d;
+  letter-spacing: .03em;
+}
+
+.breed-stallion-card .breed-selected-role {
+  color: #7cc8ff;
+}
+
+.breed-mare-card .breed-selected-role {
+  color: #ff8cc1;
+}
+
+.breed-selected-name {
+  font-size: 22px;
+  font-weight: 950;
+  line-height: 1.05;
+  margin-top: 2px;
+  word-break: break-word;
+}
+
+.breed-pair-row .breed-selected-name {
+  font-size: 17px;
+  min-height: 36px;
+}
+
+.breed-selected-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 7px;
+}
+
+.breed-selected-tags span,
+.breed-temper-note,
+.breed-forecast-note {
+  font-size: 11px;
+  color: #d6e4f0;
+  background: rgba(255, 255, 255, .055);
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 999px;
+  padding: 5px 8px;
+}
+
+.breed-stars {
+  margin-top: 5px;
+}
+
+.breed-pair-row .breed-stars {
+  font-size: 14px;
+  width: 74px;
+  height: 16px;
+}
+
+.breed-change-btn {
+  flex: 0 0 auto;
+  border: 1px solid rgba(255, 211, 77, .24);
+  background: rgba(255, 211, 77, .1);
+  color: #ffe7a6;
+  border-radius: 999px;
+  padding: 9px 11px;
+  font-weight: 900;
+}
+
+.breed-pair-row .breed-change-btn {
+  width: 100%;
+  margin-top: 9px;
+  padding: 8px;
+  font-size: 12px;
+}
+
+.breed-key-stats,
+.breed-forecast-grid,
+.foal-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 13px;
+}
+
+.breed-stat-chip,
+.breed-forecast-stat {
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .055);
+  border: 1px solid rgba(255, 255, 255, .08);
+  padding: 8px;
+  text-align: center;
+}
+
+.breed-stat-chip b,
+.breed-forecast-stat b {
+  display: block;
+  font-size: 17px;
+  color: #fff;
+}
+
+.breed-stat-chip span,
+.breed-forecast-stat span {
+  display: block;
+  font-size: 9px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.breed-picker-title {
+  font-size: 14px;
+  font-weight: 950;
+  color: #fff;
+  margin-bottom: 9px;
+}
+
+.breed-picker-grid,
+.breed-compare-table,
+.foal-info-lines {
+  display: grid;
+  gap: 9px;
+}
+
+.breed-candidate {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  color: var(--text);
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, .08);
+  background: rgba(255, 255, 255, .045);
+  padding: 10px;
+}
+
+.breed-candidate.selected {
+  border-color: rgba(255, 211, 77, .52);
+  box-shadow: 0 0 0 1px rgba(255, 211, 77, .2) inset;
+}
+
+.breed-candidate-avatar {
+  width: 54px;
+  height: 54px;
+  border-radius: 17px;
+}
+
+.breed-candidate-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.breed-candidate-name {
+  font-size: 15px;
+  font-weight: 950;
+}
+
+.breed-candidate .breed-stars {
+  font-size: 13px;
+  width: 70px;
+  height: 15px;
+  margin-top: 3px;
+}
+
+.breed-candidate-meta,
+.breed-candidate-stats {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.25;
+  margin-top: 3px;
+}
+
+.breed-candidate-check {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: rgba(255, 211, 77, .12);
+  border: 1px solid rgba(255, 211, 77, .24);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffd34d;
+  font-weight: 950;
+}
+
+.breed-compare-row {
+  display: grid;
+  grid-template-columns: 38px 1fr 38px;
+  align-items: center;
+  gap: 9px;
+}
+
+.breed-compare-value {
+  font-weight: 950;
+  color: #fff;
+  text-align: center;
+}
+
+.breed-compare-mid span {
+  display: block;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+
+.breed-compare-mid div {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .08);
+  position: relative;
+  overflow: hidden;
+}
+
+.breed-compare-mid i,
+.breed-compare-mid b {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  max-width: 100%;
+  border-radius: 999px;
+}
+
+.breed-compare-mid i {
+  left: 0;
+  background: linear-gradient(90deg, #37a7ff, #79d2ff);
+  opacity: .95;
+}
+
+.breed-compare-mid b {
+  right: 0;
+  background: linear-gradient(90deg, #ff8cc1, #ff5b99);
+  opacity: .82;
+}
+
+.breed-temper-note,
+.breed-forecast-note {
+  margin-top: 12px;
+  text-align: center;
+  border-radius: 16px;
+}
+
+.breed-forecast-panel {
+  background: radial-gradient(circle at 0 0, rgba(255, 211, 77, .16), transparent 38%), linear-gradient(180deg, rgba(20, 44, 68, .98), rgba(10, 25, 42, .98));
+}
+
+.breed-forecast-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.breed-forecast-stat b {
+  font-size: 16px;
+  color: #ffd34d;
+}
 
 /* Breeding result */
-#breedResultScreen{background:#06111f;overflow:hidden}#breedResultScreen .footer-actions{z-index:20;pointer-events:auto}#breedResultScreen .footer-actions .btn{pointer-events:auto}.breed-result-bg{position:absolute;inset:0;z-index:0;background:radial-gradient(circle at 50% 35%,rgba(255,211,77,.22),transparent 34%),radial-gradient(circle at 50% 46%,rgba(53,170,255,.12),transparent 42%),linear-gradient(180deg,#07182b,#030913);pointer-events:none}.breed-result-bg:before,.breed-result-bg:after{content:'';position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);border-radius:50%;border:1px solid rgba(255,211,77,.34);animation:foalRing 2.6s ease-out infinite}.breed-result-bg:before{width:250px;height:250px}.breed-result-bg:after{width:330px;height:330px;animation-delay:.35s}.breed-result-scroll{position:relative;z-index:1;pointer-events:none;padding-bottom:calc(140px + var(--safe-bottom))}.breed-result-card,.foal-name-input,.foal-name-label{pointer-events:auto}.breed-result-hero{text-align:center;padding-top:26px}.breed-result-kicker{font-size:34px;line-height:1;font-weight:950;letter-spacing:.03em;color:#ffd34d;text-shadow:0 2px 18px rgba(255,211,77,.32);text-transform:uppercase}.breed-result-sub{margin-top:8px;color:#d8e5f0;font-size:15px}.breed-result-aura{position:relative;margin:26px auto 16px;max-width:360px}.breed-result-aura:before{content:'';position:absolute;left:50%;top:34%;width:260px;height:260px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(255,211,77,.22),transparent 64%);filter:blur(2px);animation:foalGlow 2.4s ease-in-out infinite}.breed-result-card{position:relative;z-index:1;border-radius:28px;padding:18px;background:linear-gradient(180deg,rgba(22,50,76,.98),rgba(6,20,35,.98));border:1px solid rgba(255,211,77,.42);box-shadow:0 28px 70px rgba(0,0,0,.46),0 0 42px rgba(255,211,77,.14) inset;animation:foalReveal .85s cubic-bezier(.2,.9,.2,1) both}.foal-card-top{display:grid;place-items:center;position:relative}.foal-gender-badge{position:absolute;top:-4px;right:14px;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#8d315e,#4e1635);border:1px solid rgba(255,211,77,.44);font-size:24px;color:#ffd8e8;font-weight:950}.foal-avatar{width:126px;height:126px;border-radius:34px;border-color:rgba(255,211,77,.34);box-shadow:0 0 0 8px rgba(255,211,77,.06),0 18px 45px rgba(0,0,0,.34)}.foal-name-display{margin-top:14px;font-size:28px;font-weight:950;color:#fff}.breed-result-card .breed-stars{font-size:24px;width:124px;height:27px;margin-top:8px}.foal-info-lines{display:grid;gap:8px;margin-top:14px}.foal-info-lines div{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 11px;border-radius:14px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07)}.foal-info-lines span,.foal-parents span{color:var(--muted);font-size:12px}.foal-info-lines b,.foal-parents b{color:#fff;font-size:15px}.foal-stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:13px}.foal-stat-grid .breed-stat-chip b{color:#ffd34d;font-size:20px}.foal-parents{display:grid;grid-template-columns:1fr 42px 1fr;align-items:center;gap:8px;margin-top:14px;padding:11px;border-radius:18px;background:rgba(255,211,77,.06);border:1px solid rgba(255,211,77,.16)}.foal-heart{font-size:28px;color:#ffd34d}.foal-name-label{display:block;text-align:left;max-width:360px;margin:0 auto 7px;color:#ffe7a6;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.05em}.foal-name-input{display:block;width:100%;max-width:360px;margin:0 auto;border-radius:18px;border:1px solid rgba(255,211,77,.28);background:rgba(3,12,22,.72);color:#fff;font-size:19px;font-weight:900;padding:14px 16px;text-align:center;outline:none;box-shadow:0 12px 30px rgba(0,0,0,.26)}.foal-name-input:focus{border-color:rgba(255,211,77,.62);box-shadow:0 0 0 3px rgba(255,211,77,.12),0 12px 30px rgba(0,0,0,.26)}@keyframes foalReveal{0%{opacity:0;transform:translateY(28px) scale(.86) rotateX(10deg);filter:blur(4px)}70%{opacity:1;transform:translateY(-3px) scale(1.025);filter:blur(0)}100%{opacity:1;transform:translateY(0) scale(1)}}@keyframes foalRing{0%{opacity:.55;transform:translate(-50%,-50%) scale(.78)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.25)}}@keyframes foalGlow{0%,100%{opacity:.65;transform:translate(-50%,-50%) scale(.96)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.06)}}
+#breedResultScreen {
+  background: #06111f;
+  overflow: hidden;
+}
 
-@media(max-width:420px){.main-menu-title{font-size:24px}.race-grid{grid-template-columns:1fr 1fr 1fr}.race-box{padding:8px 4px}.race-box b{font-size:13px}.star-rating{font-size:16px;width:84px}.details-name{font-size:18px}.breed-selected-name{font-size:20px}.breed-pair-row .breed-selected-name{font-size:16px}.breed-change-btn{padding:8px 10px;font-size:12px}.breed-forecast-grid{grid-template-columns:repeat(2,1fr)}.breed-result-kicker{font-size:28px}.foal-avatar{width:108px;height:108px}.foal-name-display{font-size:24px}.breed-result-card .breed-stars{font-size:22px;width:114px}.foal-stat-grid{gap:6px}#phaserBox{min-height:470px!important}}
+#breedResultScreen .footer-actions {
+  z-index: 20;
+  pointer-events: auto;
+}
+
+#breedResultScreen .footer-actions .btn {
+  pointer-events: auto;
+}
+
+.breed-result-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(circle at 50% 35%, rgba(255, 211, 77, .22), transparent 34%), radial-gradient(circle at 50% 46%, rgba(53, 170, 255, .12), transparent 42%), linear-gradient(180deg, #07182b, #030913);
+  pointer-events: none;
+}
+
+.breed-result-bg::before,
+.breed-result-bg::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px solid rgba(255, 211, 77, .34);
+  animation: foalRing 2.6s ease-out infinite;
+}
+
+.breed-result-bg::before {
+  width: 250px;
+  height: 250px;
+}
+
+.breed-result-bg::after {
+  width: 330px;
+  height: 330px;
+  animation-delay: .35s;
+}
+
+.breed-result-scroll {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+  padding-bottom: calc(140px + var(--safe-bottom));
+}
+
+.breed-result-card,
+.foal-name-input,
+.foal-name-label {
+  pointer-events: auto;
+}
+
+.breed-result-hero {
+  text-align: center;
+  padding-top: 26px;
+}
+
+.breed-result-kicker {
+  font-size: 34px;
+  line-height: 1;
+  font-weight: 950;
+  letter-spacing: .03em;
+  color: #ffd34d;
+  text-shadow: 0 2px 18px rgba(255, 211, 77, .32);
+  text-transform: uppercase;
+}
+
+.breed-result-sub {
+  margin-top: 8px;
+  color: #d8e5f0;
+  font-size: 15px;
+}
+
+.breed-result-aura {
+  position: relative;
+  margin: 26px auto 16px;
+  max-width: 360px;
+}
+
+.breed-result-aura::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 34%;
+  width: 260px;
+  height: 260px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 211, 77, .22), transparent 64%);
+  filter: blur(2px);
+  animation: foalGlow 2.4s ease-in-out infinite;
+}
+
+.breed-result-card {
+  position: relative;
+  z-index: 1;
+  border-radius: 28px;
+  padding: 18px;
+  background: linear-gradient(180deg, rgba(22, 50, 76, .98), rgba(6, 20, 35, .98));
+  border: 1px solid rgba(255, 211, 77, .42);
+  box-shadow: 0 28px 70px rgba(0, 0, 0, .46), 0 0 42px rgba(255, 211, 77, .14) inset;
+  animation: foalReveal .85s cubic-bezier(.2, .9, .2, 1) both;
+}
+
+.foal-card-top {
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+
+.foal-gender-badge {
+  position: absolute;
+  top: -4px;
+  right: 14px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #8d315e, #4e1635);
+  border: 1px solid rgba(255, 211, 77, .44);
+  font-size: 24px;
+  color: #ffd8e8;
+  font-weight: 950;
+}
+
+.foal-avatar {
+  width: 126px;
+  height: 126px;
+  border-radius: 34px;
+  border-color: rgba(255, 211, 77, .34);
+  box-shadow: 0 0 0 8px rgba(255, 211, 77, .06), 0 18px 45px rgba(0, 0, 0, .34);
+}
+
+.foal-name-display {
+  margin-top: 14px;
+  font-size: 28px;
+  font-weight: 950;
+  color: #fff;
+}
+
+.breed-result-card .breed-stars {
+  font-size: 24px;
+  width: 124px;
+  height: 27px;
+  margin-top: 8px;
+}
+
+.foal-info-lines div,
+.foal-parents {
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .045);
+  border: 1px solid rgba(255, 255, 255, .07);
+}
+
+.foal-info-lines div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 11px;
+}
+
+.foal-info-lines span,
+.foal-parents span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.foal-info-lines b,
+.foal-parents b {
+  color: #fff;
+  font-size: 15px;
+}
+
+.foal-stat-grid .breed-stat-chip b {
+  color: #ffd34d;
+  font-size: 20px;
+}
+
+.foal-parents {
+  display: grid;
+  grid-template-columns: 1fr 42px 1fr;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 11px;
+  background: rgba(255, 211, 77, .06);
+  border-color: rgba(255, 211, 77, .16);
+}
+
+.foal-heart {
+  font-size: 28px;
+  color: #ffd34d;
+}
+
+.foal-name-label {
+  display: block;
+  text-align: left;
+  max-width: 360px;
+  margin: 0 auto 7px;
+  color: #ffe7a6;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.foal-name-input {
+  display: block;
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 211, 77, .28);
+  background: rgba(3, 12, 22, .72);
+  color: #fff;
+  font-size: 19px;
+  font-weight: 900;
+  padding: 14px 16px;
+  text-align: center;
+  outline: none;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .26);
+}
+
+.foal-name-input:focus {
+  border-color: rgba(255, 211, 77, .62);
+  box-shadow: 0 0 0 3px rgba(255, 211, 77, .12), 0 12px 30px rgba(0, 0, 0, .26);
+}
+
+@keyframes foalReveal {
+  0% { opacity: 0; transform: translateY(28px) scale(.86) rotateX(10deg); filter: blur(4px); }
+  70% { opacity: 1; transform: translateY(-3px) scale(1.025); filter: blur(0); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes foalRing {
+  0% { opacity: .55; transform: translate(-50%, -50%) scale(.78); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.25); }
+}
+
+@keyframes foalGlow {
+  0%, 100% { opacity: .65; transform: translate(-50%, -50%) scale(.96); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.06); }
+}
+
+@media (max-width: 420px) {
+  .race-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .race-box {
+    padding: 8px 4px;
+  }
+
+  .race-box b {
+    font-size: 13px;
+  }
+
+  .star-rating {
+    font-size: 16px;
+    width: 84px;
+  }
+
+  .details-name {
+    font-size: 18px;
+  }
+
+  .breed-selected-name {
+    font-size: 20px;
+  }
+
+  .breed-pair-row .breed-selected-name {
+    font-size: 16px;
+  }
+
+  .breed-change-btn {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .breed-forecast-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .breed-result-kicker {
+    font-size: 28px;
+  }
+
+  .foal-avatar {
+    width: 108px;
+    height: 108px;
+  }
+
+  .foal-name-display {
+    font-size: 24px;
+  }
+
+  .breed-result-card .breed-stars {
+    font-size: 22px;
+    width: 114px;
+  }
+
+  .foal-stat-grid {
+    gap: 6px;
+  }
+
+  #phaserBox {
+    min-height: 470px !important;
+  }
+}
