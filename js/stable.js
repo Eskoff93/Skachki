@@ -4,7 +4,6 @@ window.SKACHKI_STABLE = (function () {
   var selectedDetailsHorseId = null;
 
   function game() { return window.SKACHKI_GAME; }
-
   function horseTools() { return window.SKACHKI_HORSE || {}; }
 
   function genderLabel(horse) {
@@ -24,6 +23,55 @@ window.SKACHKI_STABLE = (function () {
     var rank = horseRank(horse);
     if (tools.horseRankLabel) return tools.horseRankLabel(rank);
     return rank;
+  }
+
+  function slug(value) {
+    var map = {
+      'Английская': 'english',
+      'Арабская': 'arabian',
+      'Ахалтекинская': 'akhal',
+      'Квотерхорс': 'quarter',
+      'Стандартбредная': 'standard',
+      'Гнедая': 'bay',
+      'Вороная': 'black',
+      'Рыжая': 'chestnut',
+      'Серая': 'gray',
+      'Буланая': 'buckskin',
+      'Соловая': 'palomino'
+    };
+    return map[value] || 'bay';
+  }
+
+  function breedShort(breed) {
+    var map = {
+      'Английская': 'АНГ',
+      'Арабская': 'АРБ',
+      'Ахалтекинская': 'АХЛ',
+      'Квотерхорс': 'КВО',
+      'Стандартбредная': 'СТБ'
+    };
+    return map[breed] || 'СКК';
+  }
+
+  function horsePortrait(horse) {
+    var coat = slug(horse.coat);
+    var breed = slug(horse.breed);
+    return '<div class="breed-emblem breed-' + breed + '">' + breedShort(horse.breed) + '</div>' +
+      '<svg class="horse-portrait-svg coat-' + coat + ' breed-' + breed + '" viewBox="0 0 120 120" aria-hidden="true">' +
+        '<defs>' +
+          '<radialGradient id="avatarBg' + horse.id + '" cx="50%" cy="35%" r="70%"><stop offset="0" stop-color="#24445f"/><stop offset="1" stop-color="#06111f"/></radialGradient>' +
+        '</defs>' +
+        '<circle cx="60" cy="60" r="57" fill="url(#avatarBg' + horse.id + ')"/>' +
+        '<path class="breed-mark" d="M22 86c17 10 38 13 63 7" fill="none" stroke-width="3" stroke-linecap="round" opacity=".28"/>' +
+        '<path class="horse-shadow" d="M32 86c17-14 25-31 26-52 9-8 21-13 38-15-9 10-13 22-12 37 7 5 13 13 16 24-9-5-19-6-31-2 2 18-8 30-30 37-4-10-6-19-7-29Z"/>' +
+        '<path class="horse-mane" d="M53 32c10-13 24-20 43-20-12 12-17 27-15 45-12-5-22-13-28-25Z"/>' +
+        '<path class="horse-head" d="M31 87c18-20 26-40 27-62 14-11 29-16 45-14-11 10-16 23-15 40 11 4 20 13 25 27-13-6-25-6-37-1 2 22-14 35-45 39-4-9-5-18 0-29Z"/>' +
+        '<path class="horse-highlight" d="M58 29c10-8 22-12 36-12-7 9-10 19-9 31-12-3-21-9-27-19Z"/>' +
+        '<path class="horse-blaze" d="M75 23c2 12 0 24-5 36" fill="none" stroke-width="5" stroke-linecap="round" opacity=".42"/>' +
+        '<circle cx="84" cy="48" r="3.2" fill="#07111d"/>' +
+        '<path d="M64 75c10 7 22 8 34 4" fill="none" stroke="#2b1708" stroke-width="3" stroke-linecap="round" opacity=".45"/>' +
+        '<path class="horse-neck-light" d="M42 99c19-5 35-14 48-27" fill="none" stroke-width="3" stroke-linecap="round" opacity=".55"/>' +
+      '</svg>';
   }
 
   function starRating(horse) {
@@ -67,13 +115,12 @@ window.SKACHKI_STABLE = (function () {
 
   function renderSummary() {
     var G = game();
-    var coinsPill = G.byId('coinsPill');
     var summaryGrid = G.byId('summaryGrid');
-    if (coinsPill) coinsPill.innerHTML = '🪙 ' + G.state.coins + '<small>Монеты</small>';
     if (summaryGrid) {
       summaryGrid.innerHTML =
-        '<div class="stable-summary-mini"><span>Уровень конюшни</span><b>' + (G.state.stableLevel || 1) + '</b></div>' +
-        '<div class="stable-summary-mini"><span>Средний уровень</span>' + averageStars() + '</div>';
+        '<div class="stable-summary-mini"><span>Конюшня</span><b>' + (G.state.stableLevel || 1) + '</b></div>' +
+        '<div class="stable-summary-mini"><span>Уровень</span>' + averageStars() + '</div>' +
+        '<div class="stable-summary-mini stable-coins-mini"><span>Монеты</span><b>🪙 ' + G.state.coins + '</b></div>';
     }
   }
 
@@ -83,12 +130,6 @@ window.SKACHKI_STABLE = (function () {
 
     var footer = document.querySelector('#stableScreen .footer-actions');
     if (footer) footer.style.display = '';
-
-    var back = G.byId('resetBtn');
-    if (back) {
-      back.textContent = '←';
-      back.id = 'stableBackMenuBtn';
-    }
 
     var horseList = G.byId('horseList');
     if (!horseList) return;
@@ -101,7 +142,7 @@ window.SKACHKI_STABLE = (function () {
         '<div class="luxury-horse-top">' +
           '<div class="horse-medallion medallion-' + rank + ' ' + sexClass + '">' +
             '<div class="medallion-crest">♞</div>' +
-            '<img class="luxury-portrait" src="./assets/horse-premium.svg" alt="horse">' +
+            horsePortrait(horse) +
             '<div class="sex-badge ' + sexClass + '">' + sexSymbol + '</div>' +
             '<div class="rank-badge">' + horseRankLabel(horse) + '</div>' +
           '</div>' +
@@ -194,7 +235,7 @@ window.SKACHKI_STABLE = (function () {
 
     body.innerHTML =
       '<div class="details-hero">' +
-        '<div class="horse-avatar"><img src="./assets/horse-premium.svg" alt="horse"></div>' +
+        '<div class="horse-avatar detail-horse-avatar">' + horsePortrait(horse) + '</div>' +
         '<div class="details-hero-main">' +
           '<div class="details-name-row"><div class="details-name">' + horse.name + '</div>' + starRating(horse) + '</div>' +
           '<div class="horse-stat-line details-stat-line">' + horseStatLine(horse) + ' • Заработано ' + (horse.earnings || 0) + ' 🪙</div>' +
