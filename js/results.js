@@ -63,7 +63,7 @@ window.SKACHKI_RESULTS = (function () {
           '</div></div></div>';
         }).join('') +
         '<button class="btn btn-gold" id="resultRaceMenuBtn" style="width:100%;margin-top:12px">В меню гонок</button>' +
-        '<button class="btn btn-dark" id="resultMainMenuBtn" style="width:100%;margin-top:10px">В главное меню</button>';
+        '<button class="btn btn-dark" id="resultStableBtn" style="width:100%;margin-top:10px">В Конюшню</button>';
     }
 
     if (resultsModal) resultsModal.classList.add('active');
@@ -80,22 +80,20 @@ window.SKACHKI_RESULTS = (function () {
     G.showScreen('raceMenu');
   }
 
+  function closeResultsToStable() {
+    var G = game();
+    var modal = G.byId('resultsModal');
+    if (modal) modal.classList.remove('active');
+    G.showScreen('stable');
+  }
+
   function bindDynamicResultButtons() {
     var G = game();
     var raceMenuButton = G.byId('resultRaceMenuBtn');
-    var mainMenuButton = G.byId('resultMainMenuBtn');
-    var modal = G.byId('resultsModal');
+    var stableButton = G.byId('resultStableBtn');
 
-    if (raceMenuButton) {
-      raceMenuButton.onclick = closeResultsToRaceMenu;
-    }
-
-    if (mainMenuButton) {
-      mainMenuButton.onclick = function () {
-        if (modal) modal.classList.remove('active');
-        G.showScreen('menu');
-      };
-    }
+    if (raceMenuButton) raceMenuButton.onclick = closeResultsToRaceMenu;
+    if (stableButton) stableButton.onclick = closeResultsToStable;
   }
 
   function bind() {
