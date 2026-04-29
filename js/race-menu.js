@@ -98,7 +98,7 @@ window.SKACHKI_RACE_MENU = (function () {
       '<div class="race-top">' +
         '<div>' +
           '<div class="race-title">' + race.name + '</div>' +
-          '<div class="race-desc">Выбранный заезд. Можно вернуться и поменять.</div>' +
+          '<div class="race-desc">Текущий заезд. Можно вернуться и поменять.</div>' +
         '</div>' +
         '<button class="breed-change-btn" type="button" data-race-action="change-race">Изменить</button>' +
       '</div>' +
@@ -136,7 +136,6 @@ window.SKACHKI_RACE_MENU = (function () {
       '</div>' +
       '<div class="select-badges race-badges">' +
         '<span class="mini-tag">Соперников: ' + race.opponents + '</span>' +
-        (selected ? '<span class="player-badge">Выбран</span>' : '') +
       '</div>' +
     '</button>';
   }
@@ -347,7 +346,6 @@ window.SKACHKI_RACE_MENU = (function () {
             '<span>' + horse.coat + '</span>' +
             '<span>Карьера ' + ((horse.racesRun || 0) + (horse.practiceStarts || 0)) + '/' + horse.careerLimit + '</span>' +
             '<span>Потомство ' + horse.offspringCount + '/' + horse.offspringLimit + '</span>' +
-            (selected ? '<span>Выбрана</span>' : '') +
           '</div>' +
         '</div>' +
       '</div>' +
