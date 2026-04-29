@@ -22,12 +22,71 @@ window.SKACHKI_HORSE = (function () {
     return rand(0, 1) === 0 ? 'stallion' : 'mare';
   }
 
+  function hiddenRankFromValue(value) {
+    var score = Number.isFinite(value) ? value : 8;
+    if (score >= 16) return 'diamond';
+    if (score >= 11) return 'gold';
+    if (score >= 6) return 'silver';
+    return 'bronze';
+  }
+
+  function rankLabel(rank) {
+    if (rank === 'diamond') return 'Алмаз';
+    if (rank === 'gold') return 'Золото';
+    if (rank === 'silver') return 'Серебро';
+    return 'Бронза';
+  }
+
+  function rankScoreFromStat(stat) {
+    var value = Number.isFinite(stat) ? stat : 60;
+    return Math.max(1, Math.min(20, Math.round((value - 40) / 3)));
+  }
+
+  function randomHiddenQuality(rand, baseStat) {
+    var base = rankScoreFromStat(baseStat);
+    return Math.max(1, Math.min(20, base + rand(-2, 2)));
+  }
+
+  function hiddenQualityLabel(key) {
+    if (key === 'strength') return 'Сила';
+    if (key === 'agility') return 'Ловкость';
+    if (key === 'instinct') return 'Чутьё';
+    return key;
+  }
+
+  function hiddenQualityDescription(key, rank) {
+    var text = {
+      strength: {
+        bronze: 'Тяжело держит плотную борьбу.',
+        silver: 'Нормально держится под давлением.',
+        gold: 'Уверенно держит борьбу.',
+        diamond: 'Почти не проседает в жёсткой борьбе.'
+      },
+      agility: {
+        bronze: 'Часто вязнет в группе.',
+        silver: 'Хорошо проходит повороты.',
+        gold: 'Легко находит свободную дорожку.',
+        diamond: 'Мгновенно открывает себе путь.'
+      },
+      instinct: {
+        bronze: 'Иногда ошибается с рывком.',
+        silver: 'Неплохо чувствует гонку.',
+        gold: 'Хорошо выбирает момент атаки.',
+        diamond: 'Чувствует идеальный момент для рывка.'
+      }
+    };
+    return ((text[key] || {})[rank]) || 'Качество проявится в гонках.';
+  }
+
   function createHorse(name, randIntFn) {
     var rand = randIntFn || function (min, max) {
       return Math.floor(Math.random() * (max - min + 1)) + min;
     };
     var data = window.SKACHKI_DATA || {};
     var temperaments = data.temperaments || ['Смелая', 'Пугливая', 'Упрямая', 'Резкая', 'Быстрая'];
+    var agility = rand(48, 74);
+    var power = rand(48, 74);
+    var intelligence = rand(50, 76);
 
     return normalizeHorse({
       id: Date.now() + Math.random().toString(36).slice(2, 8),
@@ -36,9 +95,14 @@ window.SKACHKI_HORSE = (function () {
       speed: rand(54, 78),
       stamina: rand(52, 76),
       acceleration: rand(52, 78),
-      agility: rand(48, 74),
-      power: rand(48, 74),
-      intelligence: rand(50, 76),
+      agility: agility,
+      power: power,
+      intelligence: intelligence,
+      hiddenQualities: {
+        strength: randomHiddenQuality(rand, power),
+        agility: randomHiddenQuality(rand, agility),
+        instinct: randomHiddenQuality(rand, intelligence)
+      },
       potential: rand(84, 100),
       temperament: temperaments[rand(0, temperaments.length - 1)],
       form: 'normal',
@@ -74,6 +138,11 @@ window.SKACHKI_HORSE = (function () {
     if (!Number.isFinite(horse.offspringLimit)) horse.offspringLimit = rand(1, 5);
     if (!Number.isFinite(horse.offspringCount)) horse.offspringCount = 0;
     if (!horse.status) horse.status = 'active';
+
+    if (!horse.hiddenQualities) horse.hiddenQualities = {};
+    if (!Number.isFinite(horse.hiddenQualities.strength)) horse.hiddenQualities.strength = randomHiddenQuality(rand, horse.power);
+    if (!Number.isFinite(horse.hiddenQualities.agility)) horse.hiddenQualities.agility = randomHiddenQuality(rand, horse.agility);
+    if (!Number.isFinite(horse.hiddenQualities.instinct)) horse.hiddenQualities.instinct = randomHiddenQuality(rand, horse.intelligence);
 
     if (typeof horse.energy !== 'undefined') delete horse.energy;
 
@@ -164,6 +233,10 @@ window.SKACHKI_HORSE = (function () {
     trainingProgressText: trainingProgressText,
     horseClass: horseClass,
     genderLabel: genderLabel,
+    hiddenRankFromValue: hiddenRankFromValue,
+    rankLabel: rankLabel,
+    hiddenQualityLabel: hiddenQualityLabel,
+    hiddenQualityDescription: hiddenQualityDescription,
     formLabel: formLabel,
     formMultiplier: formMultiplier,
     behaviorLabel: behaviorLabel
