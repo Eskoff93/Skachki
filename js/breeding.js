@@ -346,8 +346,8 @@ window.SKACHKI_BREEDING = (function () {
       });
     }
 
-    if (back) back.onclick = function () { G.showScreen('menu'); };
-    if (cancel) cancel.onclick = function () { G.showScreen('menu'); };
+    if (back) back.onclick = function () { G.showScreen('stable'); };
+    if (cancel) cancel.onclick = function () { G.showScreen('stable'); };
     if (confirm) confirm.onclick = breedSelected;
     if (stableBtn) stableBtn.onclick = function () { G.showScreen('stable'); };
     if (againBtn) againBtn.onclick = function () { openBreedScreen(); };
