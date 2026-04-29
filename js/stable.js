@@ -13,6 +13,19 @@ window.SKACHKI_STABLE = (function () {
     return horse.gender === 'mare' ? 'Кобыла' : 'Жеребец';
   }
 
+  function horseRank(horse) {
+    var tools = horseTools();
+    if (tools.horseRankFromRating) return tools.horseRankFromRating(horse.rating || 0);
+    return 'bronze';
+  }
+
+  function horseRankLabel(horse) {
+    var tools = horseTools();
+    var rank = horseRank(horse);
+    if (tools.horseRankLabel) return tools.horseRankLabel(rank);
+    return rank;
+  }
+
   function starRating(horse) {
     var G = game();
     var cls = G.horseClass(horse);
@@ -83,11 +96,14 @@ window.SKACHKI_STABLE = (function () {
     horseList.innerHTML = G.state.horses.map(function (horse) {
       var sexSymbol = horse.gender === 'mare' ? '♀' : '♂';
       var sexClass = horse.gender === 'mare' ? 'sex-mare' : 'sex-stallion';
+      var rank = horseRank(horse);
       return '<article class="horse-card luxury-horse-card">' +
         '<div class="luxury-horse-top">' +
-          '<div class="luxury-portrait-wrap ' + sexClass + '">' +
+          '<div class="horse-medallion medallion-' + rank + ' ' + sexClass + '">' +
+            '<div class="medallion-crest">♞</div>' +
             '<img class="luxury-portrait" src="./assets/horse-premium.svg" alt="horse">' +
             '<div class="sex-badge ' + sexClass + '">' + sexSymbol + '</div>' +
+            '<div class="rank-badge">' + horseRankLabel(horse) + '</div>' +
           '</div>' +
           '<div class="luxury-horse-info">' +
             '<div class="horse-name-row luxury-name-row">' +
@@ -96,10 +112,10 @@ window.SKACHKI_STABLE = (function () {
             '</div>' +
             '<div class="horse-stat-line luxury-record">' + horseStatLine(horse) + '</div>' +
             '<div class="luxury-meta-row">' +
-              '<span>Карьера ' + horse.racesRun + '/' + horse.careerLimit + '</span>' +
-              '<span>Потомство ' + horse.offspringCount + '/' + horse.offspringLimit + '</span>' +
               '<span>' + horse.breed + '</span>' +
               '<span>' + horse.coat + '</span>' +
+              '<span>Карьера ' + ((horse.racesRun || 0) + (horse.practiceStarts || 0)) + '/' + horse.careerLimit + '</span>' +
+              '<span>Потомство ' + horse.offspringCount + '/' + horse.offspringLimit + '</span>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -163,8 +179,9 @@ window.SKACHKI_STABLE = (function () {
       ['Пол', genderLabel(horse)],
       ['Порода', horse.breed],
       ['Масть', horse.coat],
+      ['Ранг', horseRankLabel(horse)],
       ['Форма', G.formLabel(horse.form)],
-      ['Карьера', horse.racesRun + '/' + horse.careerLimit],
+      ['Карьера', ((horse.racesRun || 0) + (horse.practiceStarts || 0)) + '/' + horse.careerLimit],
       ['Потомство', horse.offspringCount + '/' + horse.offspringLimit],
       ['Потенциал', horse.potential]
     ];
