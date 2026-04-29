@@ -270,6 +270,43 @@
   box-shadow: 0 0 0 1px rgba(255, 210, 93, .26) inset, var(--shadow);
 }
 
+.race-menu-summary {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+}
+
+.race-menu-mini-stats {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.premium-race-card,
+.premium-race-horse-card {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(216, 169, 67, .22);
+  background: radial-gradient(circle at 10% 0, rgba(216, 169, 67, .13), transparent 30%), linear-gradient(180deg, rgba(14, 36, 57, .98), rgba(5, 17, 31, .98));
+}
+
+.premium-race-card::before,
+.premium-race-horse-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(255, 235, 170, .1), transparent 22%, transparent 78%, rgba(216, 169, 67, .08));
+}
+
+.premium-race-card > *,
+.premium-race-horse-card > * {
+  position: relative;
+  z-index: 1;
+}
+
 .race-top {
   display: flex;
   justify-content: space-between;
@@ -277,9 +314,14 @@
 }
 
 .race-fee {
+  align-self: flex-start;
   color: #ffd34d;
-  font-weight: 900;
+  font-weight: 950;
   white-space: nowrap;
+  border-radius: 999px;
+  padding: 6px 9px;
+  background: rgba(255, 210, 93, .1);
+  border: 1px solid rgba(255, 210, 93, .2);
 }
 
 .race-box {
@@ -302,6 +344,10 @@
   color: var(--muted);
 }
 
+.race-badges {
+  margin-top: 11px;
+}
+
 .my-horse-card {
   display: flex;
   gap: 12px;
@@ -311,6 +357,43 @@
 .my-horse-info {
   flex: 1;
   min-width: 0;
+}
+
+.race-horse-mark {
+  position: relative;
+  width: 62px;
+  height: 62px;
+  border-radius: 20px;
+  background: radial-gradient(circle at 32% 20%, rgba(255, 230, 162, .32), transparent 34%), linear-gradient(135deg, #d8a943, #694019 62%, #1b0d07);
+  border: 1px solid rgba(255, 230, 162, .35);
+  color: #fff7d2;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .28);
+}
+
+.race-horse-mark.selected {
+  box-shadow: 0 0 0 3px rgba(216, 169, 67, .14), 0 10px 24px rgba(0, 0, 0, .28);
+}
+
+.race-horse-letter {
+  font-size: 28px;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.race-horse-symbol {
+  position: absolute;
+  right: 6px;
+  bottom: 4px;
+  font-size: 16px;
+  font-weight: 950;
+  color: #07111d;
+  background: rgba(255, 230, 162, .9);
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #raceMenuScreen .content-scroll {
@@ -978,6 +1061,25 @@
 
   .race-box b {
     font-size: 13px;
+  }
+
+  .race-menu-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .race-menu-summary .selection-count {
+    min-width: 100%;
+    min-height: 52px;
+  }
+
+  .race-horse-mark {
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
+  }
+
+  .race-horse-letter {
+    font-size: 24px;
   }
 
   .star-rating {
