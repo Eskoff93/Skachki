@@ -8,9 +8,10 @@ window.SKACHKI_BREEDING = (function () {
 
   function game() { return window.SKACHKI_GAME; }
   function horseUi() { return window.SKACHKI_HORSE_UI || {}; }
+  function horseTools() { return window.SKACHKI_HORSE || {}; }
 
   function genderLabel(horse) {
-    var tools = window.SKACHKI_HORSE || {};
+    var tools = horseTools();
     if (tools.genderLabel) return tools.genderLabel(horse.gender);
     return horse.gender === 'mare' ? 'Кобыла' : 'Жеребец';
   }
@@ -22,6 +23,74 @@ window.SKACHKI_BREEDING = (function () {
 
   function renderAvatar(horse, className) {
     return '<div class="horse-avatar detail-horse-avatar ' + (className || '') + '">' + horsePortrait(horse) + '</div>';
+  }
+
+  function qualityValue(horse, key) {
+    var qualities = horse && horse.hiddenQualities ? horse.hiddenQualities : {};
+    return Number.isFinite(qualities[key]) ? qualities[key] : 8;
+  }
+
+  function qualityRank(value) {
+    var tools = horseTools();
+    if (tools.hiddenRankFromValue) return tools.hiddenRankFromValue(value);
+    if (value >= 16) return 'diamond';
+    if (value >= 11) return 'gold';
+    if (value >= 6) return 'silver';
+    return 'bronze';
+  }
+
+  function qualityRankLabel(rank) {
+    var tools = horseTools();
+    if (tools.rankLabel) return tools.rankLabel(rank);
+    if (rank === 'diamond') return 'Алмаз';
+    if (rank === 'gold') return 'Золото';
+    if (rank === 'silver') return 'Серебро';
+    return 'Бронза';
+  }
+
+  function qualityLabel(key) {
+    var tools = horseTools();
+    if (tools.hiddenQualityLabel) return tools.hiddenQualityLabel(key);
+    if (key === 'strength') return 'Сила';
+    if (key === 'agility') return 'Ловкость';
+    if (key === 'instinct') return 'Чутьё';
+    return key;
+  }
+
+  function qualityIcon(key) {
+    if (key === 'strength') return '♞';
+    if (key === 'agility') return '♘';
+    return '◆';
+  }
+
+  function forecastQualityRank(stallion, mare, key) {
+    var base = Math.round((qualityValue(stallion, key) + qualityValue(mare, key)) / 2);
+    var min = Math.max(1, Math.min(20, base - 2));
+    var max = Math.max(1, Math.min(20, base + 2));
+    var minRank = qualityRank(min);
+    var maxRank = qualityRank(max);
+    var label = minRank === maxRank
+      ? qualityRankLabel(minRank)
+      : qualityRankLabel(minRank) + '–' + qualityRankLabel(maxRank);
+
+    return {
+      rank: maxRank,
+      label: label
+    };
+  }
+
+  function forecastQualityBadge(stallion, mare, key) {
+    var forecast = forecastQualityRank(stallion, mare, key);
+    return '<div class="quality-badge quality-' + forecast.rank + ' compact">' +
+      '<div class="quality-icon">' + qualityIcon(key) + '</div>' +
+      '<div><div class="quality-name">' + qualityLabel(key) + '</div><div class="quality-rank">' + forecast.label + '</div></div>' +
+    '</div>';
+  }
+
+  function qualityGrid(horse) {
+    var UI = horseUi();
+    if (UI.qualityGrid) return UI.qualityGrid(horse, true);
+    return '';
   }
 
   function availableParents(gender) {
@@ -98,46 +167,47 @@ window.SKACHKI_BREEDING = (function () {
 
     scroll.innerHTML =
       '<section class="breed-intro-card">' +
-        '<div class="summary-title">Выберите жеребца и кобылу</div>' +
-        '<div class="summary-desc">Потомок наследует параметры, характер и потенциал родителей с небольшой мутацией.</div>' +
+        '<div class="summary-title">Выберите пару</div>' +
+        '<div class="summary-desc">Жеребёнок наследует породу, масть, характер, показатели и скрытые качества родителей.</div>' +
       '</section>' +
       '<section class="breed-pair-row">' +
-        '<div class="breed-choice-card breed-stallion-card" data-picker="stallion">' + renderSelectedHorse('Жеребец', '♂', stallion, 'stallion') + '</div>' +
-        '<div class="breed-choice-card breed-mare-card" data-picker="mare">' + renderSelectedHorse('Кобыла', '♀', mare, 'mare') + '</div>' +
+        '<div class="breed-choice-card breed-stallion-card" data-picker="stallion">' + renderSelectedHorse('♂', stallion) + '</div>' +
+        '<div class="breed-choice-card breed-mare-card" data-picker="mare">' + renderSelectedHorse('♀', mare) + '</div>' +
       '</section>' +
       renderPicker('stallion') +
       renderPicker('mare') +
-      renderComparison(stallion, mare) +
       renderForecast(stallion, mare);
 
     updateBreedButton();
   }
 
-  function renderSelectedHorse(title, symbol, horse, gender) {
+  function renderSelectedHorse(symbol, horse) {
     if (!horse) {
-      return '<div class="breed-selected-empty"><div class="breed-selected-title">' + symbol + ' ' + title + '</div><div class="summary-desc">Нажмите, чтобы выбрать</div></div>';
+      return '<div class="breed-selected-empty"><div class="breed-selected-title">' + symbol + '</div><div class="summary-desc">Нажмите, чтобы выбрать</div></div>';
     }
 
     return '<div class="breed-selected-head">' +
       renderAvatar(horse, 'breed-avatar') +
       '<div class="breed-selected-main">' +
-        '<div class="breed-selected-role">' + symbol + ' ' + title + '</div>' +
+        '<div class="breed-selected-topline">' +
+          '<span class="breed-sex-symbol">' + symbol + '</span>' +
+          starRating(horse) +
+        '</div>' +
         '<div class="breed-selected-name">' + horse.name + '</div>' +
-        starRating(horse) +
         '<div class="breed-selected-tags">' +
           '<span>' + horse.breed + '</span>' +
           '<span>' + horse.coat + '</span>' +
-          '<span>Потомство: ' + horse.offspringCount + '/' + horse.offspringLimit + '</span>' +
-          '<span>Карьера: ' + horse.racesRun + '/' + horse.careerLimit + '</span>' +
+          '<span>Потомство ' + horse.offspringCount + '/' + horse.offspringLimit + '</span>' +
+          '<span>Карьера ' + horse.racesRun + '/' + horse.careerLimit + '</span>' +
         '</div>' +
       '</div>' +
-      '<button class="breed-change-btn" data-open-picker="' + gender + '">Выбрать</button>' +
     '</div>' +
     '<div class="breed-key-stats">' +
       statShort('СКР', horse.speed) +
       statShort('ВЫН', horse.stamina) +
       statShort('УСК', horse.acceleration) +
-    '</div>';
+    '</div>' +
+    qualityGrid(horse);
   }
 
   function renderPicker(gender) {
@@ -165,63 +235,53 @@ window.SKACHKI_BREEDING = (function () {
     '</section>';
   }
 
-  function renderComparison(stallion, mare) {
-    if (!stallion || !mare) return '';
+  function traitForecast(label, value) {
+    return '<div class="breed-trait-chip"><span>' + label + '</span><b>' + value + '</b></div>';
+  }
 
-    var rows = [
-      ['Скорость', stallion.speed, mare.speed],
-      ['Выносливость', stallion.stamina, mare.stamina],
-      ['Ускорение', stallion.acceleration, mare.acceleration],
-      ['Манёвренность', stallion.agility, mare.agility],
-      ['Сила', stallion.power, mare.power],
-      ['Интеллект', stallion.intelligence, mare.intelligence],
-      ['Потенциал', stallion.potential, mare.potential]
-    ];
-
-    return '<section class="breed-compare-panel">' +
-      '<div class="summary-title">Сравнение пары</div>' +
-      '<div class="summary-desc">Сильные стороны родителей влияют на прогноз потомка.</div>' +
-      '<div class="breed-compare-table">' + rows.map(function (row) {
-        var max = Math.max(row[1], row[2], 100);
-        return '<div class="breed-compare-row">' +
-          '<div class="breed-compare-value">' + row[1] + '</div>' +
-          '<div class="breed-compare-mid"><span>' + row[0] + '</span><div><i style="width:' + (row[1] / max * 100) + '%"></i><b style="width:' + (row[2] / max * 100) + '%"></b></div></div>' +
-          '<div class="breed-compare-value">' + row[2] + '</div>' +
-        '</div>';
-      }).join('') + '</div>' +
-      '<div class="breed-temper-note">Характер: ' + stallion.temperament + ' или ' + mare.temperament + '</div>' +
-    '</section>';
+  function traitPair(valueA, valueB) {
+    if (valueA === valueB) return valueA;
+    return valueA + ' / ' + valueB;
   }
 
   function renderForecast(stallion, mare) {
     if (!stallion || !mare) {
-      return '<section class="breed-forecast-panel"><div class="summary-title">Прогноз потомка</div><div class="summary-desc">Выберите жеребца и кобылу.</div></section>';
+      return '<section class="breed-forecast-panel"><div class="summary-title">Будущий жеребёнок</div><div class="summary-desc">Выберите жеребца и кобылу.</div></section>';
     }
 
     function avg(key) { return Math.round((stallion[key] + mare[key]) / 2); }
     var forecast = {
       speed: avg('speed'),
       stamina: avg('stamina'),
-      acceleration: avg('acceleration'),
-      agility: avg('agility'),
-      power: avg('power'),
-      intelligence: avg('intelligence')
+      acceleration: avg('acceleration')
     };
-    var expected = Math.round((forecast.speed + forecast.stamina + forecast.acceleration + forecast.agility + forecast.power + forecast.intelligence) / 6);
+    var expected = Math.round((forecast.speed + forecast.stamina + forecast.acceleration) / 3);
     var percent = Math.max(0, Math.min(100, Math.round(expected / 10) * 10));
 
-    return '<section class="breed-forecast-panel">' +
+    return '<section class="breed-forecast-panel breed-foal-simulation">' +
       '<div class="breed-forecast-head">' +
-        '<div><div class="summary-title">Будущий жеребёнок</div><div class="summary-desc">Пол определится случайно. Характер наследуется от одного из родителей.</div></div>' +
+        '<div><div class="summary-title">Будущий жеребёнок</div><div class="summary-desc">Прогноз не раскрывает точные числа: финальный результат получит небольшую мутацию.</div></div>' +
         '<div class="star-rating breed-stars"><span class="star-rating-bg">★★★★★</span><span class="star-rating-fill" style="width:' + percent + '%">★★★★★</span></div>' +
       '</div>' +
+      '<div class="breed-forecast-section-title">Вероятные признаки</div>' +
+      '<div class="breed-trait-grid">' +
+        traitForecast('Пол', 'случайный') +
+        traitForecast('Порода', traitPair(stallion.breed, mare.breed)) +
+        traitForecast('Масть', traitPair(stallion.coat, mare.coat)) +
+        traitForecast('Характер', traitPair(stallion.temperament, mare.temperament)) +
+      '</div>' +
+      '<div class="breed-forecast-section-title">Прогноз показателей</div>' +
       '<div class="breed-forecast-grid">' +
         statRange('Скорость', forecast.speed) +
         statRange('Выносливость', forecast.stamina) +
         statRange('Ускорение', forecast.acceleration) +
-        statRange('Манёвр', forecast.agility) +
-        statRange('Сила', forecast.power) +
-        statRange('Интеллект', forecast.intelligence) +
+        statRange('Потенциал', Math.round((stallion.potential + mare.potential) / 2)) +
+      '</div>' +
+      '<div class="breed-forecast-section-title">Наследование качеств</div>' +
+      '<div class="quality-grid breed-forecast-quality-grid">' +
+        forecastQualityBadge(stallion, mare, 'strength') +
+        forecastQualityBadge(stallion, mare, 'agility') +
+        forecastQualityBadge(stallion, mare, 'instinct') +
       '</div>' +
       '<div class="breed-forecast-note">После разведения: ' + stallion.name + ' ' + (stallion.offspringCount + 1) + '/' + stallion.offspringLimit + ' • ' + mare.name + ' ' + (mare.offspringCount + 1) + '/' + mare.offspringLimit + '</div>' +
     '</section>';
@@ -250,6 +310,8 @@ window.SKACHKI_BREEDING = (function () {
       '</div>' +
       '<div class="foal-info-lines">' +
         '<div><span>Пол</span><b>' + genderLabel(child) + '</b></div>' +
+        '<div><span>Порода</span><b>' + child.breed + '</b></div>' +
+        '<div><span>Масть</span><b>' + child.coat + '</b></div>' +
         '<div><span>Характер</span><b>' + child.temperament + '</b></div>' +
         '<div><span>Потенциал</span><b>' + child.potential + '</b></div>' +
       '</div>' +
@@ -258,10 +320,11 @@ window.SKACHKI_BREEDING = (function () {
         statShort('Выносливость', child.stamina) +
         statShort('Ускорение', child.acceleration) +
       '</div>' +
+      qualityGrid(child) +
       '<div class="foal-parents">' +
-        '<div><span>Жеребец</span><b>' + stallion.name + '</b></div>' +
+        '<div><span>Отец</span><b>' + stallion.name + '</b></div>' +
         '<div class="foal-heart">♡</div>' +
-        '<div><span>Кобыла</span><b>' + mare.name + '</b></div>' +
+        '<div><span>Мать</span><b>' + mare.name + '</b></div>' +
       '</div>';
 
     input.value = child.name;
@@ -284,6 +347,23 @@ window.SKACHKI_BREEDING = (function () {
     button.textContent = ready ? 'Скрестить' : 'Выберите пару';
   }
 
+  function inheritQuality(stallion, mare, key) {
+    var G = game();
+    var average = Math.round((qualityValue(stallion, key) + qualityValue(mare, key)) / 2);
+    var strongest = Math.max(qualityValue(stallion, key), qualityValue(mare, key));
+    var base = Math.random() < 0.22 ? Math.round((average + strongest) / 2) : average;
+    return G.clamp(base + G.randInt(-2, 2), 1, 20);
+  }
+
+  function inheritVisibleStat(stallion, mare, key) {
+    var G = game();
+    return G.clamp(Math.round((stallion[key] + mare[key]) / 2) + G.randInt(-5, 6), 10, 100);
+  }
+
+  function inheritParentTrait(stallion, mare, key) {
+    return Math.random() < 0.5 ? stallion[key] : mare[key];
+  }
+
   function breedSelected() {
     var G = game();
     var stallion = findHorse(selectedStallionId);
@@ -295,21 +375,24 @@ window.SKACHKI_BREEDING = (function () {
     if (mare.gender !== 'mare') return G.showToast('В блоке кобылы должна быть кобыла');
     if (stallion.offspringCount >= stallion.offspringLimit || mare.offspringCount >= mare.offspringLimit) return G.showToast('У одного из родителей исчерпан лимит потомства');
 
-    function avg(key) {
-      return G.clamp(Math.round((stallion[key] + mare[key]) / 2) + G.randInt(-5, 6), 10, 100);
-    }
-
     var child = G.normalizeHorse({
       id: Date.now() + Math.random().toString(36).slice(2, 8),
       name: 'Жеребёнок ' + (G.state.horses.length + 1),
-      speed: avg('speed'),
-      stamina: avg('stamina'),
-      acceleration: avg('acceleration'),
-      agility: avg('agility'),
-      power: avg('power'),
-      intelligence: avg('intelligence'),
+      breed: inheritParentTrait(stallion, mare, 'breed'),
+      coat: inheritParentTrait(stallion, mare, 'coat'),
+      speed: inheritVisibleStat(stallion, mare, 'speed'),
+      stamina: inheritVisibleStat(stallion, mare, 'stamina'),
+      acceleration: inheritVisibleStat(stallion, mare, 'acceleration'),
+      agility: inheritVisibleStat(stallion, mare, 'agility'),
+      power: inheritVisibleStat(stallion, mare, 'power'),
+      intelligence: inheritVisibleStat(stallion, mare, 'intelligence'),
+      hiddenQualities: {
+        strength: inheritQuality(stallion, mare, 'strength'),
+        agility: inheritQuality(stallion, mare, 'agility'),
+        instinct: inheritQuality(stallion, mare, 'instinct')
+      },
       potential: G.clamp(Math.round((stallion.potential + mare.potential) / 2) + G.randInt(-3, 5), 65, 100),
-      temperament: Math.random() < 0.5 ? stallion.temperament : mare.temperament
+      temperament: inheritParentTrait(stallion, mare, 'temperament')
     });
 
     stallion.offspringCount += 1;
@@ -339,7 +422,7 @@ window.SKACHKI_BREEDING = (function () {
 
     if (scroll) {
       scroll.addEventListener('click', function (event) {
-        var open = event.target.closest('[data-open-picker], [data-picker]');
+        var open = event.target.closest('[data-picker]');
         var selectStallion = event.target.closest('[data-select-stallion]');
         var selectMare = event.target.closest('[data-select-mare]');
 
@@ -358,7 +441,7 @@ window.SKACHKI_BREEDING = (function () {
         }
 
         if (open) {
-          var next = open.dataset.openPicker || open.dataset.picker;
+          var next = open.dataset.picker;
           activePicker = activePicker === next ? null : next;
           renderBreedScreen();
         }
