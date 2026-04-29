@@ -1,6 +1,9 @@
 // Breeding screen and breeding actions.
 
 window.SKACHKI_BREEDING = (function () {
+  var STUD_SERVICE_ID = 'external_stud_service_basic';
+  var STUD_SERVICE_FEE = 80;
+
   var selectedStallionId = null;
   var selectedMareId = null;
   var breedStep = 'pair';
@@ -10,7 +13,51 @@ window.SKACHKI_BREEDING = (function () {
   function horseUi() { return window.SKACHKI_HORSE_UI || {}; }
   function horseTools() { return window.SKACHKI_HORSE || {}; }
 
+  function createExternalStud() {
+    return {
+      id: STUD_SERVICE_ID,
+      name: 'Племенной жеребец',
+      gender: 'stallion',
+      breed: 'Английская',
+      coat: 'Гнедая',
+      speed: 72,
+      stamina: 70,
+      acceleration: 73,
+      agility: 68,
+      power: 72,
+      intelligence: 67,
+      potential: 86,
+      temperament: 'Смелая',
+      form: 'normal',
+      rating: 900,
+      racesRun: 0,
+      practiceStarts: 0,
+      wins: 0,
+      podiums: 0,
+      earnings: 0,
+      offspringCount: 0,
+      offspringLimit: '∞',
+      status: 'external',
+      hiddenQualities: {
+        strength: 11,
+        agility: 8,
+        instinct: 10
+      },
+      isExternalStud: true
+    };
+  }
+
+  function isExternalStud(horseOrId) {
+    var id = typeof horseOrId === 'object' && horseOrId ? horseOrId.id : horseOrId;
+    return String(id) === STUD_SERVICE_ID;
+  }
+
+  function studFee(horse) {
+    return isExternalStud(horse) ? STUD_SERVICE_FEE : 0;
+  }
+
   function genderLabel(horse) {
+    if (isExternalStud(horse)) return 'Племенной жеребец';
     var tools = horseTools();
     if (tools.genderLabel) return tools.genderLabel(horse.gender);
     return horse.gender === 'mare' ? 'Кобыла' : 'Жеребец';
@@ -90,7 +137,7 @@ window.SKACHKI_BREEDING = (function () {
     return '';
   }
 
-  function availableParents(gender) {
+  function ownAvailableParents(gender) {
     var G = game();
     return G.state.horses.filter(function (horse) {
       return horse.status !== 'archived' &&
@@ -99,11 +146,26 @@ window.SKACHKI_BREEDING = (function () {
     });
   }
 
+  function availableParents(gender) {
+    var own = ownAvailableParents(gender);
+    if (gender === 'stallion' && !own.length) return [createExternalStud()];
+    return own;
+  }
+
   function findHorse(id) {
     var G = game();
+    if (isExternalStud(id)) return createExternalStud();
     return G.state.horses.find(function (horse) {
       return String(horse.id) === String(id);
     });
+  }
+
+  function canUseAsParent(horse, gender) {
+    if (!horse) return false;
+    if (isExternalStud(horse)) return gender === 'stallion';
+    return horse.status !== 'archived' &&
+      horse.gender === gender &&
+      horse.offspringCount < horse.offspringLimit;
   }
 
   function starRating(horse) {
@@ -135,17 +197,15 @@ window.SKACHKI_BREEDING = (function () {
   function ensureSelection() {
     var stallions = availableParents('stallion');
     var mares = availableParents('mare');
+    var stallion = findHorse(selectedStallionId);
+    var mare = findHorse(selectedMareId);
 
-    if (!findHorse(selectedStallionId) && stallions[0]) selectedStallionId = String(stallions[0].id);
-    if (!findHorse(selectedMareId) && mares[0]) selectedMareId = String(mares[0].id);
-
-    if (findHorse(selectedStallionId) && findHorse(selectedStallionId).gender !== 'stallion') selectedStallionId = stallions[0] ? String(stallions[0].id) : null;
-    if (findHorse(selectedMareId) && findHorse(selectedMareId).gender !== 'mare') selectedMareId = mares[0] ? String(mares[0].id) : null;
+    if (!canUseAsParent(stallion, 'stallion')) selectedStallionId = stallions[0] ? String(stallions[0].id) : null;
+    if (!canUseAsParent(mare, 'mare')) selectedMareId = mares[0] ? String(mares[0].id) : null;
   }
 
   function openBreedScreen() {
     var G = game();
-    if (!availableParents('stallion').length) return G.showToast('Нет доступных жеребцов');
     if (!availableParents('mare').length) return G.showToast('Нет доступных кобыл');
     breedStep = 'pair';
     ensureSelection();
@@ -172,10 +232,11 @@ window.SKACHKI_BREEDING = (function () {
   function renderPairStep() {
     var stallion = findHorse(selectedStallionId);
     var mare = findHorse(selectedMareId);
+    var usesStudService = isExternalStud(stallion);
 
     return '<section class="breed-intro-card">' +
         '<div class="summary-title">Разведение</div>' +
-        '<div class="summary-desc">Выберите жеребца и кобылу. Потомок унаследует породу, масть, характер, показатели и качества родителей.</div>' +
+        '<div class="summary-desc">' + (usesStudService ? 'Своих доступных жеребцов нет. Можно нанять племенного жеребца за ' + STUD_SERVICE_FEE + ' 🪙.' : 'Выберите жеребца и кобылу. Потомок унаследует породу, масть, характер, показатели и качества родителей.') + '</div>' +
       '</section>' +
       '<div class="section-label">Жеребец</div>' +
       renderParentSlot(stallion, 'stallion') +
@@ -190,6 +251,9 @@ window.SKACHKI_BREEDING = (function () {
     var buttonText = gender === 'stallion' ? 'Выбрать жеребца' : 'Выбрать кобылу';
     var accent = gender === 'stallion' ? 'breed-parent-stallion' : 'breed-parent-mare';
     var UI = horseUi();
+    var serviceNote = horse && isExternalStud(horse)
+      ? '<div class="breed-forecast-note">Племенная станция • Взнос ' + STUD_SERVICE_FEE + ' 🪙 • Не занимает место в конюшне</div>'
+      : '';
 
     if (!horse || !UI.renderHorseCard) {
       return '<button class="breed-parent-empty ' + accent + '" data-open-parent-picker="' + gender + '">' +
@@ -200,15 +264,20 @@ window.SKACHKI_BREEDING = (function () {
 
     return '<div class="breed-parent-slot ' + accent + '">' +
       UI.renderHorseCard(horse, { extraClass: 'breed-parent-card' }) +
+      serviceNote +
       '<button class="breed-change-parent-btn" type="button" data-open-parent-picker="' + gender + '">' + buttonText + '</button>' +
     '</div>';
   }
 
   function renderParentPicker(gender) {
+    var hasOwnStallions = ownAvailableParents('stallion').length > 0;
+    var usesStudService = gender === 'stallion' && !hasOwnStallions;
     var title = gender === 'stallion' ? 'Выбор жеребца' : 'Выбор кобылы';
-    var desc = gender === 'stallion'
-      ? 'Выберите жеребца для пары. Карточки показывают те же параметры, что и в Конюшне.'
-      : 'Выберите кобылу для пары. Карточки показывают те же параметры, что и в Конюшне.';
+    var desc = usesStudService
+      ? 'Своих доступных жеребцов нет. Доступна племенная станция за ' + STUD_SERVICE_FEE + ' 🪙.'
+      : (gender === 'stallion'
+        ? 'Выберите жеребца для пары. Карточки показывают те же параметры, что и в Конюшне.'
+        : 'Выберите кобылу для пары. Карточки показывают те же параметры, что и в Конюшне.');
     var selectedId = gender === 'stallion' ? selectedStallionId : selectedMareId;
     var list = availableParents(gender);
     var UI = horseUi();
@@ -217,7 +286,7 @@ window.SKACHKI_BREEDING = (function () {
         '<div class="summary-title">' + title + '</div>' +
         '<div class="summary-desc">' + desc + '</div>' +
       '</section>' +
-      '<div class="section-label">Доступные лошади</div>' +
+      '<div class="section-label">Доступные варианты</div>' +
       list.map(function (horse) {
         var selected = String(horse.id) === String(selectedId);
         var card = UI.renderHorseCard ? UI.renderHorseCard(horse, {
@@ -231,6 +300,7 @@ window.SKACHKI_BREEDING = (function () {
             '<article style="border-color:rgba(255,210,93,.76)!important;box-shadow:0 0 0 1px rgba(255,210,93,.24) inset,0 18px 52px rgba(0,0,0,.46)!important;" class="'
           );
         }
+        if (isExternalStud(horse)) card += '<div class="breed-forecast-note">Стоимость скрещивания: ' + STUD_SERVICE_FEE + ' 🪙</div>';
         return '<div class="breed-picker-item" data-select-parent="' + gender + '" data-id="' + horse.id + '">' + card + '</div>';
       }).join('');
   }
@@ -272,6 +342,9 @@ window.SKACHKI_BREEDING = (function () {
     };
     var expected = Math.round((forecast.speed + forecast.stamina + forecast.acceleration) / 3);
     var percent = Math.max(0, Math.min(100, Math.round(expected / 10) * 10));
+    var afterStallion = isExternalStud(stallion)
+      ? 'Племенная станция: ' + STUD_SERVICE_FEE + ' 🪙'
+      : stallion.name + ' ' + (stallion.offspringCount + 1) + '/' + stallion.offspringLimit;
 
     return '<section class="breed-forecast-panel breed-foal-card">' +
       '<div class="breed-forecast-head breed-foal-head">' +
@@ -302,7 +375,7 @@ window.SKACHKI_BREEDING = (function () {
         forecastQualityBadge(stallion, mare, 'agility') +
         forecastQualityBadge(stallion, mare, 'instinct') +
       '</div>' +
-      '<div class="breed-forecast-note">После разведения: ' + stallion.name + ' ' + (stallion.offspringCount + 1) + '/' + stallion.offspringLimit + ' • ' + mare.name + ' ' + (mare.offspringCount + 1) + '/' + mare.offspringLimit + '</div>' +
+      '<div class="breed-forecast-note">После разведения: ' + afterStallion + ' • ' + mare.name + ' ' + (mare.offspringCount + 1) + '/' + mare.offspringLimit + '</div>' +
     '</section>';
   }
 
@@ -359,6 +432,10 @@ window.SKACHKI_BREEDING = (function () {
   function updateBreedButton() {
     var G = game();
     var button = G.byId('confirmBreedScreenBtn');
+    var stallion = findHorse(selectedStallionId);
+    var mare = findHorse(selectedMareId);
+    var fee = studFee(stallion);
+    var ready = !!stallion && !!mare;
     if (!button) return;
 
     if (breedStep === 'stallion' || breedStep === 'mare') {
@@ -368,10 +445,11 @@ window.SKACHKI_BREEDING = (function () {
       return;
     }
 
-    var ready = !!findHorse(selectedStallionId) && !!findHorse(selectedMareId);
-    button.disabled = !ready;
-    button.className = ready ? 'btn btn-teal' : 'btn btn-dark';
-    button.textContent = ready ? 'Скрестить' : 'Выберите пару';
+    button.disabled = !ready || G.state.coins < fee;
+    button.className = ready && G.state.coins >= fee ? 'btn btn-teal' : 'btn btn-dark';
+    if (!ready) button.textContent = 'Выберите пару';
+    else if (fee && G.state.coins < fee) button.textContent = 'Нужно ' + fee + ' 🪙';
+    else button.textContent = fee ? 'Скрестить • ' + fee + ' 🪙' : 'Скрестить';
   }
 
   function inheritQuality(stallion, mare, key) {
@@ -395,6 +473,7 @@ window.SKACHKI_BREEDING = (function () {
     var G = game();
     var stallion = findHorse(selectedStallionId);
     var mare = findHorse(selectedMareId);
+    var fee = studFee(stallion);
 
     if (breedStep === 'stallion' || breedStep === 'mare') {
       breedStep = 'pair';
@@ -404,9 +483,9 @@ window.SKACHKI_BREEDING = (function () {
 
     if (!stallion) return G.showToast('Выберите жеребца');
     if (!mare) return G.showToast('Выберите кобылу');
-    if (stallion.gender !== 'stallion') return G.showToast('В блоке жеребца должен быть жеребец');
-    if (mare.gender !== 'mare') return G.showToast('В блоке кобылы должна быть кобыла');
-    if (stallion.offspringCount >= stallion.offspringLimit || mare.offspringCount >= mare.offspringLimit) return G.showToast('У одного из родителей исчерпан лимит потомства');
+    if (!canUseAsParent(stallion, 'stallion')) return G.showToast('Выберите доступного жеребца');
+    if (!canUseAsParent(mare, 'mare')) return G.showToast('Выберите доступную кобылу');
+    if (fee && G.state.coins < fee) return G.showToast('Недостаточно монет для племенной станции');
 
     var child = G.normalizeHorse({
       id: Date.now() + Math.random().toString(36).slice(2, 8),
@@ -428,9 +507,14 @@ window.SKACHKI_BREEDING = (function () {
       temperament: inheritParentTrait(stallion, mare, 'temperament')
     });
 
-    stallion.offspringCount += 1;
+    if (fee) G.state.coins -= fee;
+
+    if (!isExternalStud(stallion)) {
+      stallion.offspringCount += 1;
+      if (stallion.offspringCount >= stallion.offspringLimit && stallion.status === 'retired') stallion.status = 'archived';
+    }
+
     mare.offspringCount += 1;
-    if (stallion.offspringCount >= stallion.offspringLimit && stallion.status === 'retired') stallion.status = 'archived';
     if (mare.offspringCount >= mare.offspringLimit && mare.status === 'retired') mare.status = 'archived';
 
     G.state.horses.push(child);
