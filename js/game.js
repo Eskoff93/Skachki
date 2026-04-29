@@ -155,12 +155,21 @@ window.SKACHKI_GAME = (function () {
     }, 0) / state.horses.length);
   }
 
+  function bottomNav(active) {
+    return '<div class="bottom-nav">' +
+      '<button class="bottom-nav-btn ' + (active === 'stable' ? 'active' : '') + '" data-menu="stable"><span>🐴</span><b>Конюшня</b></button>' +
+      '<button class="bottom-nav-btn ' + (active === 'races' ? 'active' : '') + '" data-menu="races"><span>🏁</span><b>Гонки</b></button>' +
+      '<button class="bottom-nav-btn ' + (active === 'breed' ? 'active' : '') + '" data-menu="breed"><span>🧬</span><b>Разведение</b></button>' +
+      '<button class="bottom-nav-btn ' + (active === 'rating' ? 'active' : '') + '" data-menu="rating"><span>🏆</span><b>Рейтинг</b></button>' +
+    '</div>';
+  }
+
   function addScreens() {
     if (!byId('raceMenuScreen')) {
       var raceMenu = document.createElement('div');
       raceMenu.id = 'raceMenuScreen';
       raceMenu.className = 'screen';
-      raceMenu.innerHTML = '<div class="topbar"><div class="topbar-row"><button class="icon-btn" id="raceMenuBackBtn">←</button><div class="topbar-title"><h1>ГОНКИ</h1><p>Выберите заезд и свою лошадь</p></div><div style="width:38px;flex:0 0 auto"></div></div></div><div class="content-scroll" id="raceMenuScroll"></div><div class="race-start-panel"><button class="btn btn-gold" id="raceMenuStartBtn" style="width:100%">Начать заезд</button></div>';
+      raceMenu.innerHTML = '<div class="topbar"><div class="topbar-row"><button class="icon-btn" id="raceMenuBackBtn">←</button><div class="topbar-title"><h1>ГОНКИ</h1><p>Выберите заезд и свою лошадь</p></div><div style="width:38px;flex:0 0 auto"></div></div></div><div class="content-scroll" id="raceMenuScroll"></div><div class="race-start-panel"><button class="btn btn-gold" id="raceMenuStartBtn" style="width:100%">Начать заезд</button>' + bottomNav('races') + '</div>';
       document.body.insertBefore(raceMenu, document.body.firstChild);
     }
 
@@ -168,7 +177,7 @@ window.SKACHKI_GAME = (function () {
       var rating = document.createElement('div');
       rating.id = 'ratingScreen';
       rating.className = 'screen';
-      rating.innerHTML = '<div class="topbar"><div class="topbar-row"><button class="icon-btn" id="ratingBackBtn">←</button><div class="topbar-title"><h1>РЕЙТИНГ</h1><p>Лидеры сезона</p></div><div style="width:38px;flex:0 0 auto"></div></div></div><div class="content-scroll"><section class="summary-card"><div class="summary-title">Рейтинг</div><div class="summary-desc">Скоро здесь появятся лидеры сезона, друзья и награды.</div></section></div><div class="footer-actions"><div class="bottom-nav"><button class="bottom-nav-btn" data-menu="stable"><span>🐴</span><b>Конюшня</b></button><button class="bottom-nav-btn" data-menu="races"><span>🏁</span><b>Гонки</b></button><button class="bottom-nav-btn" data-menu="breed"><span>🧬</span><b>Разведение</b></button><button class="bottom-nav-btn active" data-menu="rating"><span>🏆</span><b>Рейтинг</b></button></div></div>';
+      rating.innerHTML = '<div class="topbar"><div class="topbar-row"><button class="icon-btn" id="ratingBackBtn">←</button><div class="topbar-title"><h1>РЕЙТИНГ</h1><p>Лидеры сезона</p></div><div style="width:38px;flex:0 0 auto"></div></div></div><div class="content-scroll"><section class="summary-card"><div class="summary-title">Рейтинг</div><div class="summary-desc">Скоро здесь появятся лидеры сезона, друзья и награды.</div></section></div><div class="footer-actions">' + bottomNav('rating') + '</div>';
       document.body.insertBefore(rating, document.body.firstChild);
     }
   }
