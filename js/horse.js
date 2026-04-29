@@ -14,6 +14,14 @@ window.SKACHKI_HORSE = (function () {
     return Math.floor((b.getTime() - a.getTime()) / 86400000);
   }
 
+  function genderLabel(gender) {
+    return gender === 'mare' ? 'Кобыла' : 'Жеребец';
+  }
+
+  function randomGender(rand) {
+    return rand(0, 1) === 0 ? 'stallion' : 'mare';
+  }
+
   function createHorse(name, randIntFn) {
     var rand = randIntFn || function (min, max) {
       return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -24,6 +32,7 @@ window.SKACHKI_HORSE = (function () {
     return normalizeHorse({
       id: Date.now() + Math.random().toString(36).slice(2, 8),
       name: name,
+      gender: randomGender(rand),
       speed: rand(54, 78),
       stamina: rand(52, 76),
       acceleration: rand(52, 78),
@@ -51,6 +60,7 @@ window.SKACHKI_HORSE = (function () {
       return Math.floor(Math.random() * (max - min + 1)) + min;
     };
 
+    if (!horse.gender) horse.gender = randomGender(rand);
     if (!horse.form) horse.form = 'normal';
     if (!Number.isFinite(horse.trainingStreakDays)) horse.trainingStreakDays = 0;
     if (typeof horse.lastTrainingDate === 'undefined') horse.lastTrainingDate = null;
@@ -153,6 +163,7 @@ window.SKACHKI_HORSE = (function () {
     applyFormDecay: applyFormDecay,
     trainingProgressText: trainingProgressText,
     horseClass: horseClass,
+    genderLabel: genderLabel,
     formLabel: formLabel,
     formMultiplier: formMultiplier,
     behaviorLabel: behaviorLabel
