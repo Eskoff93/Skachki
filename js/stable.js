@@ -5,6 +5,12 @@ window.SKACHKI_STABLE = (function () {
 
   function game() { return window.SKACHKI_GAME; }
 
+  function genderLabel(horse) {
+    var tools = window.SKACHKI_HORSE || {};
+    if (tools.genderLabel) return tools.genderLabel(horse.gender);
+    return horse.gender === 'mare' ? 'Кобыла' : 'Жеребец';
+  }
+
   function starRating(horse) {
     var G = game();
     var cls = G.horseClass(horse);
@@ -57,6 +63,7 @@ window.SKACHKI_STABLE = (function () {
             '</div>' +
             '<div class="horse-stat-line">' + horseStatLine(horse) + '</div>' +
             '<div class="horse-tags">' +
+              '<span class="mini-tag">Пол: ' + genderLabel(horse) + '</span>' +
               '<span class="mini-tag">Форма: ' + G.formLabel(horse.form) + '</span>' +
               '<span class="mini-tag">Карьера: ' + horse.racesRun + '/' + horse.careerLimit + '</span>' +
               '<span class="mini-tag">Потенциал: ' + horse.potential + '</span>' +
@@ -128,6 +135,7 @@ window.SKACHKI_STABLE = (function () {
     title.textContent = horse.name;
 
     var overview = [
+      ['Пол', genderLabel(horse)],
       ['Форма', G.formLabel(horse.form)],
       ['Карьера', horse.racesRun + '/' + horse.careerLimit],
       ['Потомство', horse.offspringCount + '/' + horse.offspringLimit],
@@ -150,7 +158,7 @@ window.SKACHKI_STABLE = (function () {
         '<div class="details-hero-main">' +
           '<div class="details-name-row"><div class="details-name">' + horse.name + '</div>' + starRating(horse) + '</div>' +
           '<div class="horse-stat-line details-stat-line">' + horseStatLine(horse) + ' • Заработано ' + (horse.earnings || 0) + ' 🪙</div>' +
-          '<div class="details-behavior">' + horse.temperament + ' — ' + G.behaviorLabel(horse.temperament) + '</div>' +
+          '<div class="details-behavior">' + genderLabel(horse) + ' • ' + horse.temperament + ' — ' + G.behaviorLabel(horse.temperament) + '</div>' +
         '</div>' +
       '</div>' +
       '<div class="detail-section-title">Состояние</div>' +
