@@ -36,7 +36,7 @@ window.SKACHKI_RACE_MENU = (function () {
       '<div class="section-label">Тип гонки</div>' +
       raceTypes.map(renderRaceCard).join('') +
       '<div class="section-label">Ваша лошадь</div>' +
-      G.state.horses.map(renderPlayerHorseCard).join('');
+      G.state.horses.filter(function (horse) { return horse.status !== 'archived'; }).map(renderPlayerHorseCard).join('');
 
     var button = G.byId('raceMenuStartBtn');
     var type = getRaceType();
@@ -75,8 +75,8 @@ window.SKACHKI_RACE_MENU = (function () {
         '<div class="my-horse-name">' + horse.name + (selected ? ' <span class="player-badge">Выбрана</span>' : '') + '</div>' +
         '<div class="select-badges">' +
           '<span class="mini-tag">Класс ' + G.horseClass(horse) + '</span>' +
-          '<span class="mini-tag">Энергия ' + horse.energy + '</span>' +
-          '<span class="mini-tag">' + horse.temperament + '</span>' +
+          '<span class="mini-tag">Форма ' + G.formLabel(horse.form) + '</span>' +
+          '<span class="mini-tag">Карьера ' + horse.racesRun + '/' + horse.careerLimit + '</span>' +
         '</div>' +
         '<div class="my-horse-note">' + G.behaviorLabel(horse.temperament) + '</div>' +
       '</div>' +
@@ -98,8 +98,10 @@ window.SKACHKI_RACE_MENU = (function () {
       power: stat(),
       intelligence: stat(),
       potential: stat(),
-      energy: G.randInt(75, 100),
       temperament: temperaments[G.randInt(0, temperaments.length - 1)],
+      form: 'normal',
+      racesRun: 0,
+      careerLimit: 25,
       isBot: true
     };
   }
@@ -111,6 +113,7 @@ window.SKACHKI_RACE_MENU = (function () {
 
     if (!raceType) return G.showToast('Заезд не найден');
     if (!player) return G.showToast('Выберите свою лошадь');
+    if (player.status !== 'active') return G.showToast('Эта лошадь не может участвовать в гонках');
     if (G.state.coins < raceType.fee) return G.showToast('Недостаточно монет для взноса');
 
     G.state.coins -= raceType.fee;
