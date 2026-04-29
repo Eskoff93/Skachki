@@ -6,6 +6,14 @@
   <title>Skachki</title>
   <link rel="stylesheet" href="./css/app.css" />
   <link rel="stylesheet" href="./css/luxury.css" />
+  <style>
+    #breedScreen .content-scroll{padding-bottom:calc(176px + var(--safe-bottom))!important}
+    #confirmBreedScreenBtn{min-height:48px;border-radius:18px!important;font-size:18px;font-weight:950;box-shadow:0 12px 30px rgba(0,0,0,.34)}
+    .breed-change-parent-btn{width:100%;min-height:46px;margin:10px 0 6px;border:1px solid rgba(216,169,67,.46);border-radius:18px;background:radial-gradient(circle at 50% 0,rgba(255,230,162,.22),transparent 55%),linear-gradient(180deg,#f6cf65,#c79226);color:#241400;font-size:16px;font-weight:950;box-shadow:0 10px 26px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.35)}
+    .breed-parent-slot{margin-bottom:4px}.breed-parent-slot .luxury-horse-card{margin-bottom:0!important}
+    .breed-heart-divider{width:58px;height:58px;margin:10px auto 12px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,rgba(255,126,182,.34),rgba(216,169,67,.13) 52%,rgba(8,21,36,.98));border:1px solid rgba(255,126,182,.38);color:#ff9ccc;font-size:35px;font-weight:950;line-height:1;box-shadow:0 0 26px rgba(255,126,182,.2),0 12px 24px rgba(0,0,0,.3);animation:breedHeartGlow 2.1s ease-in-out infinite}
+    @keyframes breedHeartGlow{0%,100%{transform:scale(1);filter:drop-shadow(0 0 2px rgba(255,126,182,.2))}50%{transform:scale(1.06);filter:drop-shadow(0 0 10px rgba(255,126,182,.46))}}
+  </style>
   <script src="./phaser.min.js"></script>
   <script src="./js/utils.js"></script>
   <script src="./js/data.js"></script>
