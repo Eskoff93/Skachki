@@ -5,8 +5,10 @@ window.SKACHKI_STABLE = (function () {
 
   function game() { return window.SKACHKI_GAME; }
 
+  function horseTools() { return window.SKACHKI_HORSE || {}; }
+
   function genderLabel(horse) {
-    var tools = window.SKACHKI_HORSE || {};
+    var tools = horseTools();
     if (tools.genderLabel) return tools.genderLabel(horse.gender);
     return horse.gender === 'mare' ? 'Кобыла' : 'Жеребец';
   }
@@ -16,11 +18,32 @@ window.SKACHKI_STABLE = (function () {
     var cls = G.horseClass(horse);
     var rounded = Math.round(cls / 10) * 10;
     var percent = Math.max(0, Math.min(100, rounded));
-    return '<div class="star-rating" title="Класс ' + cls + '"><span class="star-rating-bg">★★★★★</span><span class="star-rating-fill" style="width:' + percent + '%">★★★★★</span></div>';
+    return '<div class="star-rating" title="Уровень"><span class="star-rating-bg">★★★★★</span><span class="star-rating-fill" style="width:' + percent + '%">★★★★★</span></div>';
   }
 
   function horseStatLine(horse) {
-    return 'Гонки ' + (horse.racesRun || 0) + ' • Победы ' + (horse.wins || 0) + ' • Призы ' + (horse.podiums || 0);
+    return 'Гонки ' + (horse.racesRun || 0) + ' • Призы ' + (horse.podiums || 0) + ' • Победы ' + (horse.wins || 0);
+  }
+
+  function qualityBadge(key, value, compact) {
+    var tools = horseTools();
+    var rank = tools.hiddenRankFromValue ? tools.hiddenRankFromValue(value) : 'bronze';
+    var rankLabel = tools.rankLabel ? tools.rankLabel(rank) : rank;
+    var label = tools.hiddenQualityLabel ? tools.hiddenQualityLabel(key) : key;
+    var icon = key === 'strength' ? '♞' : key === 'agility' ? '♘' : '◆';
+    return '<div class="quality-badge quality-' + rank + (compact ? ' compact' : '') + '">' +
+      '<div class="quality-icon">' + icon + '</div>' +
+      '<div><div class="quality-name">' + label + '</div><div class="quality-rank">' + rankLabel + '</div></div>' +
+    '</div>';
+  }
+
+  function qualityGrid(horse, compact) {
+    var q = horse.hiddenQualities || {};
+    return '<div class="quality-grid">' +
+      qualityBadge('strength', q.strength, compact) +
+      qualityBadge('agility', q.agility, compact) +
+      qualityBadge('instinct', q.instinct, compact) +
+    '</div>';
   }
 
   function renderSummary() {
@@ -31,7 +54,7 @@ window.SKACHKI_STABLE = (function () {
     if (summaryGrid) {
       summaryGrid.innerHTML =
         '<div class="chip-box"><div class="value">' + G.state.horses.length + '</div><div class="label">Лошадей</div></div>' +
-        '<div class="chip-box"><div class="value">' + G.averageClass() + '</div><div class="label">Средний класс</div></div>' +
+        '<div class="chip-box"><div class="value">' + G.averageClass() + '</div><div class="label">Средний уровень</div></div>' +
         '<div class="chip-box"><div class="value">' + G.state.coins + '</div><div class="label">Монеты</div></div>';
     }
   }
@@ -52,39 +75,31 @@ window.SKACHKI_STABLE = (function () {
     var horseList = G.byId('horseList');
     if (!horseList) return;
 
-    horseList.innerHTML = G.state.horses.map(function (horse, index) {
-      return '<article class="horse-card">' +
-        '<div class="horse-head">' +
-          '<div class="horse-avatar"><img src="./horse_icon.png" alt="horse"></div>' +
-          '<div class="horse-meta">' +
-            '<div class="horse-name-row">' +
-              '<div class="horse-name-wrap"><div class="horse-name">' + horse.name + '</div></div>' +
+    horseList.innerHTML = G.state.horses.map(function (horse) {
+      var sexSymbol = horse.gender === 'mare' ? '♀' : '♂';
+      var sexClass = horse.gender === 'mare' ? 'sex-mare' : 'sex-stallion';
+      return '<article class="horse-card luxury-horse-card">' +
+        '<div class="luxury-horse-top">' +
+          '<div class="luxury-portrait-wrap ' + sexClass + '">' +
+            '<img class="luxury-portrait" src="./assets/horse-premium.svg" alt="horse">' +
+            '<div class="sex-badge ' + sexClass + '">' + sexSymbol + '</div>' +
+          '</div>' +
+          '<div class="luxury-horse-info">' +
+            '<div class="horse-name-row luxury-name-row">' +
+              '<div class="horse-name-wrap"><div class="horse-name luxury-name">' + horse.name + '</div></div>' +
               starRating(horse) +
             '</div>' +
-            '<div class="horse-stat-line">' + horseStatLine(horse) + '</div>' +
-            '<div class="horse-tags">' +
-              '<span class="mini-tag">Пол: ' + genderLabel(horse) + '</span>' +
-              '<span class="mini-tag">Форма: ' + G.formLabel(horse.form) + '</span>' +
-              '<span class="mini-tag">Карьера: ' + horse.racesRun + '/' + horse.careerLimit + '</span>' +
-              '<span class="mini-tag">Потенциал: ' + horse.potential + '</span>' +
-              '<span class="mini-tag">Характер: ' + horse.temperament + '</span>' +
-            '</div>' +
+            '<div class="horse-stat-line luxury-record">' + horseStatLine(horse) + '</div>' +
+            '<div class="luxury-meta-row"><span>' + genderLabel(horse) + '</span><span>Карьера ' + horse.racesRun + '/' + horse.careerLimit + '</span><span>Потомство ' + horse.offspringCount + '/' + horse.offspringLimit + '</span></div>' +
           '</div>' +
         '</div>' +
-        '<div class="power-grid">' +
-          '<div class="power-box"><div class="num">' + horse.speed + '</div><div class="txt">Скорость</div></div>' +
-          '<div class="power-box"><div class="num">' + horse.stamina + '</div><div class="txt">Выносливость</div></div>' +
-          '<div class="power-box"><div class="num">' + horse.acceleration + '</div><div class="txt">Ускорение</div></div>' +
+        '<div class="football-stats">' +
+          '<div class="football-stat"><b>' + horse.speed + '</b><span>Скорость</span></div>' +
+          '<div class="football-stat"><b>' + horse.stamina + '</b><span>Выносливость</span></div>' +
+          '<div class="football-stat"><b>' + horse.acceleration + '</b><span>Ускорение</span></div>' +
         '</div>' +
-        '<div class="stats-grid">' +
-          G.statBlock('Скорость', horse.speed, 'linear-gradient(90deg,#34d17a,#37c86e)') +
-          G.statBlock('Выносливость', horse.stamina, 'linear-gradient(90deg,#42b3ff,#4b9ef7)') +
-          G.statBlock('Ускорение', horse.acceleration, 'linear-gradient(90deg,#ffd44d,#eeb600)') +
-          G.statBlock('Манёвренность', horse.agility, 'linear-gradient(90deg,#ffad67,#ff8441)') +
-          G.statBlock('Сила', horse.power, 'linear-gradient(90deg,#9c8cff,#7e72f7)') +
-          G.statBlock('Интеллект', horse.intelligence, 'linear-gradient(90deg,#ff89c1,#f24c92)') +
-        '</div>' +
-        '<div class="card-actions">' +
+        qualityGrid(horse, true) +
+        '<div class="card-actions luxury-actions">' +
           '<button class="btn btn-blue" data-action="train" data-id="' + horse.id + '">Тренировать</button>' +
           '<button class="btn btn-dark" data-action="details" data-id="' + horse.id + '">Подробнее</button>' +
         '</div>' +
@@ -104,7 +119,7 @@ window.SKACHKI_STABLE = (function () {
         '<div class="main-menu-stats">' +
           '<div class="chip-box"><div class="value">🪙 ' + G.state.coins + '</div><div class="label">Баланс</div></div>' +
           '<div class="chip-box"><div class="value">' + G.state.horses.length + '</div><div class="label">Лошадей</div></div>' +
-          '<div class="chip-box"><div class="value">' + G.averageClass() + '</div><div class="label">Класс</div></div>' +
+          '<div class="chip-box"><div class="value">' + G.averageClass() + '</div><div class="label">Уровень</div></div>' +
         '</div>' +
       '</section>' +
       menuTile('stable', '🐴', 'Конюшня', 'Ваши лошади и тренировки') +
@@ -145,16 +160,12 @@ window.SKACHKI_STABLE = (function () {
     var stats = [
       ['Скорость', horse.speed],
       ['Выносливость', horse.stamina],
-      ['Ускорение', horse.acceleration],
-      ['Манёвренность', horse.agility],
-      ['Сила', horse.power],
-      ['Интеллект', horse.intelligence],
-      ['Характер', horse.temperament]
+      ['Ускорение', horse.acceleration]
     ];
 
     body.innerHTML =
       '<div class="details-hero">' +
-        '<div class="horse-avatar"><img src="./horse_icon.png" alt="horse"></div>' +
+        '<div class="horse-avatar"><img src="./assets/horse-premium.svg" alt="horse"></div>' +
         '<div class="details-hero-main">' +
           '<div class="details-name-row"><div class="details-name">' + horse.name + '</div>' + starRating(horse) + '</div>' +
           '<div class="horse-stat-line details-stat-line">' + horseStatLine(horse) + ' • Заработано ' + (horse.earnings || 0) + ' 🪙</div>' +
@@ -165,10 +176,14 @@ window.SKACHKI_STABLE = (function () {
       '<div class="detail-grid">' + overview.map(function (p) {
         return '<div class="detail-box"><div class="label helpable" data-help="' + p[0] + '">' + p[0] + '</div><div class="value">' + p[1] + '</div></div>';
       }).join('') + '</div>' +
-      '<div class="detail-section-title">Характеристики</div>' +
+      '<div class="detail-section-title">Основные показатели</div>' +
       '<div class="detail-grid">' + stats.map(function (p) {
         return '<div class="detail-box"><div class="label helpable" data-help="' + p[0] + '">' + p[0] + '</div><div class="value">' + p[1] + '</div></div>';
       }).join('') + '</div>' +
+      '<div class="detail-section-title">Качества</div>' + qualityGrid(horse, false) +
+      '<div class="detail-section-title">Скрытые черты</div>' +
+      '<div class="locked-traits"><div>🔒 ?</div><div>🔒 ?</div><div>🔒 ?</div></div>' +
+      '<div class="details-behavior">Откроются по мере участия в заездах.</div>' +
       '<div id="paramHelpOverlay" class="param-help-overlay" aria-live="polite"></div>';
 
     var trainButton = G.byId('horseModalTrainBtn');
