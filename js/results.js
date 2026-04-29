@@ -31,7 +31,14 @@ window.SKACHKI_RESULTS = (function () {
       var realHorse = G.state.horses.find(function (horse) {
         return String(horse.id) === String(playerResult.horse.playerHorseId);
       });
-      if (realHorse) realHorse.energy = Math.max(0, realHorse.energy - G.randInt(6, 12));
+
+      if (realHorse) {
+        realHorse.racesRun = (realHorse.racesRun || 0) + 1;
+        if (place === 1) realHorse.wins = (realHorse.wins || 0) + 1;
+        if (place > 0 && place <= 3) realHorse.podiums = (realHorse.podiums || 0) + 1;
+        realHorse.earnings = (realHorse.earnings || 0) + reward;
+        if (realHorse.racesRun >= realHorse.careerLimit) realHorse.status = 'retired';
+      }
     }
 
     G.saveGame();
