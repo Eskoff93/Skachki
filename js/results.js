@@ -62,7 +62,7 @@ window.SKACHKI_RESULTS = (function () {
             '<div style="font-size:12px;color:var(--muted);margin-top:4px">Время: ' + result.time + ' сек</div>' +
           '</div></div></div>';
         }).join('') +
-        '<button class="btn btn-gold" id="resultRaceMenuBtn" style="width:100%;margin-top:12px">В меню гонок</button>' +
+        '<button class="btn btn-gold" id="resultRaceMenuBtn" style="width:100%;margin-top:12px">Выбрать новый заезд</button>' +
         '<button class="btn btn-dark" id="resultStableBtn" style="width:100%;margin-top:10px">В Конюшню</button>';
     }
 
@@ -77,7 +77,8 @@ window.SKACHKI_RESULTS = (function () {
     var G = game();
     var modal = G.byId('resultsModal');
     if (modal) modal.classList.remove('active');
-    G.showScreen('raceMenu');
+    if (G.openRaceMenu) G.openRaceMenu();
+    else G.showScreen('raceMenu');
   }
 
   function closeResultsToStable() {
