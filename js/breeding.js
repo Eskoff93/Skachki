@@ -3,9 +3,22 @@
 window.SKACHKI_BREEDING = (function () {
   function game() { return window.SKACHKI_GAME; }
 
+  function genderLabel(horse) {
+    var tools = window.SKACHKI_HORSE || {};
+    if (tools.genderLabel) return tools.genderLabel(horse.gender);
+    return horse.gender === 'mare' ? 'Кобыла' : 'Жеребец';
+  }
+
+  function availableParents() {
+    var G = game();
+    return G.state.horses.filter(function (horse) {
+      return horse.status !== 'archived' && horse.offspringCount < horse.offspringLimit;
+    });
+  }
+
   function openBreedScreen() {
     var G = game();
-    if (G.state.horses.length < 2) return G.showToast('Нужно минимум 2 лошади');
+    if (availableParents().length < 2) return G.showToast('Нужно минимум 2 доступные лошади');
     renderBreedScreen();
     G.showScreen('breed');
   }
@@ -16,8 +29,9 @@ window.SKACHKI_BREEDING = (function () {
     var parentTwo = G.byId('breedParentTwo');
     if (!parentOne || !parentTwo) return;
 
-    var options = G.state.horses.map(function (horse) {
-      return '<option value="' + horse.id + '">' + horse.name + ' — Класс ' + G.horseClass(horse) + '</option>';
+    var parents = availableParents();
+    var options = parents.map(function (horse) {
+      return '<option value="' + horse.id + '">' + horse.name + ' — ' + genderLabel(horse) + ' • Класс ' + G.horseClass(horse) + '</option>';
     }).join('');
 
     var currentOne = parentOne.value;
@@ -28,8 +42,9 @@ window.SKACHKI_BREEDING = (function () {
 
     if (currentOne) parentOne.value = currentOne;
     if (currentTwo) parentTwo.value = currentTwo;
-    if (!parentTwo.value && G.state.horses[1]) parentTwo.value = String(G.state.horses[1].id);
-    if (parentOne.value === parentTwo.value && G.state.horses[1]) parentTwo.value = String(G.state.horses[1].id);
+    if (!parentOne.value && parents[0]) parentOne.value = String(parents[0].id);
+    if (!parentTwo.value && parents[1]) parentTwo.value = String(parents[1].id);
+    if (parentOne.value === parentTwo.value && parents[1]) parentTwo.value = String(parents[1].id);
 
     updateBreedPreview();
   }
@@ -49,6 +64,12 @@ window.SKACHKI_BREEDING = (function () {
 
     if (!h1 || !h2 || String(h1.id) === String(h2.id)) {
       if (childPreviewText) childPreviewText.textContent = 'Выберите двух разных родителей.';
+      if (childPreviewGrid) childPreviewGrid.innerHTML = '';
+      return;
+    }
+
+    if (h1.gender === h2.gender) {
+      if (childPreviewText) childPreviewText.textContent = 'Для разведения нужны жеребец и кобыла.';
       if (childPreviewGrid) childPreviewGrid.innerHTML = '';
       return;
     }
@@ -77,6 +98,7 @@ window.SKACHKI_BREEDING = (function () {
     if (!horse) return '<div class="parent-card"><div class="parent-card-title">' + title + '</div><div class="modal-sub">Не выбран</div></div>';
     return '<div class="parent-card">' +
       '<div class="parent-card-title">' + title + ': ' + horse.name + '</div>' +
+      '<div class="mini-tag">' + genderLabel(horse) + '</div>' +
       '<div class="mini-tag">Класс ' + G.horseClass(horse) + '</div>' +
       '<div class="mini-tag">Форма ' + G.formLabel(horse.form) + '</div>' +
       '<div class="mini-tag">Потомство ' + horse.offspringCount + '/' + horse.offspringLimit + '</div>' +
@@ -97,6 +119,8 @@ window.SKACHKI_BREEDING = (function () {
     var h2 = G.state.horses.find(function (h) { return String(h.id) === String(parentTwo.value); });
 
     if (!h1 || !h2 || String(h1.id) === String(h2.id)) return G.showToast('Выберите разных родителей');
+    if (h1.status === 'archived' || h2.status === 'archived') return G.showToast('Архивные лошади не участвуют в разведении');
+    if (h1.gender === h2.gender) return G.showToast('Для разведения нужны жеребец и кобыла');
     if (h1.offspringCount >= h1.offspringLimit || h2.offspringCount >= h2.offspringLimit) return G.showToast('У одного из родителей исчерпан лимит потомства');
 
     function avg(key) {
