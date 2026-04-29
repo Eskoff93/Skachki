@@ -3,84 +3,159 @@
 window.SKACHKI_RACE_MENU = (function () {
   function game() { return window.SKACHKI_GAME; }
 
+  function activeHorses() {
+    var G = game();
+    return G.state.horses.filter(function (horse) {
+      return horse.status !== 'archived';
+    });
+  }
+
   function renderRaceMenu() {
     var G = game();
     var el = G.byId('raceMenuScroll');
     if (!el) return;
 
-    var raceTypes = G.DATA.raceTypes || [];
-    if (!raceTypes.length) {
-      raceTypes = [{
-        id: 'rookie',
-        name: 'Новичковый заезд',
-        level: 'Низкая',
-        fee: 0,
-        prizeMin: 30,
-        prizeMax: 60,
-        distance: 1000,
-        opponents: 3,
-        classOffset: -12,
-        desc: 'Бесплатный старт.'
-      }];
-    }
+    var raceTypes = getRaceTypes();
+    var horses = activeHorses();
 
-    if (!G.state.selectedPlayerHorseId && G.state.horses[0]) {
-      G.state.selectedPlayerHorseId = String(G.state.horses[0].id);
+    if (!G.state.selectedPlayerHorseId && horses[0]) {
+      G.state.selectedPlayerHorseId = String(horses[0].id);
     }
 
     el.innerHTML =
-      '<section class="selection-summary">' +
-        '<div><div class="summary-title">Доступные заезды</div><div class="summary-desc">Выберите уровень гонки и одну свою лошадь.</div></div>' +
-        '<div class="selection-count"><span>🪙</span><small>' + G.state.coins + '</small></div>' +
-      '</section>' +
+      renderRaceSummary(raceTypes, horses) +
       '<div class="section-label">Тип гонки</div>' +
       raceTypes.map(renderRaceCard).join('') +
       '<div class="section-label">Ваша лошадь</div>' +
-      G.state.horses.filter(function (horse) { return horse.status !== 'archived'; }).map(renderPlayerHorseCard).join('');
+      horses.map(renderPlayerHorseCard).join('');
 
-    var button = G.byId('raceMenuStartBtn');
-    var type = getRaceType();
-    if (button && type) {
-      button.textContent = type.fee === 0 ? 'Начать заезд • бесплатно' : 'Начать заезд • взнос ' + type.fee + ' 🪙';
-    }
+    updateStartButton();
+  }
+
+  function getRaceTypes() {
+    var G = game();
+    var raceTypes = G.DATA.raceTypes || [];
+    if (raceTypes.length) return raceTypes;
+
+    return [{
+      id: 'rookie',
+      name: 'Новичковый заезд',
+      level: 'Низкая',
+      fee: 0,
+      prizeMin: 30,
+      prizeMax: 60,
+      distance: 1000,
+      opponents: 3,
+      classOffset: -12,
+      desc: 'Бесплатный старт.'
+    }];
+  }
+
+  function renderRaceSummary(raceTypes, horses) {
+    var G = game();
+    return '<section class="selection-summary race-menu-summary">' +
+      '<div>' +
+        '<div class="summary-title">Гонки</div>' +
+        '<div class="summary-desc">Выберите заезд, оцените приз и выставьте подходящую лошадь.</div>' +
+      '</div>' +
+      '<div class="selection-count"><span>🪙</span><small>' + G.state.coins + '</small></div>' +
+      '<div class="race-menu-mini-stats">' +
+        '<div class="chip-box"><div class="value">' + raceTypes.length + '</div><div class="label">Заездов</div></div>' +
+        '<div class="chip-box"><div class="value">' + horses.length + '</div><div class="label">Лошадей</div></div>' +
+        '<div class="chip-box"><div class="value">' + (G.state.selectedRaceTypeId ? '✓' : '—') + '</div><div class="label">Выбор</div></div>' +
+      '</div>' +
+    '</section>';
   }
 
   function getRaceType() {
     var G = game();
-    var raceTypes = G.DATA.raceTypes || [];
+    var raceTypes = getRaceTypes();
     return raceTypes.find(function (race) { return race.id === G.state.selectedRaceTypeId; }) || raceTypes[0];
+  }
+
+  function raceFeeLabel(race) {
+    return race.fee === 0 ? 'Бесплатно' : race.fee + ' 🪙';
+  }
+
+  function raceRewardLabel(race) {
+    return race.prizeMin + '–' + race.prizeMax + ' 🪙';
   }
 
   function renderRaceCard(race) {
     var G = game();
-    return '<div class="race-card ' + (race.id === G.state.selectedRaceTypeId ? 'selected' : '') + '" data-race="' + race.id + '">' +
+    var selected = race.id === G.state.selectedRaceTypeId;
+    return '<button class="race-card premium-race-card ' + (selected ? 'selected' : '') + '" data-race="' + race.id + '" type="button">' +
       '<div class="race-top">' +
-        '<div><div class="race-title">' + race.name + '</div><div class="race-desc">' + race.desc + '</div></div>' +
-        '<div class="race-fee">' + race.fee + ' 🪙</div>' +
+        '<div>' +
+          '<div class="race-title">' + race.name + '</div>' +
+          '<div class="race-desc">' + race.desc + '</div>' +
+        '</div>' +
+        '<div class="race-fee">' + raceFeeLabel(race) + '</div>' +
       '</div>' +
       '<div class="race-grid">' +
         '<div class="race-box"><b>' + race.level + '</b><span>Сложность</span></div>' +
         '<div class="race-box"><b>' + race.distance + ' м</b><span>Дистанция</span></div>' +
-        '<div class="race-box"><b>' + race.prizeMin + '–' + race.prizeMax + '</b><span>Приз</span></div>' +
+        '<div class="race-box"><b>' + raceRewardLabel(race) + '</b><span>Приз</span></div>' +
       '</div>' +
+      '<div class="select-badges race-badges">' +
+        '<span class="mini-tag">Соперников: ' + race.opponents + '</span>' +
+        '<span class="mini-tag">Класс: ' + race.classOffset + '</span>' +
+        (selected ? '<span class="player-badge">Выбран</span>' : '') +
+      '</div>' +
+    '</button>';
+  }
+
+  function horseShortName(horse) {
+    return String(horse.name || 'Л').trim().slice(0, 1).toUpperCase();
+  }
+
+  function horseRecord(horse) {
+    return 'Гонки ' + (horse.racesRun || 0) + '/' + horse.careerLimit + ' • Победы ' + (horse.wins || 0) + ' • Призы ' + (horse.podiums || 0);
+  }
+
+  function renderHorseMark(horse, selected) {
+    var gender = horse.gender === 'mare' ? '♀' : '♂';
+    return '<div class="horse-avatar race-horse-mark ' + (selected ? 'selected' : '') + '">' +
+      '<div class="race-horse-letter">' + horseShortName(horse) + '</div>' +
+      '<div class="race-horse-symbol">' + gender + '</div>' +
     '</div>';
   }
 
   function renderPlayerHorseCard(horse) {
     var G = game();
     var selected = String(horse.id) === String(G.state.selectedPlayerHorseId);
-    return '<div class="my-horse-card ' + (selected ? 'selected' : '') + '" data-horse="' + horse.id + '">' +
-      '<div class="horse-avatar"><img src="./horse_icon.png" alt="horse"></div>' +
+    return '<button class="my-horse-card premium-race-horse-card ' + (selected ? 'selected' : '') + '" data-horse="' + horse.id + '" type="button">' +
+      renderHorseMark(horse, selected) +
       '<div class="my-horse-info">' +
         '<div class="my-horse-name">' + horse.name + (selected ? ' <span class="player-badge">Выбрана</span>' : '') + '</div>' +
         '<div class="select-badges">' +
           '<span class="mini-tag">Класс ' + G.horseClass(horse) + '</span>' +
           '<span class="mini-tag">Форма ' + G.formLabel(horse.form) + '</span>' +
-          '<span class="mini-tag">Карьера ' + horse.racesRun + '/' + horse.careerLimit + '</span>' +
+          '<span class="mini-tag">' + horseRecord(horse) + '</span>' +
         '</div>' +
         '<div class="my-horse-note">' + G.behaviorLabel(horse.temperament) + '</div>' +
       '</div>' +
-    '</div>';
+    '</button>';
+  }
+
+  function updateStartButton() {
+    var G = game();
+    var button = G.byId('raceMenuStartBtn');
+    var type = getRaceType();
+    var player = G.state.horses.find(function (horse) {
+      return String(horse.id) === String(G.state.selectedPlayerHorseId);
+    });
+
+    if (!button || !type) return;
+
+    if (!player) {
+      button.textContent = 'Выберите лошадь';
+      button.disabled = true;
+      return;
+    }
+
+    button.disabled = false;
+    button.textContent = type.fee === 0 ? 'Начать заезд • бесплатно' : 'Начать заезд • взнос ' + type.fee + ' 🪙';
   }
 
   function createBotHorse(base, index) {
