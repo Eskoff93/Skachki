@@ -99,16 +99,19 @@ window.SKACHKI_HORSE = (function () {
     var today = currentDate || todayKey();
     var trainedToday = horse.lastTrainingDate === today;
     var streak = Number.isFinite(horse.trainingStreakDays) ? horse.trainingStreakDays : 0;
+    var form = horse.form || 'normal';
 
-    if (trainedToday) {
-      if (streak >= 7) return 'Сегодня уже тренировалась. Форма отличная.';
-      if (streak >= 3) return 'Сегодня уже тренировалась. До отличной формы: ' + (7 - streak) + ' дн.';
-      return 'Сегодня уже тренировалась. До нормальной формы: ' + (3 - streak) + ' дн.';
+    if (form === 'excellent') {
+      return trainedToday ? 'Сегодня уже тренировалась. Форма отличная.' : 'Поддержите серию сегодня, чтобы сохранить отличную форму.';
     }
 
-    if (streak >= 7) return 'Поддержите серию сегодня, чтобы сохранить отличную форму.';
-    if (streak >= 3) return 'До отличной формы: ' + (7 - streak) + ' дн.';
-    return 'До нормальной формы: ' + Math.max(1, 3 - streak) + ' дн.';
+    if (form === 'bad') {
+      var toNormal = Math.max(1, 3 - streak);
+      return trainedToday ? 'Сегодня уже тренировалась. До нормальной формы: ' + toNormal + ' дн.' : 'До нормальной формы: ' + toNormal + ' дн.';
+    }
+
+    var toExcellent = Math.max(1, 7 - streak);
+    return trainedToday ? 'Сегодня уже тренировалась. До отличной формы: ' + toExcellent + ' дн.' : 'До отличной формы: ' + toExcellent + ' дн.';
   }
 
   function horseClass(horse) {
