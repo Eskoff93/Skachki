@@ -161,7 +161,7 @@ window.SKACHKI_RACE_MENU = (function () {
 
     var back = G.byId('raceMenuBackBtn');
     var start = G.byId('raceMenuStartBtn');
-    if (back) back.onclick = function () { G.showScreen('menu'); };
+    if (back) back.onclick = function () { G.showScreen('stable'); };
     if (start) start.onclick = startRace;
   }
 
