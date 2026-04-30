@@ -113,10 +113,7 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     };
     var minRank = qualityRank(values.min);
     var maxRank = qualityRank(values.max);
-    var label = minRank === maxRank
-      ? qualityRankLabel(minRank)
-      : qualityRankLabel(minRank) + '–' + qualityRankLabel(maxRank);
-
+    var label = minRank === maxRank ? qualityRankLabel(minRank) : qualityRankLabel(minRank) + '–' + qualityRankLabel(maxRank);
     return { rank: maxRank, label: label };
   }
 
@@ -174,10 +171,7 @@ window.SKACHKI_BREEDING_RENDER = (function () {
       desc = 'Своих доступных кобыл нет. Можно нанять племенную кобылу за ' + ctx.parentFee(mare) + ' 🪙.';
     }
 
-    return '<section class="breed-intro-card">' +
-      '<div class="summary-title">Разведение</div>' +
-      '<div class="summary-desc">' + desc + '</div>' +
-    '</section>';
+    return '<section class="breed-intro-card"><div class="summary-title">Разведение</div><div class="summary-desc">' + desc + '</div></section>';
   }
 
   function renderParentSlot(ctx, horse, gender) {
@@ -187,10 +181,7 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     var accent = gender === 'stallion' ? 'breed-parent-stallion' : 'breed-parent-mare';
 
     if (!horse || !UI.renderHorseCard) {
-      return '<button class="breed-parent-empty ' + accent + '" data-open-parent-picker="' + gender + '">' +
-        '<span class="breed-empty-symbol">' + symbol + '</span>' +
-        '<b>' + buttonText + '</b>' +
-      '</button>';
+      return '<button class="breed-parent-empty ' + accent + '" data-open-parent-picker="' + gender + '"><span class="breed-empty-symbol">' + symbol + '</span><b>' + buttonText + '</b></button>';
     }
 
     return '<div class="breed-parent-slot ' + accent + '">' +
@@ -225,25 +216,16 @@ window.SKACHKI_BREEDING_RENDER = (function () {
         : 'Выберите кобылу для пары. Карточки показывают те же параметры, что и в Конюшне.';
     }
 
-    return '<section class="breed-intro-card">' +
-        '<div class="summary-title">' + title + '</div>' +
-        '<div class="summary-desc">' + desc + '</div>' +
-      '</section>' +
+    return '<section class="breed-intro-card"><div class="summary-title">' + title + '</div><div class="summary-desc">' + desc + '</div></section>' +
       '<div class="section-label">Доступные варианты</div>' +
       list.map(function (horse) {
         var selected = String(horse.id) === String(selectedId);
-        var card = UI.renderHorseCard ? UI.renderHorseCard(horse, {
-          dataHorse: false,
-          selected: selected,
-          extraClass: 'breed-picker-card'
-        }) : '';
+        var card = UI.renderHorseCard ? UI.renderHorseCard(horse, { dataHorse: false, selected: selected, extraClass: 'breed-picker-card' }) : '';
 
         if (selected) {
-          card = card.replace(
-            '<article class="',
-            '<article style="border-color:rgba(255,210,93,.76)!important;box-shadow:0 0 0 1px rgba(255,210,93,.24) inset,0 18px 52px rgba(0,0,0,.46)!important;" class="'
-          );
+          card = card.replace('<article class="', '<article style="border-color:rgba(255,210,93,.76)!important;box-shadow:0 0 0 1px rgba(255,210,93,.24) inset,0 18px 52px rgba(0,0,0,.46)!important;" class="');
         }
+
         if (ctx.isExternalParent(horse)) card += '<div class="breed-forecast-note">Стоимость скрещивания: ' + ctx.parentFee(horse) + ' 🪙</div>';
         return '<div class="breed-picker-item" data-select-parent="' + gender + '" data-id="' + horse.id + '">' + card + '</div>';
       }).join('');
@@ -251,12 +233,7 @@ window.SKACHKI_BREEDING_RENDER = (function () {
 
   function renderForecast(ctx, stallion, mare) {
     if (!stallion || !mare) {
-      return '<section class="breed-forecast-panel breed-foal-card">' +
-        '<div class="breed-forecast-head">' +
-          '<div><div class="summary-title">Будущий жеребёнок</div><div class="summary-desc">Выберите жеребца и кобылу, чтобы увидеть прогноз.</div></div>' +
-          renderFoalPreview() +
-        '</div>' +
-      '</section>';
+      return '<section class="breed-forecast-panel breed-foal-card"><div class="breed-forecast-head"><div><div class="summary-title">Будущий жеребёнок</div><div class="summary-desc">Выберите жеребца и кобылу, чтобы увидеть прогноз.</div></div>' + renderFoalPreview() + '</div></section>';
     }
 
     var logic = breedingLogic();
@@ -269,38 +246,17 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     var potential = potentialForecast(stallion, mare);
 
     return '<section class="breed-forecast-panel breed-foal-card">' +
-      '<div class="breed-forecast-head breed-foal-head">' +
-        '<div>' +
-          '<div class="summary-title">Будущий жеребёнок</div>' +
-          '<div class="summary-desc">Прогноз наследования. Точные значения откроются после рождения.</div>' +
-        '</div>' +
-        renderFoalPreview() +
-      '</div>' +
-      '<div class="breed-foal-level-row">' +
-        '<span>Прогноз потенциала</span>' +
-        forecastStars(potential.stars, 'Потенциал: ' + potential.label) +
-      '</div>' +
+      '<div class="breed-forecast-head breed-foal-head"><div><div class="summary-title">Будущий жеребёнок</div><div class="summary-desc">Прогноз наследования. Точные значения откроются после рождения.</div></div>' + renderFoalPreview() + '</div>' +
+      '<div class="breed-foal-level-row"><span>Прогноз потенциала</span>' + forecastStars(potential.stars, 'Потенциал: ' + potential.label) + '</div>' +
       '<div class="breed-forecast-note">Потенциал: ' + potential.label + ' • Ожидаемый класс: ' + Math.max(10, expectedClass - 5) + '–' + Math.min(100, expectedClass + 6) + '</div>' +
       '<div class="breed-forecast-section-title">Вероятные признаки</div>' +
       '<div class="breed-trait-grid">' +
-        traitForecast('Пол', 'случайный') +
-        traitForecast('Порода', traitPair(stallion.breed, mare.breed)) +
-        traitForecast('Масть', traitPair(stallion.coat, mare.coat)) +
-        traitForecast('Характер', traitPair(stallion.temperament, mare.temperament)) +
+        traitForecast('Пол', 'случайный') + traitForecast('Порода', traitPair(stallion.breed, mare.breed)) + traitForecast('Масть', traitPair(stallion.coat, mare.coat)) + traitForecast('Характер', traitPair(stallion.temperament, mare.temperament)) +
       '</div>' +
       '<div class="breed-forecast-section-title">Прогноз показателей</div>' +
-      '<div class="breed-forecast-grid">' +
-        statRange('Класс', expectedClass) +
-        statRange('Скорость', forecast.speed) +
-        statRange('Выносливость', forecast.stamina) +
-        statRange('Ускорение', forecast.acceleration) +
-      '</div>' +
+      '<div class="breed-forecast-grid">' + statRange('Класс', expectedClass) + statRange('Скорость', forecast.speed) + statRange('Выносливость', forecast.stamina) + statRange('Ускорение', forecast.acceleration) + '</div>' +
       '<div class="breed-forecast-section-title">Наследование качеств</div>' +
-      '<div class="quality-grid breed-forecast-quality-grid">' +
-        forecastQualityBadge(stallion, mare, 'strength') +
-        forecastQualityBadge(stallion, mare, 'agility') +
-        forecastQualityBadge(stallion, mare, 'instinct') +
-      '</div>' +
+      '<div class="quality-grid breed-forecast-quality-grid">' + forecastQualityBadge(stallion, mare, 'strength') + forecastQualityBadge(stallion, mare, 'agility') + forecastQualityBadge(stallion, mare, 'instinct') + '</div>' +
       '<div class="breed-forecast-note">После разведения: ' + parentAfterText(ctx, stallion) + ' • ' + parentAfterText(ctx, mare) + '</div>' +
     '</section>';
   }
@@ -321,6 +277,7 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     var article = card.querySelector('.foal-result-shared-card');
     var meta = card.querySelector('.luxury-meta-row');
     var name = card.querySelector('.luxury-name');
+    var nameWrap = card.querySelector('.horse-name-wrap');
     var stars = card.querySelector('.star-rating');
     var stats = card.querySelector('.football-stats');
     var qualities = card.querySelector('.quality-grid');
@@ -339,9 +296,17 @@ window.SKACHKI_BREEDING_RENDER = (function () {
       article.style.overflow = 'hidden';
     }
 
+    if (nameWrap) {
+      nameWrap.style.position = 'relative';
+      nameWrap.style.minWidth = '0';
+      nameWrap.style.paddingRight = '0';
+    }
+
     if (name) {
       name.style.cursor = 'pointer';
+      name.style.display = 'block';
       name.style.maxWidth = '100%';
+      name.style.padding = '0';
       name.style.wordBreak = 'break-word';
     }
 
@@ -405,6 +370,41 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     setTimeout(renderSharedFoalCard, 80);
   }
 
+  function makeEditButton(card, name, openEditor) {
+    var wrap = name ? name.parentElement : null;
+    var button = card.querySelector('.foal-name-edit-btn');
+    if (!wrap) return null;
+
+    if (!button) {
+      button = document.createElement('button');
+      button.className = 'foal-name-edit-btn';
+      button.type = 'button';
+      button.textContent = '✎';
+      button.setAttribute('aria-label', 'Переименовать жеребёнка');
+      wrap.appendChild(button);
+    }
+
+    button.style.position = 'absolute';
+    button.style.right = '-28px';
+    button.style.top = '2px';
+    button.style.width = '24px';
+    button.style.height = '24px';
+    button.style.borderRadius = '50%';
+    button.style.border = '1px solid rgba(255,211,77,.34)';
+    button.style.background = 'rgba(255,211,77,.14)';
+    button.style.color = '#ffe7a6';
+    button.style.fontSize = '13px';
+    button.style.fontWeight = '900';
+    button.style.lineHeight = '1';
+    button.style.display = 'flex';
+    button.style.alignItems = 'center';
+    button.style.justifyContent = 'center';
+    button.style.boxShadow = '0 8px 18px rgba(0,0,0,.22)';
+    button.style.zIndex = '6';
+    button.onclick = openEditor;
+    return button;
+  }
+
   function setupFoalNameEditor() {
     var card = document.getElementById('breedResultCard');
     var sourceInput = document.getElementById('foalNameInput');
@@ -415,35 +415,48 @@ window.SKACHKI_BREEDING_RENDER = (function () {
 
     if (!card || !sourceInput || !foal || !name || !editor || !input) return;
 
-    sourceInput.value = foal.name || sourceInput.value || 'Жеребёнок';
-    input.value = sourceInput.value;
+    sourceInput.value = foal.name || 'Жеребёнок';
+    input.placeholder = foal.name || 'Введите имя';
 
-    name.classList.add('editable-foal-name');
+    name.classList.remove('editable-foal-name');
+    name.style.cursor = 'pointer';
     name.setAttribute('role', 'button');
     name.setAttribute('tabindex', '0');
     name.setAttribute('aria-label', 'Переименовать жеребёнка');
 
-    if (card.dataset.nameEditorBound === String(foal.id)) return;
-    card.dataset.nameEditorBound = String(foal.id);
+    function applyName(value) {
+      var cleanName = String(value || '').trim().slice(0, 18);
+      if (!cleanName) return false;
+
+      foal.name = cleanName;
+      sourceInput.value = cleanName;
+      name.textContent = cleanName;
+      input.placeholder = cleanName;
+      sourceInput.dispatchEvent(new Event('input', { bubbles: true }));
+      saveGame();
+      return true;
+    }
+
+    function closeEditor(save) {
+      if (save) applyName(input.value);
+      input.value = '';
+      editor.hidden = true;
+    }
 
     function openEditor() {
       editor.hidden = false;
-      input.value = foal.name || sourceInput.value || name.textContent.trim();
+      input.value = '';
+      input.placeholder = foal.name || 'Введите имя';
       setTimeout(function () {
         input.focus();
-        input.select();
         editor.scrollIntoView({ block: 'center', behavior: 'smooth' });
       }, 0);
     }
 
-    function applyName(value) {
-      var cleanName = String(value || '').trim().slice(0, 18) || 'Жеребёнок';
-      foal.name = cleanName;
-      sourceInput.value = cleanName;
-      name.textContent = cleanName;
-      sourceInput.dispatchEvent(new Event('input', { bubbles: true }));
-      saveGame();
-    }
+    makeEditButton(card, name, openEditor);
+
+    if (card.dataset.nameEditorBound === String(foal.id)) return;
+    card.dataset.nameEditorBound = String(foal.id);
 
     name.addEventListener('click', openEditor);
     name.addEventListener('keydown', function (event) {
@@ -454,13 +467,23 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     });
 
     input.addEventListener('input', function () {
-      applyName(input.value);
+      var cleanName = input.value.trim();
+      if (cleanName) applyName(cleanName);
+      else sourceInput.value = '';
+    });
+
+    input.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter') closeEditor(true);
+      if (event.key === 'Escape') closeEditor(false);
+    });
+
+    input.addEventListener('blur', function () {
+      closeEditor(true);
     });
   }
 
   function animateElement(element, delay, keyframes) {
     if (!element) return;
-
     element.style.opacity = '0';
     element.style.transform = 'translateY(12px) scale(.98)';
 
