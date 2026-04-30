@@ -65,7 +65,13 @@ window.SKACHKI_BREEDING_RENDER = (function () {
 
   function enhanceFoalResult() {
     var card = document.getElementById('breedResultCard');
-    if (!card || card.classList.contains('foal-card-enhanced')) return;
+    if (!card) return;
+
+    // The card node is reused between births. Its enhanced class can remain
+    // while breeding.js replaces the inner HTML with a fresh raw result.
+    // Therefore the real idempotency check is the presence of the medallion,
+    // not the class on the reused card.
+    if (card.querySelector('.foal-medallion-wrap')) return;
 
     var top = card.querySelector('.foal-card-top');
     var avatar = card.querySelector('.foal-avatar');
