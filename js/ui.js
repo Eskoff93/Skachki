@@ -86,6 +86,26 @@ window.SKACHKI_HORSE_UI = (function () {
     return hash >>> 0;
   }
 
+  function potentialLabel(value) {
+    var potential = Number(value) || 0;
+    if (potential >= 95) return 'Выдающийся';
+    if (potential >= 85) return 'Высокий';
+    if (potential >= 75) return 'Хороший';
+    return 'Средний';
+  }
+
+  function potentialTier(value) {
+    var potential = Number(value) || 0;
+    if (potential >= 95) return 'elite';
+    if (potential >= 85) return 'high';
+    if (potential >= 75) return 'good';
+    return 'base';
+  }
+
+  function potentialBadge(horse) {
+    return '<span class="potential-badge potential-' + potentialTier(horse.potential) + '">Потенциал: ' + potentialLabel(horse.potential) + '</span>';
+  }
+
   function horseRank(horse) {
     var tools = horseTools();
     if (tools.horseRankFromRating) return tools.horseRankFromRating(horse.rating || 0);
@@ -274,6 +294,7 @@ window.SKACHKI_HORSE_UI = (function () {
             '<span>' + horse.coat + '</span>' +
             '<span>Карьера ' + ((horse.racesRun || 0) + (horse.practiceStarts || 0)) + '/' + horse.careerLimit + '</span>' +
             '<span>Потомство ' + horse.offspringCount + '/' + horse.offspringLimit + '</span>' +
+            potentialBadge(horse) +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -293,6 +314,9 @@ window.SKACHKI_HORSE_UI = (function () {
     horseRank: horseRank,
     horseRankLabel: horseRankLabel,
     horseStatLine: horseStatLine,
+    potentialBadge: potentialBadge,
+    potentialLabel: potentialLabel,
+    potentialTier: potentialTier,
     qualityGrid: qualityGrid,
     renderHorseCard: renderHorseCard,
     starRating: starRating
