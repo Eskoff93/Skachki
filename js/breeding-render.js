@@ -281,6 +281,9 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     var stars = card.querySelector('.star-rating');
     var stats = card.querySelector('.football-stats');
     var qualities = card.querySelector('.quality-grid');
+    var oldPencil = card.querySelector('.foal-name-edit-btn');
+
+    if (oldPencil) oldPencil.remove();
 
     if (shell) {
       shell.style.width = '100%';
@@ -303,7 +306,8 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     }
 
     if (name) {
-      name.style.cursor = 'pointer';
+      name.classList.remove('editable-foal-name');
+      name.style.cursor = 'default';
       name.style.display = 'block';
       name.style.maxWidth = '100%';
       name.style.padding = '0';
@@ -353,9 +357,9 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     card.dataset.foalId = String(foal.id);
     card.innerHTML = '<div class="foal-shared-card-shell" data-foal-id="' + foal.id + '">' +
       UI.renderHorseCard(foal, { extraClass: 'foal-result-shared-card', dataHorse: false, actions: false }) +
-      '<div class="foal-name-inline-editor" hidden>' +
-        '<label class="foal-name-inline-label">Имя жеребёнка</label>' +
-        '<input class="foal-name-inline-input" type="text" maxlength="18" placeholder="Введите имя" autocomplete="off" />' +
+      '<div class="foal-name-inline-editor foal-name-quick-editor">' +
+        '<label class="foal-name-inline-label">Сменить имя</label>' +
+        '<input class="foal-name-inline-input" type="text" maxlength="18" placeholder="Новое имя" autocomplete="off" />' +
       '</div>' +
       '</div>';
 
@@ -370,41 +374,6 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     setTimeout(renderSharedFoalCard, 80);
   }
 
-  function makeEditButton(card, name, openEditor) {
-    var wrap = name ? name.parentElement : null;
-    var button = card.querySelector('.foal-name-edit-btn');
-    if (!wrap) return null;
-
-    if (!button) {
-      button = document.createElement('button');
-      button.className = 'foal-name-edit-btn';
-      button.type = 'button';
-      button.textContent = '✎';
-      button.setAttribute('aria-label', 'Переименовать жеребёнка');
-      wrap.appendChild(button);
-    }
-
-    button.style.position = 'absolute';
-    button.style.right = '-28px';
-    button.style.top = '2px';
-    button.style.width = '24px';
-    button.style.height = '24px';
-    button.style.borderRadius = '50%';
-    button.style.border = '1px solid rgba(255,211,77,.34)';
-    button.style.background = 'rgba(255,211,77,.14)';
-    button.style.color = '#ffe7a6';
-    button.style.fontSize = '13px';
-    button.style.fontWeight = '900';
-    button.style.lineHeight = '1';
-    button.style.display = 'flex';
-    button.style.alignItems = 'center';
-    button.style.justifyContent = 'center';
-    button.style.boxShadow = '0 8px 18px rgba(0,0,0,.22)';
-    button.style.zIndex = '6';
-    button.onclick = openEditor;
-    return button;
-  }
-
   function setupFoalNameEditor() {
     var card = document.getElementById('breedResultCard');
     var sourceInput = document.getElementById('foalNameInput');
@@ -412,17 +381,19 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     var name = card ? card.querySelector('.luxury-name') : null;
     var editor = card ? card.querySelector('.foal-name-inline-editor') : null;
     var input = editor ? editor.querySelector('.foal-name-inline-input') : null;
+    var oldPencil = card ? card.querySelector('.foal-name-edit-btn') : null;
 
+    if (oldPencil) oldPencil.remove();
     if (!card || !sourceInput || !foal || !name || !editor || !input) return;
 
     sourceInput.value = foal.name || 'Жеребёнок';
-    input.placeholder = foal.name || 'Введите имя';
+    input.placeholder = 'Новое имя';
 
     name.classList.remove('editable-foal-name');
-    name.style.cursor = 'pointer';
-    name.setAttribute('role', 'button');
-    name.setAttribute('tabindex', '0');
-    name.setAttribute('aria-label', 'Переименовать жеребёнка');
+    name.style.cursor = 'default';
+    name.removeAttribute('role');
+    name.removeAttribute('tabindex');
+    name.removeAttribute('aria-label');
 
     function applyName(value) {
       var cleanName = String(value || '').trim().slice(0, 18);
@@ -431,55 +402,27 @@ window.SKACHKI_BREEDING_RENDER = (function () {
       foal.name = cleanName;
       sourceInput.value = cleanName;
       name.textContent = cleanName;
-      input.placeholder = cleanName;
       sourceInput.dispatchEvent(new Event('input', { bubbles: true }));
       saveGame();
       return true;
     }
 
-    function closeEditor(save) {
-      if (save) applyName(input.value);
-      input.value = '';
-      editor.hidden = true;
+    function commitInput() {
+      if (applyName(input.value)) input.value = '';
     }
-
-    function openEditor() {
-      editor.hidden = false;
-      input.value = '';
-      input.placeholder = foal.name || 'Введите имя';
-      setTimeout(function () {
-        input.focus();
-        editor.scrollIntoView({ block: 'center', behavior: 'smooth' });
-      }, 0);
-    }
-
-    makeEditButton(card, name, openEditor);
 
     if (card.dataset.nameEditorBound === String(foal.id)) return;
     card.dataset.nameEditorBound = String(foal.id);
 
-    name.addEventListener('click', openEditor);
-    name.addEventListener('keydown', function (event) {
-      if (event.key === 'Enter' || event.key === ' ') {
+    input.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter') {
         event.preventDefault();
-        openEditor();
+        commitInput();
+        input.blur();
       }
     });
 
-    input.addEventListener('input', function () {
-      var cleanName = input.value.trim();
-      if (cleanName) applyName(cleanName);
-      else sourceInput.value = '';
-    });
-
-    input.addEventListener('keydown', function (event) {
-      if (event.key === 'Enter') closeEditor(true);
-      if (event.key === 'Escape') closeEditor(false);
-    });
-
-    input.addEventListener('blur', function () {
-      closeEditor(true);
-    });
+    input.addEventListener('blur', commitInput);
   }
 
   function animateElement(element, delay, keyframes) {
