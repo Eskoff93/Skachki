@@ -38,3 +38,16 @@
 .locked-traits{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}.locked-traits div{min-height:58px;border-radius:16px;border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(0,0,0,.12));display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.62);font-weight:950;font-size:20px}.details-hero .horse-avatar{border:1px solid rgba(216,169,67,.4);background:linear-gradient(135deg,#fff0a8,#d4a341,#5a340f);padding:3px}.details-hero .horse-avatar img{border-radius:18px}.detail-horse-avatar{position:relative;overflow:hidden;border-radius:18px}.detail-horse-avatar .horse-portrait-svg{position:relative;inset:auto;width:100%;height:100%}.detail-horse-avatar .breed-emblem{display:none}
 
 @media(max-width:420px){#stableScreen .content-scroll,#raceMenuScreen .content-scroll,#breedScreen .content-scroll,#ratingScreen .content-scroll{padding-top:calc(var(--safe-top) + var(--tg-top-offset))!important}.stable-hero-card{padding:7px!important}.stable-summary-mini{min-height:38px}.stable-summary-mini b{font-size:16px}.horse-medallion{width:103px;height:103px}.luxury-name{font-size:22px!important}.football-stat b{font-size:23px}.quality-badge{gap:5px;padding:7px 5px}.quality-icon{width:24px;height:24px;font-size:14px}.quality-name{font-size:9px}.quality-rank{font-size:10px}.bottom-nav-btn{height:54px;border-radius:16px}.bottom-nav-btn span{font-size:18px}.bottom-nav-btn b{font-size:9px}}
+
+/* Horse card spacing refinement */
+.luxury-horse-card{padding:16px 14px 14px 18px!important}
+.luxury-horse-top{gap:14px!important;padding:4px 0 3px 4px!important;align-items:center!important}
+.horse-medallion{margin:2px 0 4px 2px!important}
+.football-stats{margin-top:22px!important}
+
+@media(max-width:420px){
+  .luxury-horse-card{padding:14px 12px 13px 15px!important}
+  .luxury-horse-top{gap:11px!important;padding:3px 0 2px 3px!important}
+  .horse-medallion{margin:2px 0 3px 1px!important}
+  .football-stats{margin-top:20px!important}
+}
