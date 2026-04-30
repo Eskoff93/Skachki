@@ -22,6 +22,51 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     if (G && typeof G.saveGame === 'function') G.saveGame();
   }
 
+  function resultScrollRoot() {
+    return document.querySelector('#breedResultScreen .breed-result-scroll') || document.scrollingElement || document.documentElement;
+  }
+
+  function resultFooter() {
+    var screen = document.getElementById('breedResultScreen');
+    return screen ? screen.querySelector('.footer-actions') : null;
+  }
+
+  function setNameEditingMode(isEditing) {
+    var footer = resultFooter();
+    document.body.classList.toggle('foal-name-editing', !!isEditing);
+
+    if (!footer) return;
+
+    footer.style.transition = 'opacity .18s ease, transform .18s ease';
+    footer.style.opacity = isEditing ? '0' : '';
+    footer.style.pointerEvents = isEditing ? 'none' : '';
+    footer.style.transform = isEditing ? 'translateY(26px)' : '';
+  }
+
+  function scrollEditorIntoView(editor) {
+    if (!editor || typeof editor.scrollIntoView !== 'function') return;
+
+    window.setTimeout(function () {
+      editor.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
+    }, 120);
+
+    window.setTimeout(function () {
+      editor.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
+    }, 360);
+  }
+
+  function restoreResultScroll() {
+    var root = resultScrollRoot();
+
+    window.setTimeout(function () {
+      if (root && typeof root.scrollTo === 'function') {
+        root.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }, 180);
+  }
+
   function potentialStars(value) {
     var UI = horseUi();
     if (UI.potentialStars) return UI.potentialStars(value);
@@ -414,6 +459,11 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     if (card.dataset.nameEditorBound === String(foal.id)) return;
     card.dataset.nameEditorBound = String(foal.id);
 
+    input.addEventListener('focus', function () {
+      setNameEditingMode(true);
+      scrollEditorIntoView(editor);
+    });
+
     input.addEventListener('keydown', function (event) {
       if (event.key === 'Enter') {
         event.preventDefault();
@@ -422,7 +472,13 @@ window.SKACHKI_BREEDING_RENDER = (function () {
       }
     });
 
-    input.addEventListener('blur', commitInput);
+    input.addEventListener('blur', function () {
+      commitInput();
+      window.setTimeout(function () {
+        setNameEditingMode(false);
+        restoreResultScroll();
+      }, 140);
+    });
   }
 
   function animateElement(element, delay, keyframes) {
