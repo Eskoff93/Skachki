@@ -213,7 +213,7 @@ window.SKACHKI_BREEDING_RENDER = (function () {
   }
 
   function traitForecast(label, value) {
-    return '<div class="breed-trait-chip breed-trait-polished"><span>' + label + '</span><b>' + value + '</b></div>';
+    return '<div class="breed-trait-chip breed-trait-polished"><span>' + label + ':&nbsp;</span><b>' + value + '</b></div>';
   }
 
   function traitPair(valueA, valueB) {
@@ -240,12 +240,6 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     return parent.name + ' ' + (parent.offspringCount + 1) + '/' + parent.offspringLimit;
   }
 
-  function parentLabel(gender) {
-    return gender === 'stallion'
-      ? '<div class="section-label breed-parent-hint"><b>Жеребец</b><span>Нажмите на карточку для выбора</span></div>'
-      : '<div class="section-label breed-parent-hint"><b>Кобыла</b><span>Нажмите на карточку для выбора</span></div>';
-  }
-
   function renderParentSlot(ctx, horse, gender) {
     var UI = horseUi();
     var symbol = gender === 'stallion' ? '♂' : '♀';
@@ -258,17 +252,15 @@ window.SKACHKI_BREEDING_RENDER = (function () {
       '</button>';
     }
 
-    return '<div class="breed-parent-slot breed-parent-selectable ' + accent + '" data-open-parent-picker="' + gender + '" role="button" tabindex="0" aria-label="' + buttonText + '">' +
+    return '<div class="breed-parent-slot breed-parent-selectable ' + accent + '" data-open-parent-picker="' + gender + '" role="button" tabindex="0" aria-label="' + buttonText + '" style="margin-bottom:0;">' +
       UI.renderHorseCard(horse, { extraClass: 'breed-parent-card' }) +
       ctx.serviceNote(horse) +
     '</div>';
   }
 
   function renderPairStep(ctx, stallion, mare) {
-    return parentLabel('stallion') +
-      renderParentSlot(ctx, stallion, 'stallion') +
-      '<div class="breed-heart-divider" aria-hidden="true">♡</div>' +
-      parentLabel('mare') +
+    return renderParentSlot(ctx, stallion, 'stallion') +
+      '<div class="breed-heart-divider" aria-hidden="true" style="position:relative;z-index:8;margin:-12px auto -12px;">♡</div>' +
       renderParentSlot(ctx, mare, 'mare') +
       renderForecast(ctx, stallion, mare);
   }
