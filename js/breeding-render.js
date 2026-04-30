@@ -1,5 +1,5 @@
 // Breeding render enhancements.
-// Temporary bridge module for foal result UI until breeding.js is fully split.
+// Bridge module for foal result UI until breeding.js is fully split.
 
 window.SKACHKI_BREEDING_RENDER = (function () {
   function setupFoalNameEditor() {
@@ -58,35 +58,6 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     });
   }
 
-  function addResultStyles() {
-    if (document.getElementById('foalResultEnhanceStyles')) return;
-
-    var style = document.createElement('style');
-    style.id = 'foalResultEnhanceStyles';
-    style.textContent = [
-      '.foal-card-enhanced{padding:16px 14px 15px 18px!important;text-align:left!important}',
-      '.foal-card-enhanced .foal-card-top{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:14px!important;place-items:initial!important;padding:4px 0 4px 4px}',
-      '.foal-medallion-wrap{position:relative;flex:0 0 auto;width:121px;height:121px;border-radius:50%;padding:4px;background:linear-gradient(135deg,#fff0a8,#d4a341,#5a340f);box-shadow:0 10px 30px rgba(0,0,0,.48),0 0 0 5px rgba(216,169,67,.08)}',
-      '.foal-medallion-wrap:before{content:"";position:absolute;inset:-7px;border-radius:50%;border:2px solid rgba(216,169,67,.38)}',
-      '.foal-medallion-wrap .foal-avatar{position:absolute;inset:4px;width:calc(100% - 8px)!important;height:calc(100% - 8px)!important;border-radius:50%!important;box-shadow:none!important;border:0!important}',
-      '.foal-medallion-wrap .horse-portrait-svg{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;border-radius:50%!important}',
-      '.foal-result-score{position:absolute;left:-11px;top:6px;z-index:7;min-width:36px;height:36px;padding:4px 7px;box-sizing:border-box;border-radius:13px;background:linear-gradient(180deg,rgba(31,39,45,.98),rgba(9,15,22,.98));border:1px solid rgba(255,218,111,.58);box-shadow:0 8px 18px rgba(0,0,0,.42);display:flex;align-items:center;justify-content:center;color:#ffe08a;font-size:22px;font-weight:950;letter-spacing:-.04em}',
-      '.foal-medallion-wrap .foal-gender-badge{right:-2px!important;top:6px!important;width:28px!important;height:28px!important;font-size:18px!important}',
-      '.foal-main-wrap{min-width:0;flex:1;text-align:left}',
-      '.foal-main-wrap .foal-name-display{margin:0!important;font-size:26px!important;line-height:1!important;text-align:left}',
-      '.foal-main-wrap .breed-stars{font-size:18px!important;width:94px!important;height:20px!important;margin-top:8px!important}',
-      '.foal-subline{margin-top:7px;color:#d3dfeb;font-size:12px;font-weight:800}',
-      '.foal-info-lines{grid-template-columns:repeat(3,1fr)!important;gap:6px!important;margin-top:11px!important}',
-      '.foal-info-lines div{display:block!important;text-align:center!important;padding:8px 7px!important}',
-      '.foal-info-lines div:first-child,.foal-info-lines div:nth-child(5){display:none!important}',
-      '.foal-stat-grid{position:relative;margin-top:22px!important;padding-top:12px!important}',
-      '.foal-stat-grid:before{content:"";position:absolute;left:14%;right:14%;top:0;height:1px;background:linear-gradient(90deg,transparent,rgba(216,169,67,.78),transparent)}',
-      '@media(max-width:420px){.foal-card-enhanced{padding:14px 12px 14px 15px!important}.foal-card-enhanced .foal-card-top{gap:11px!important;padding:3px 0 3px 3px}.foal-medallion-wrap{width:103px;height:103px}.foal-main-wrap .foal-name-display{font-size:22px!important}}'
-    ].join('');
-
-    document.head.appendChild(style);
-  }
-
   function numberValue(node) {
     var value = node ? parseInt(node.textContent, 10) : NaN;
     return Number.isFinite(value) ? value : 0;
@@ -104,7 +75,6 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     var stats = Array.prototype.slice.call(card.querySelectorAll('.foal-stat-grid .breed-stat-chip b'));
     if (!top || !avatar || !gender || !name || !stars || stats.length < 3) return;
 
-    addResultStyles();
     card.classList.add('foal-card-enhanced');
 
     var score = Math.round((numberValue(stats[0]) + numberValue(stats[1]) + numberValue(stats[2])) / 3);
