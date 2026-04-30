@@ -9,7 +9,7 @@
   --lux-muted:#9fb3c6;
   --lux-blue:#5fb8ff;
   --lux-pink:#ff72b2;
-  --tg-top-offset:72px;
+  --tg-top-offset:60px;
 }
 
 #stableScreen,#raceMenuScreen,#breedScreen,#ratingScreen{background:radial-gradient(circle at 50% -10%,rgba(45,84,119,.5),transparent 38%),linear-gradient(180deg,#061526,#030812 70%)}
@@ -96,4 +96,49 @@
   .foal-card-enhanced .foal-card-top{gap:11px!important;padding:3px 0 3px 3px}
   .foal-medallion-wrap{width:103px;height:103px}
   .foal-main-wrap .foal-name-display{font-size:22px!important}
+}
+
+/* Breeding forecast polish */
+.breed-parent-hint{display:none!important}
+.breed-parent-selectable{cursor:pointer;margin:0!important;position:relative;z-index:2}
+.breed-parent-selectable .luxury-horse-card{transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease}
+.breed-parent-selectable:active .luxury-horse-card{transform:scale(.985)}
+.breed-heart-divider{position:relative!important;z-index:8!important;margin:-16px auto -16px!important}
+.breed-forecast-polished{position:relative;margin-top:18px!important;padding:16px!important;border-radius:24px!important;background:radial-gradient(circle at 80% 0,rgba(255,211,77,.13),transparent 32%),linear-gradient(180deg,rgba(12,33,52,.95),rgba(5,16,29,.98))!important;border:1px solid rgba(216,169,67,.34)!important;box-shadow:0 18px 42px rgba(0,0,0,.32),inset 0 0 0 1px rgba(255,255,255,.03)!important}
+.breed-forecast-polished .summary-title{font-size:20px!important;line-height:1.05!important;color:#fff!important}
+.breed-forecast-polished .summary-desc{font-size:12px!important;line-height:1.32!important;color:var(--lux-muted)!important;margin-top:5px!important}
+.breed-foal-level-row{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;margin:12px 0!important;padding:10px 12px!important;border-radius:16px;background:rgba(255,255,255,.045);border:1px solid rgba(216,169,67,.2)}
+.breed-foal-level-row > span{font-size:12px!important;font-weight:950!important;color:#ffe6a2!important;text-transform:uppercase;letter-spacing:.035em;white-space:nowrap}
+.breed-foal-level-row .breed-stars{margin:0!important;width:94px!important;min-width:94px!important;height:18px!important;font-size:17px!important}
+.breed-forecast-section-title{margin:16px 0 8px!important;color:#ffe6a2!important;font-size:11px!important;font-weight:950!important;text-transform:uppercase;letter-spacing:.065em}
+.breed-trait-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important;margin-top:8px!important}
+.breed-trait-polished{position:relative;min-height:72px!important;padding:11px 10px 10px 42px!important;border-radius:18px!important;background:linear-gradient(180deg,rgba(255,255,255,.065),rgba(255,255,255,.025))!important;border:1px solid rgba(216,169,67,.2)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.025);display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:flex-start!important;gap:4px!important;overflow:hidden}
+.breed-trait-polished:before{position:absolute;left:10px;top:12px;width:24px;height:24px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(255,230,162,.95),rgba(216,169,67,.72));color:#201000;font-size:14px;font-weight:950;box-shadow:0 8px 16px rgba(0,0,0,.22)}
+.breed-trait-polished:after{content:'наследование';font-size:9px;font-weight:900;color:rgba(211,223,235,.56);text-transform:uppercase;letter-spacing:.04em;line-height:1.05}
+.breed-trait-polished:nth-child(1):before{content:'⚥'}
+.breed-trait-polished:nth-child(1):after{content:'случайно 50/50'}
+.breed-trait-polished:nth-child(2):before{content:'♞'}
+.breed-trait-polished:nth-child(2):after{content:'линия породы'}
+.breed-trait-polished:nth-child(3):before{content:'◐'}
+.breed-trait-polished:nth-child(3):after{content:'линия масти'}
+.breed-trait-polished:nth-child(4):before{content:'✦'}
+.breed-trait-polished:nth-child(4):after{content:'характер'}
+.breed-trait-polished span{display:block!important;color:var(--lux-muted)!important;font-size:10px!important;font-weight:950!important;line-height:1!important;text-transform:uppercase!important;letter-spacing:.04em!important;white-space:nowrap!important}
+.breed-trait-polished b{display:block!important;color:#fff!important;font-size:14px!important;font-weight:950!important;line-height:1.14!important;word-break:break-word!important}
+.breed-forecast-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important;margin-top:8px!important}
+.breed-forecast-stat{min-height:66px!important;border-radius:18px!important;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.025))!important;border:1px solid rgba(216,169,67,.18)!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;padding:10px!important;text-align:center!important}
+.breed-forecast-stat b{color:#ffe6a2!important;font-size:22px!important;line-height:1!important;font-weight:950!important}
+.breed-forecast-stat span{margin-top:5px!important;color:var(--lux-muted)!important;font-size:10px!important;font-weight:900!important;text-transform:uppercase!important;letter-spacing:.035em!important}
+.breed-forecast-quality-grid{grid-template-columns:repeat(1,minmax(0,1fr))!important;gap:8px!important;margin-top:8px!important}
+.breed-forecast-quality-grid .quality-badge{min-height:48px!important;padding:8px 10px!important}
+.breed-forecast-note{border-radius:14px!important;padding:9px 11px!important;background:rgba(3,12,22,.42)!important;border:1px solid rgba(255,255,255,.055)!important;color:#b8c7d6!important;font-size:11px!important;line-height:1.32!important}
+@media(max-width:420px){
+  .breed-forecast-polished{padding:14px 12px!important;border-radius:22px!important}
+  .breed-trait-grid,.breed-forecast-grid{gap:7px!important}
+  .breed-trait-polished{min-height:68px!important;padding:10px 8px 9px 38px!important}
+  .breed-trait-polished:before{left:8px;top:11px;width:23px;height:23px}
+  .breed-trait-polished b{font-size:13px!important}
+  .breed-foal-level-row{padding:9px 10px!important}
+  .breed-foal-level-row > span{font-size:10px!important}
+  .breed-foal-level-row .breed-stars{width:86px!important;min-width:86px!important;font-size:16px!important}
 }
