@@ -10,6 +10,7 @@ window.SKACHKI_BREEDING = (function () {
   function horseUi() { return window.SKACHKI_HORSE_UI || {}; }
   function horseTools() { return window.SKACHKI_HORSE || {}; }
   function breedingService() { return window.SKACHKI_BREEDING_SERVICE || {}; }
+  function breedingLogic() { return window.SKACHKI_BREEDING_LOGIC || {}; }
 
   function stateHorses() {
     var G = game();
@@ -94,18 +95,20 @@ window.SKACHKI_BREEDING = (function () {
   }
 
   function potentialForecast(stallion, mare) {
-    var base = Math.round((stallion.potential + mare.potential) / 2);
-    var min = Math.max(50, Math.min(100, base - 4));
-    var max = Math.max(50, Math.min(100, base + 5));
-    var minLabel = potentialLabel(min);
-    var maxLabel = potentialLabel(max);
-    var average = Math.round((min + max) / 2);
+    var logic = breedingLogic();
+    var forecast = logic.potentialForecast ? logic.potentialForecast(stallion, mare) : {
+      min: Math.max(50, Math.min(100, Math.round((stallion.potential + mare.potential) / 2) - 4)),
+      max: Math.max(50, Math.min(100, Math.round((stallion.potential + mare.potential) / 2) + 5)),
+      average: Math.round((stallion.potential + mare.potential) / 2)
+    };
+    var minLabel = potentialLabel(forecast.min);
+    var maxLabel = potentialLabel(forecast.max);
 
     return {
-      min: min,
-      max: max,
+      min: forecast.min,
+      max: forecast.max,
       label: minLabel === maxLabel ? minLabel : minLabel + '–' + maxLabel,
-      stars: potentialStars(average)
+      stars: potentialStars(forecast.average)
     };
   }
 
@@ -135,8 +138,8 @@ window.SKACHKI_BREEDING = (function () {
   }
 
   function qualityValue(horse, key) {
-    var qualities = horse && horse.hiddenQualities ? horse.hiddenQualities : {};
-    return Number.isFinite(qualities[key]) ? qualities[key] : 8;
+    var logic = breedingLogic();
+    return logic.qualityValue ? logic.qualityValue(horse, key) : 8;
   }
 
   function qualityRank(value) {
@@ -173,11 +176,13 @@ window.SKACHKI_BREEDING = (function () {
   }
 
   function forecastQualityRank(stallion, mare, key) {
-    var base = Math.round((qualityValue(stallion, key) + qualityValue(mare, key)) / 2);
-    var min = Math.max(1, Math.min(20, base - 2));
-    var max = Math.max(1, Math.min(20, base + 2));
-    var minRank = qualityRank(min);
-    var maxRank = qualityRank(max);
+    var logic = breedingLogic();
+    var values = logic.forecastQualityValues ? logic.forecastQualityValues(stallion, mare, key) : {
+      min: Math.max(1, Math.min(20, Math.round((qualityValue(stallion, key) + qualityValue(mare, key)) / 2) - 2)),
+      max: Math.max(1, Math.min(20, Math.round((qualityValue(stallion, key) + qualityValue(mare, key)) / 2) + 2))
+    };
+    var minRank = qualityRank(values.min);
+    var maxRank = qualityRank(values.max);
     var label = minRank === maxRank
       ? qualityRankLabel(minRank)
       : qualityRankLabel(minRank) + '–' + qualityRankLabel(maxRank);
@@ -198,6 +203,7 @@ window.SKACHKI_BREEDING = (function () {
     if (UI.qualityGrid) return UI.qualityGrid(horse, true);
     return '';
   }
+
 
   function starRating(horse) {
     var UI = horseUi();
@@ -393,14 +399,13 @@ window.SKACHKI_BREEDING = (function () {
       '</section>';
     }
 
-    function avg(key) { return Math.round((stallion[key] + mare[key]) / 2); }
-
-    var forecast = {
-      speed: avg('speed'),
-      stamina: avg('stamina'),
-      acceleration: avg('acceleration')
+    var logic = breedingLogic();
+    var forecast = logic.forecastVisibleStats ? logic.forecastVisibleStats(stallion, mare) : {
+      speed: Math.round((stallion.speed + mare.speed) / 2),
+      stamina: Math.round((stallion.stamina + mare.stamina) / 2),
+      acceleration: Math.round((stallion.acceleration + mare.acceleration) / 2)
     };
-    var expectedClass = Math.round((forecast.speed + forecast.stamina + forecast.acceleration) / 3);
+    var expectedClass = forecast.expectedClass || Math.round((forecast.speed + forecast.stamina + forecast.acceleration) / 3);
     var potential = potentialForecast(stallion, mare);
 
     return '<section class="breed-forecast-panel breed-foal-card">' +
@@ -513,33 +518,12 @@ window.SKACHKI_BREEDING = (function () {
     else button.textContent = fee ? 'Скрестить • ' + fee + ' 🪙' : 'Скрестить';
   }
 
-  function inheritQuality(stallion, mare, key) {
+  function createFoal(stallion, mare) {
     var G = game();
-    var average = Math.round((qualityValue(stallion, key) + qualityValue(mare, key)) / 2);
-    var strongest = Math.max(qualityValue(stallion, key), qualityValue(mare, key));
-    var base = Math.random() < 0.22 ? Math.round((average + strongest) / 2) : average;
-    return G.clamp(base + G.randInt(-2, 2), 1, 20);
-  }
+    var logic = breedingLogic();
+    if (!logic.createFoal) return null;
 
-  function inheritVisibleStat(stallion, mare, key) {
-    var G = game();
-    return G.clamp(Math.round((stallion[key] + mare[key]) / 2) + G.randInt(-5, 6), 10, 100);
-  }
-
-  function inheritPotential(stallion, mare) {
-    var G = game();
-    var average = Math.round((stallion.potential + mare.potential) / 2);
-    var strongest = Math.max(stallion.potential, mare.potential);
-    var bonus = 0;
-
-    if (strongest >= 95 && Math.random() < 0.24) bonus += 3;
-    if (stallion.potential >= 85 && mare.potential >= 85 && Math.random() < 0.18) bonus += 2;
-
-    return G.clamp(average + bonus + G.randInt(-4, 6), 65, 100);
-  }
-
-  function inheritParentTrait(stallion, mare, key) {
-    return Math.random() < 0.5 ? stallion[key] : mare[key];
+    return logic.createFoal(G, stallion, mare, 'Жеребёнок ' + (G.state.horses.length + 1));
   }
 
   function incrementParentUsage(parent) {
@@ -566,25 +550,8 @@ window.SKACHKI_BREEDING = (function () {
     if (!canUseAsParent(mare, 'mare')) return G.showToast('Выберите доступную кобылу');
     if (fee && G.state.coins < fee) return G.showToast('Недостаточно монет для племенной станции');
 
-    var child = G.normalizeHorse({
-      id: Date.now() + Math.random().toString(36).slice(2, 8),
-      name: 'Жеребёнок ' + (G.state.horses.length + 1),
-      breed: inheritParentTrait(stallion, mare, 'breed'),
-      coat: inheritParentTrait(stallion, mare, 'coat'),
-      speed: inheritVisibleStat(stallion, mare, 'speed'),
-      stamina: inheritVisibleStat(stallion, mare, 'stamina'),
-      acceleration: inheritVisibleStat(stallion, mare, 'acceleration'),
-      agility: inheritVisibleStat(stallion, mare, 'agility'),
-      power: inheritVisibleStat(stallion, mare, 'power'),
-      intelligence: inheritVisibleStat(stallion, mare, 'intelligence'),
-      hiddenQualities: {
-        strength: inheritQuality(stallion, mare, 'strength'),
-        agility: inheritQuality(stallion, mare, 'agility'),
-        instinct: inheritQuality(stallion, mare, 'instinct')
-      },
-      potential: inheritPotential(stallion, mare),
-      temperament: inheritParentTrait(stallion, mare, 'temperament')
-    });
+    var child = createFoal(stallion, mare);
+    if (!child) return G.showToast('Не удалось создать жеребёнка');
 
     if (fee) G.state.coins -= fee;
 
