@@ -70,6 +70,54 @@ window.SKACHKI_GAME = (function () {
     return horses.map(normalizeHorse);
   }
 
+  function randomFrom(list) {
+    return list[randInt(0, list.length - 1)];
+  }
+
+  function createStarterHorse(name) {
+    var breeds = ['Английская', 'Арабская', 'Ахалтекинская', 'Квотерхорс', 'Стандартбредная'];
+    var coats = ['Гнедая', 'Вороная', 'Рыжая', 'Серая', 'Буланая', 'Соловая'];
+    var temperaments = DATA.temperaments || ['Смелая', 'Пугливая', 'Упрямая', 'Резкая', 'Быстрая'];
+    var gender = randInt(0, 1) === 0 ? 'stallion' : 'mare';
+
+    return normalizeHorse({
+      id: Date.now() + Math.random().toString(36).slice(2, 8),
+      name: name,
+      gender: gender,
+      breed: randomFrom(breeds),
+      coat: randomFrom(coats),
+      speed: randInt(20, 30),
+      stamina: randInt(20, 30),
+      acceleration: randInt(20, 30),
+      agility: randInt(18, 30),
+      power: randInt(18, 30),
+      intelligence: randInt(18, 30),
+      hiddenQualities: {
+        strength: randInt(1, 5),
+        agility: randInt(1, 5),
+        instinct: randInt(1, 5)
+      },
+      rating: 0,
+      bestRank: 'bronze',
+      demotionShield: 0,
+      practiceStarts: 0,
+      practiceBestPlace: null,
+      potential: randInt(58, 70),
+      temperament: randomFrom(temperaments),
+      form: 'normal',
+      trainingStreakDays: 0,
+      lastTrainingDate: null,
+      careerLimit: randInt(18, 30),
+      racesRun: 0,
+      wins: 0,
+      podiums: 0,
+      earnings: 0,
+      offspringLimit: randInt(1, 3),
+      offspringCount: 0,
+      status: 'active'
+    });
+  }
+
   function createHorse(name) {
     if (HORSE.createHorse) return HORSE.createHorse(name, randInt);
     var temperaments = DATA.temperaments || ['Смелая', 'Пугливая', 'Упрямая', 'Резкая', 'Быстрая'];
@@ -137,7 +185,7 @@ window.SKACHKI_GAME = (function () {
   function newGame() {
     var names = DATA.stableNames || ['Буран', 'Молния', 'Ветерок'];
     resetTransientState();
-    state.horses = names.map(createHorse);
+    state.horses = names.map(createStarterHorse);
     state.coins = 250;
     state.stableLevel = 1;
     state.stableXp = 0;
@@ -314,6 +362,7 @@ window.SKACHKI_GAME = (function () {
     clamp: clamp,
     showToast: showToast,
     createHorse: createHorse,
+    createStarterHorse: createStarterHorse,
     normalizeHorse: normalizeHorse,
     normalizeHorses: normalizeHorses,
     horseClass: horseClass,
