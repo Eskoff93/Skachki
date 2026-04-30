@@ -47,13 +47,20 @@ window.SKACHKI_BREEDING_RENDER = (function () {
   }
 
   function scrollEditorIntoView(editor) {
+    var root = resultScrollRoot();
     if (!editor || typeof editor.scrollIntoView !== 'function') return;
-    window.setTimeout(function () {
+
+    function scrollAndLift() {
       editor.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
-    }, 120);
-    window.setTimeout(function () {
-      editor.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
-    }, 360);
+      window.setTimeout(function () {
+        if (root && typeof root.scrollBy === 'function') {
+          root.scrollBy({ top: 86, behavior: 'smooth' });
+        }
+      }, 80);
+    }
+
+    window.setTimeout(scrollAndLift, 90);
+    window.setTimeout(scrollAndLift, 330);
   }
 
   function restoreResultScroll() {
@@ -328,9 +335,7 @@ window.SKACHKI_BREEDING_RENDER = (function () {
       '<div class="breed-foal-level-row"><span>Прогноз потенциала</span>' + forecastStars(potential.stars, 'Потенциал: ' + potential.label) + '</div>' +
       '<div class="breed-forecast-note">Потенциал: ' + potential.label + ' • Ожидаемый класс: ' + Math.max(10, expectedClass - 5) + '–' + Math.min(100, expectedClass + 6) + '</div>' +
       '<div class="breed-forecast-section-title">Вероятные признаки</div>' +
-      '<div class="breed-trait-grid">' +
-        traitForecast('Пол', 'случайный') + traitForecast('Порода', traitPair(stallion.breed, mare.breed)) + traitForecast('Масть', traitPair(stallion.coat, mare.coat)) + traitForecast('Характер', traitPair(stallion.temperament, mare.temperament)) +
-      '</div>' +
+      '<div class="breed-trait-grid">' + traitForecast('Пол', 'случайный') + traitForecast('Порода', traitPair(stallion.breed, mare.breed)) + traitForecast('Масть', traitPair(stallion.coat, mare.coat)) + traitForecast('Характер', traitPair(stallion.temperament, mare.temperament)) + '</div>' +
       '<div class="breed-forecast-section-title">Прогноз показателей</div>' +
       '<div class="breed-forecast-grid">' + statRange('Класс', expectedClass) + statRange('Скорость', forecast.speed) + statRange('Выносливость', forecast.stamina) + statRange('Ускорение', forecast.acceleration) + '</div>' +
       '<div class="breed-forecast-section-title">Наследование качеств</div>' +
@@ -359,6 +364,7 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     var stars = card.querySelector('.star-rating');
     var stats = card.querySelector('.football-stats');
     var qualities = card.querySelector('.quality-grid');
+    var editor = card.querySelector('.foal-name-inline-editor');
     var oldPencil = card.querySelector('.foal-name-edit-btn');
 
     if (oldPencil) oldPencil.remove();
@@ -407,6 +413,12 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     }
     if (stats) stats.style.gridTemplateColumns = 'repeat(3, minmax(0, 1fr))';
     if (qualities) qualities.style.gridTemplateColumns = 'repeat(3, minmax(0, 1fr))';
+    if (editor) {
+      editor.style.margin = '-8px auto 4px';
+      editor.style.padding = '8px 10px';
+      editor.style.transform = 'translateY(-12px)';
+      editor.style.scrollMarginBottom = '360px';
+    }
   }
 
   function renderSharedFoalCard() {
@@ -427,7 +439,6 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     card.innerHTML = '<div class="foal-shared-card-shell" data-foal-id="' + foal.id + '">' +
       UI.renderHorseCard(foal, { extraClass: 'foal-result-shared-card', dataHorse: false, actions: false }) +
       '<div class="foal-name-inline-editor foal-name-quick-editor">' +
-        '<label class="foal-name-inline-label">Сменить имя</label>' +
         '<input class="foal-name-inline-input" type="text" maxlength="18" placeholder="Новое имя" autocomplete="off" />' +
       '</div>' +
       '</div>';
