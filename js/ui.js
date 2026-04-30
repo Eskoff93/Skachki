@@ -86,24 +86,48 @@ window.SKACHKI_HORSE_UI = (function () {
     return hash >>> 0;
   }
 
-  function potentialLabel(value) {
+  function potentialStars(value) {
     var potential = Number(value) || 0;
-    if (potential >= 95) return 'Выдающийся';
-    if (potential >= 85) return 'Высокий';
-    if (potential >= 75) return 'Хороший';
-    return 'Средний';
+    if (potential >= 90) return 5;
+    if (potential >= 80) return 4;
+    if (potential >= 70) return 3;
+    if (potential >= 60) return 2;
+    return 1;
+  }
+
+  function potentialLabel(value) {
+    var stars = potentialStars(value);
+    if (stars === 5) return 'Выдающийся';
+    if (stars === 4) return 'Высокий';
+    if (stars === 3) return 'Хороший';
+    if (stars === 2) return 'Средний';
+    return 'Базовый';
   }
 
   function potentialTier(value) {
-    var potential = Number(value) || 0;
-    if (potential >= 95) return 'elite';
-    if (potential >= 85) return 'high';
-    if (potential >= 75) return 'good';
+    var stars = potentialStars(value);
+    if (stars === 5) return 'elite';
+    if (stars === 4) return 'high';
+    if (stars === 3) return 'good';
     return 'base';
   }
 
   function potentialBadge(horse) {
     return '<span class="potential-badge potential-' + potentialTier(horse.potential) + '">Потенциал: ' + potentialLabel(horse.potential) + '</span>';
+  }
+
+  function horseClassNumber(horse) {
+    var G = game();
+    if (!G || !G.horseClass) return Math.round(((horse.speed || 0) + (horse.stamina || 0) + (horse.acceleration || 0)) / 3);
+    return Math.round(G.horseClass(horse));
+  }
+
+  function classScoreBadge(horse) {
+    var value = horseClassNumber(horse);
+    return '<div class="class-score-badge" title="Текущий класс" style="position:absolute;left:-9px;top:-8px;z-index:7;min-width:44px;height:48px;padding:5px 6px 4px;box-sizing:border-box;border-radius:15px 15px 12px 12px;background:radial-gradient(circle at 50% 0,rgba(255,236,170,.22),transparent 58%),linear-gradient(180deg,rgba(31,39,45,.98),rgba(9,15,22,.98));border:1px solid rgba(255,218,111,.58);box-shadow:0 9px 22px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.18);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#ffe08a;text-shadow:0 2px 12px rgba(216,169,67,.32);">' +
+      '<b style="font-size:22px;line-height:.92;font-weight:950;letter-spacing:-.04em;">' + value + '</b>' +
+      '<span style="font-size:7px;line-height:1;margin-top:3px;font-weight:950;letter-spacing:.08em;color:#d8c48a;">КЛАСС</span>' +
+    '</div>';
   }
 
   function horseRank(horse) {
@@ -183,8 +207,7 @@ window.SKACHKI_HORSE_UI = (function () {
       ? '<ellipse cx="58" cy="60" rx="2" ry="1.2" fill="#fff" opacity=".22"/><ellipse cx="71" cy="72" rx="1.8" ry="1" fill="#fff" opacity=".2"/><ellipse cx="85" cy="82" rx="2.2" ry="1.2" fill="#fff" opacity=".18"/><ellipse cx="45" cy="91" rx="1.8" ry="1" fill="#fff" opacity=".16"/>'
       : '';
 
-    return '<div class="breed-emblem breed-' + breed + '">' + breedShort(horse.breed) + '</div>' +
-      '<svg class="horse-portrait-svg generated-horse-avatar coat-' + coat + ' breed-' + breed + '" viewBox="0 0 120 120" aria-hidden="true">' +
+    return '<svg class="horse-portrait-svg generated-horse-avatar coat-' + coat + ' breed-' + breed + '" viewBox="0 0 120 120" aria-hidden="true">' +
         '<defs>' +
           '<radialGradient id="' + uid + 'Bg" cx="50%" cy="36%" r="74%"><stop offset="0" stop-color="#29415f"/><stop offset=".58" stop-color="#101b2b"/><stop offset="1" stop-color="#040914"/></radialGradient>' +
           '<linearGradient id="' + uid + 'Coat" x1="39" y1="24" x2="103" y2="113"><stop offset="0" stop-color="' + palette.light + '"/><stop offset=".48" stop-color="' + palette.base + '"/><stop offset="1" stop-color="' + palette.dark + '"/></linearGradient>' +
@@ -217,11 +240,9 @@ window.SKACHKI_HORSE_UI = (function () {
   }
 
   function starRating(horse) {
-    var G = game();
-    var cls = G.horseClass(horse);
-    var rounded = Math.round(cls / 10) * 10;
-    var percent = Math.max(0, Math.min(100, rounded));
-    return '<div class="star-rating" title="Уровень"><span class="star-rating-bg">★★★★★</span><span class="star-rating-fill" style="width:' + percent + '%">★★★★★</span></div>';
+    var stars = potentialStars(horse.potential);
+    var percent = stars * 20;
+    return '<div class="star-rating potential-star-rating" title="Потенциал: ' + potentialLabel(horse.potential) + '"><span class="star-rating-bg">★★★★★</span><span class="star-rating-fill" style="width:' + percent + '%">★★★★★</span></div>';
   }
 
   function averageStars() {
@@ -261,6 +282,7 @@ window.SKACHKI_HORSE_UI = (function () {
     var rank = horseRank(horse);
 
     return '<div class="horse-medallion medallion-' + rank + ' ' + sexClass + '">' +
+      classScoreBadge(horse) +
       '<div class="medallion-crest">♞</div>' +
       horsePortrait(horse) +
       '<div class="sex-badge ' + sexClass + '">' + sexSymbol + '</div>' +
@@ -294,7 +316,6 @@ window.SKACHKI_HORSE_UI = (function () {
             '<span>' + horse.coat + '</span>' +
             '<span>Карьера ' + ((horse.racesRun || 0) + (horse.practiceStarts || 0)) + '/' + horse.careerLimit + '</span>' +
             '<span>Потомство ' + horse.offspringCount + '/' + horse.offspringLimit + '</span>' +
-            potentialBadge(horse) +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -310,12 +331,14 @@ window.SKACHKI_HORSE_UI = (function () {
 
   return {
     averageStars: averageStars,
+    horseClassNumber: horseClassNumber,
     horsePortrait: horsePortrait,
     horseRank: horseRank,
     horseRankLabel: horseRankLabel,
     horseStatLine: horseStatLine,
     potentialBadge: potentialBadge,
     potentialLabel: potentialLabel,
+    potentialStars: potentialStars,
     potentialTier: potentialTier,
     qualityGrid: qualityGrid,
     renderHorseCard: renderHorseCard,
