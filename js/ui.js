@@ -124,9 +124,8 @@ window.SKACHKI_HORSE_UI = (function () {
 
   function classScoreBadge(horse) {
     var value = horseClassNumber(horse);
-    return '<div class="class-score-badge" title="Текущий класс" style="position:absolute;left:-9px;top:-8px;z-index:7;min-width:44px;height:48px;padding:5px 6px 4px;box-sizing:border-box;border-radius:15px 15px 12px 12px;background:radial-gradient(circle at 50% 0,rgba(255,236,170,.22),transparent 58%),linear-gradient(180deg,rgba(31,39,45,.98),rgba(9,15,22,.98));border:1px solid rgba(255,218,111,.58);box-shadow:0 9px 22px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.18);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#ffe08a;text-shadow:0 2px 12px rgba(216,169,67,.32);">' +
-      '<b style="font-size:22px;line-height:.92;font-weight:950;letter-spacing:-.04em;">' + value + '</b>' +
-      '<span style="font-size:7px;line-height:1;margin-top:3px;font-weight:950;letter-spacing:.08em;color:#d8c48a;">КЛАСС</span>' +
+    return '<div class="class-score-badge" title="Текущий класс" style="position:absolute;left:-7px;top:-7px;z-index:7;min-width:36px;height:36px;padding:4px 7px;box-sizing:border-box;border-radius:13px;background:radial-gradient(circle at 50% 0,rgba(255,236,170,.22),transparent 58%),linear-gradient(180deg,rgba(31,39,45,.98),rgba(9,15,22,.98));border:1px solid rgba(255,218,111,.58);box-shadow:0 8px 18px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;color:#ffe08a;text-shadow:0 2px 12px rgba(216,169,67,.32);">' +
+      '<b style="font-size:22px;line-height:1;font-weight:950;letter-spacing:-.04em;">' + value + '</b>' +
     '</div>';
   }
 
