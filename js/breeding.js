@@ -56,6 +56,25 @@ window.SKACHKI_BREEDING = (function () {
     return isExternalStud(horse) ? STUD_SERVICE_FEE : 0;
   }
 
+  function potentialLabel(value) {
+    var UI = horseUi();
+    if (UI.potentialLabel) return UI.potentialLabel(value);
+    value = Number(value) || 0;
+    if (value >= 95) return 'Выдающийся';
+    if (value >= 85) return 'Высокий';
+    if (value >= 75) return 'Хороший';
+    return 'Средний';
+  }
+
+  function potentialForecastLabel(stallion, mare) {
+    var base = Math.round((stallion.potential + mare.potential) / 2);
+    var min = Math.max(65, Math.min(100, base - 4));
+    var max = Math.max(65, Math.min(100, base + 5));
+    var minLabel = potentialLabel(min);
+    var maxLabel = potentialLabel(max);
+    return minLabel === maxLabel ? minLabel : minLabel + '–' + maxLabel;
+  }
+
   function genderLabel(horse) {
     if (isExternalStud(horse)) return 'Племенной жеребец';
     var tools = horseTools();
@@ -361,13 +380,13 @@ window.SKACHKI_BREEDING = (function () {
         traitForecast('Порода', traitPair(stallion.breed, mare.breed)) +
         traitForecast('Масть', traitPair(stallion.coat, mare.coat)) +
         traitForecast('Характер', traitPair(stallion.temperament, mare.temperament)) +
+        traitForecast('Потенциал', potentialForecastLabel(stallion, mare)) +
       '</div>' +
       '<div class="breed-forecast-section-title">Прогноз показателей</div>' +
       '<div class="breed-forecast-grid">' +
         statRange('Скорость', forecast.speed) +
         statRange('Выносливость', forecast.stamina) +
         statRange('Ускорение', forecast.acceleration) +
-        statRange('Потенциал', Math.round((stallion.potential + mare.potential) / 2)) +
       '</div>' +
       '<div class="breed-forecast-section-title">Наследование качеств</div>' +
       '<div class="quality-grid breed-forecast-quality-grid">' +
@@ -405,7 +424,7 @@ window.SKACHKI_BREEDING = (function () {
         '<div><span>Порода</span><b>' + child.breed + '</b></div>' +
         '<div><span>Масть</span><b>' + child.coat + '</b></div>' +
         '<div><span>Характер</span><b>' + child.temperament + '</b></div>' +
-        '<div><span>Потенциал</span><b>' + child.potential + '</b></div>' +
+        '<div><span>Потенциал</span><b>' + potentialLabel(child.potential) + '</b></div>' +
       '</div>' +
       '<div class="foal-stat-grid">' +
         statShort('Скорость', child.speed) +
@@ -465,6 +484,18 @@ window.SKACHKI_BREEDING = (function () {
     return G.clamp(Math.round((stallion[key] + mare[key]) / 2) + G.randInt(-5, 6), 10, 100);
   }
 
+  function inheritPotential(stallion, mare) {
+    var G = game();
+    var average = Math.round((stallion.potential + mare.potential) / 2);
+    var strongest = Math.max(stallion.potential, mare.potential);
+    var bonus = 0;
+
+    if (strongest >= 95 && Math.random() < 0.24) bonus += 3;
+    if (stallion.potential >= 85 && mare.potential >= 85 && Math.random() < 0.18) bonus += 2;
+
+    return G.clamp(average + bonus + G.randInt(-4, 6), 65, 100);
+  }
+
   function inheritParentTrait(stallion, mare, key) {
     return Math.random() < 0.5 ? stallion[key] : mare[key];
   }
@@ -503,7 +534,7 @@ window.SKACHKI_BREEDING = (function () {
         agility: inheritQuality(stallion, mare, 'agility'),
         instinct: inheritQuality(stallion, mare, 'instinct')
       },
-      potential: G.clamp(Math.round((stallion.potential + mare.potential) / 2) + G.randInt(-3, 5), 65, 100),
+      potential: inheritPotential(stallion, mare),
       temperament: inheritParentTrait(stallion, mare, 'temperament')
     });
 
