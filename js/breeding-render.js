@@ -2,6 +2,10 @@
 // Owns breeding HTML rendering and foal result presentation.
 
 window.SKACHKI_BREEDING_RENDER = (function () {
+  var activeNameInput = null;
+  var tapGuardUntil = 0;
+  var tapGuardBound = false;
+
   function game() { return window.SKACHKI_GAME; }
   function horseUi() { return window.SKACHKI_HORSE_UI || {}; }
   function horseTools() { return window.SKACHKI_HORSE || {}; }
@@ -22,13 +26,13 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     if (G && typeof G.saveGame === 'function') G.saveGame();
   }
 
-  function resultScrollRoot() {
-    return document.querySelector('#breedResultScreen .breed-result-scroll') || document.scrollingElement || document.documentElement;
-  }
-
   function resultFooter() {
     var screen = document.getElementById('breedResultScreen');
     return screen ? screen.querySelector('.footer-actions') : null;
+  }
+
+  function resultScrollRoot() {
+    return document.querySelector('#breedResultScreen .breed-result-scroll') || document.scrollingElement || document.documentElement;
   }
 
   function setNameEditingMode(isEditing) {
@@ -36,7 +40,6 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     document.body.classList.toggle('foal-name-editing', !!isEditing);
 
     if (!footer) return;
-
     footer.style.transition = 'opacity .18s ease, transform .18s ease';
     footer.style.opacity = isEditing ? '0' : '';
     footer.style.pointerEvents = isEditing ? 'none' : '';
@@ -45,11 +48,9 @@ window.SKACHKI_BREEDING_RENDER = (function () {
 
   function scrollEditorIntoView(editor) {
     if (!editor || typeof editor.scrollIntoView !== 'function') return;
-
     window.setTimeout(function () {
       editor.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
     }, 120);
-
     window.setTimeout(function () {
       editor.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
     }, 360);
@@ -57,14 +58,39 @@ window.SKACHKI_BREEDING_RENDER = (function () {
 
   function restoreResultScroll() {
     var root = resultScrollRoot();
-
     window.setTimeout(function () {
-      if (root && typeof root.scrollTo === 'function') {
-        root.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    }, 180);
+      if (root && typeof root.scrollTo === 'function') root.scrollTo({ top: 0, behavior: 'smooth' });
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 200);
+  }
+
+  function isNameEditing() {
+    return document.body.classList.contains('foal-name-editing') || Date.now() < tapGuardUntil;
+  }
+
+  function stopEvent(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
+  }
+
+  function handleNameEditOutsideTap(event) {
+    var editor;
+    if (!isNameEditing()) return;
+
+    editor = document.querySelector('#breedResultCard .foal-name-inline-editor');
+    if (editor && editor.contains(event.target)) return;
+
+    stopEvent(event);
+    if (activeNameInput && document.activeElement === activeNameInput) activeNameInput.blur();
+  }
+
+  function bindNameEditTapGuard() {
+    if (tapGuardBound) return;
+    tapGuardBound = true;
+    document.addEventListener('pointerdown', handleNameEditOutsideTap, true);
+    document.addEventListener('click', handleNameEditOutsideTap, true);
+    document.addEventListener('touchstart', handleNameEditOutsideTap, { capture: true, passive: false });
   }
 
   function potentialStars(value) {
@@ -90,8 +116,8 @@ window.SKACHKI_BREEDING_RENDER = (function () {
   }
 
   function potentialForecast(stallion, mare) {
-    var logic = breedingLogic();
-    var forecast = logic.potentialForecast ? logic.potentialForecast(stallion, mare) : {
+    var L = breedingLogic();
+    var forecast = L.potentialForecast ? L.potentialForecast(stallion, mare) : {
       min: Math.max(50, Math.min(100, Math.round((stallion.potential + mare.potential) / 2) - 4)),
       max: Math.max(50, Math.min(100, Math.round((stallion.potential + mare.potential) / 2) + 5)),
       average: Math.round((stallion.potential + mare.potential) / 2)
@@ -113,8 +139,8 @@ window.SKACHKI_BREEDING_RENDER = (function () {
   }
 
   function qualityValue(horse, key) {
-    var logic = breedingLogic();
-    return logic.qualityValue ? logic.qualityValue(horse, key) : 8;
+    var L = breedingLogic();
+    return L.qualityValue ? L.qualityValue(horse, key) : 8;
   }
 
   function qualityRank(value) {
@@ -151,15 +177,18 @@ window.SKACHKI_BREEDING_RENDER = (function () {
   }
 
   function forecastQualityRank(stallion, mare, key) {
-    var logic = breedingLogic();
-    var values = logic.forecastQualityValues ? logic.forecastQualityValues(stallion, mare, key) : {
+    var L = breedingLogic();
+    var values = L.forecastQualityValues ? L.forecastQualityValues(stallion, mare, key) : {
       min: Math.max(1, Math.min(20, Math.round((qualityValue(stallion, key) + qualityValue(mare, key)) / 2) - 2)),
       max: Math.max(1, Math.min(20, Math.round((qualityValue(stallion, key) + qualityValue(mare, key)) / 2) + 2))
     };
     var minRank = qualityRank(values.min);
     var maxRank = qualityRank(values.max);
-    var label = minRank === maxRank ? qualityRankLabel(minRank) : qualityRankLabel(minRank) + '–' + qualityRankLabel(maxRank);
-    return { rank: maxRank, label: label };
+
+    return {
+      rank: maxRank,
+      label: minRank === maxRank ? qualityRankLabel(minRank) : qualityRankLabel(minRank) + '–' + qualityRankLabel(maxRank)
+    };
   }
 
   function forecastQualityBadge(stallion, mare, key) {
@@ -277,18 +306,22 @@ window.SKACHKI_BREEDING_RENDER = (function () {
   }
 
   function renderForecast(ctx, stallion, mare) {
+    var L = breedingLogic();
+    var forecast;
+    var expectedClass;
+    var potential;
+
     if (!stallion || !mare) {
       return '<section class="breed-forecast-panel breed-foal-card"><div class="breed-forecast-head"><div><div class="summary-title">Будущий жеребёнок</div><div class="summary-desc">Выберите жеребца и кобылу, чтобы увидеть прогноз.</div></div>' + renderFoalPreview() + '</div></section>';
     }
 
-    var logic = breedingLogic();
-    var forecast = logic.forecastVisibleStats ? logic.forecastVisibleStats(stallion, mare) : {
+    forecast = L.forecastVisibleStats ? L.forecastVisibleStats(stallion, mare) : {
       speed: Math.round((stallion.speed + mare.speed) / 2),
       stamina: Math.round((stallion.stamina + mare.stamina) / 2),
       acceleration: Math.round((stallion.acceleration + mare.acceleration) / 2)
     };
-    var expectedClass = forecast.expectedClass || Math.round((forecast.speed + forecast.stamina + forecast.acceleration) / 3);
-    var potential = potentialForecast(stallion, mare);
+    expectedClass = forecast.expectedClass || Math.round((forecast.speed + forecast.stamina + forecast.acceleration) / 3);
+    potential = potentialForecast(stallion, mare);
 
     return '<section class="breed-forecast-panel breed-foal-card">' +
       '<div class="breed-forecast-head breed-foal-head"><div><div class="summary-title">Будущий жеребёнок</div><div class="summary-desc">Прогноз наследования. Точные значения откроются после рождения.</div></div>' + renderFoalPreview() + '</div>' +
@@ -329,13 +362,11 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     var oldPencil = card.querySelector('.foal-name-edit-btn');
 
     if (oldPencil) oldPencil.remove();
-
     if (shell) {
       shell.style.width = '100%';
       shell.style.maxWidth = '100%';
       shell.style.overflow = 'visible';
     }
-
     if (article) {
       article.style.margin = '0';
       article.style.width = '100%';
@@ -343,13 +374,11 @@ window.SKACHKI_BREEDING_RENDER = (function () {
       article.style.boxSizing = 'border-box';
       article.style.overflow = 'hidden';
     }
-
     if (nameWrap) {
       nameWrap.style.position = 'relative';
       nameWrap.style.minWidth = '0';
       nameWrap.style.paddingRight = '0';
     }
-
     if (name) {
       name.classList.remove('editable-foal-name');
       name.style.cursor = 'default';
@@ -358,20 +387,17 @@ window.SKACHKI_BREEDING_RENDER = (function () {
       name.style.padding = '0';
       name.style.wordBreak = 'break-word';
     }
-
     if (stars) {
       stars.style.flex = '0 0 auto';
       stars.style.maxWidth = '96px';
       stars.style.overflow = 'hidden';
     }
-
     if (meta) {
       meta.style.display = 'grid';
       meta.style.gridTemplateColumns = 'repeat(2, minmax(0, 1fr))';
       meta.style.gap = '7px';
       meta.style.maxWidth = '100%';
       meta.style.overflow = 'hidden';
-
       Array.prototype.forEach.call(meta.children, function (item) {
         item.style.minWidth = '0';
         item.style.overflow = 'hidden';
@@ -379,7 +405,6 @@ window.SKACHKI_BREEDING_RENDER = (function () {
         item.style.whiteSpace = 'nowrap';
       });
     }
-
     if (stats) stats.style.gridTemplateColumns = 'repeat(3, minmax(0, 1fr))';
     if (qualities) qualities.style.gridTemplateColumns = 'repeat(3, minmax(0, 1fr))';
   }
@@ -390,7 +415,6 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     var foal = latestFoal();
 
     if (!card || !foal || !UI.renderHorseCard) return;
-
     prepareRoot(card);
 
     if (card.dataset.foalId === String(foal.id) && card.querySelector('.foal-shared-card-shell')) {
@@ -443,7 +467,6 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     function applyName(value) {
       var cleanName = String(value || '').trim().slice(0, 18);
       if (!cleanName) return false;
-
       foal.name = cleanName;
       sourceInput.value = cleanName;
       name.textContent = cleanName;
@@ -460,6 +483,7 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     card.dataset.nameEditorBound = String(foal.id);
 
     input.addEventListener('focus', function () {
+      activeNameInput = input;
       setNameEditingMode(true);
       scrollEditorIntoView(editor);
     });
@@ -474,10 +498,12 @@ window.SKACHKI_BREEDING_RENDER = (function () {
 
     input.addEventListener('blur', function () {
       commitInput();
+      tapGuardUntil = Date.now() + 850;
       window.setTimeout(function () {
+        activeNameInput = null;
         setNameEditingMode(false);
         restoreResultScroll();
-      }, 140);
+      }, 650);
     });
   }
 
@@ -485,22 +511,16 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     if (!element) return;
     element.style.opacity = '0';
     element.style.transform = 'translateY(12px) scale(.98)';
-
     if (typeof element.animate !== 'function') {
       element.style.opacity = '1';
       element.style.transform = 'none';
       return;
     }
-
     window.setTimeout(function () {
       element.animate(keyframes || [
         { opacity: 0, transform: 'translateY(14px) scale(.98)', filter: 'blur(4px)' },
         { opacity: 1, transform: 'translateY(0) scale(1)', filter: 'blur(0)' }
-      ], {
-        duration: 520,
-        easing: 'cubic-bezier(.2,.9,.2,1)',
-        fill: 'forwards'
-      });
+      ], { duration: 520, easing: 'cubic-bezier(.2,.9,.2,1)', fill: 'forwards' });
       element.style.opacity = '1';
       element.style.transform = 'none';
     }, delay || 0);
@@ -510,7 +530,6 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     var shell = card.querySelector('.foal-shared-card-shell');
     if (!shell || shell.dataset.revealedFor === String(foal.id)) return;
     shell.dataset.revealedFor = String(foal.id);
-
     animateElement(card.querySelector('.horse-medallion'), 0, [
       { opacity: 0, transform: 'scale(.78)', filter: 'blur(5px)' },
       { opacity: 1, transform: 'scale(1.06)', filter: 'blur(0)' },
@@ -525,16 +544,14 @@ window.SKACHKI_BREEDING_RENDER = (function () {
 
   function init() {
     var card = document.getElementById('breedResultCard');
+    bindNameEditTapGuard();
     if (!card) return;
     showFoalResult();
     new MutationObserver(showFoalResult).observe(card, { childList: true, subtree: true });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
 
   return {
     renderPairStep: renderPairStep,
