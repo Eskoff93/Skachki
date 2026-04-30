@@ -122,13 +122,42 @@ window.SKACHKI_GAME = (function () {
     }
   }
 
+  function resetTransientState() {
+    state.selectedTrainingHorseId = null;
+    state.selectedPlayerHorseId = null;
+    state.selectedRaceTypeId = null;
+    state.currentRaceHorses = [];
+    state.raceResults = [];
+    state.activeRaceType = null;
+    state.raceGame = null;
+    if (state.hoofTimer) clearInterval(state.hoofTimer);
+    state.hoofTimer = null;
+  }
+
   function newGame() {
     var names = DATA.stableNames || ['Буран', 'Молния', 'Ветерок'];
+    resetTransientState();
     state.horses = names.map(createHorse);
     state.coins = 250;
     state.stableLevel = 1;
     state.stableXp = 0;
     saveGame();
+  }
+
+  function resetProgress() {
+    var confirmed = window.confirm('Удалить весь прогресс? Это действие нельзя отменить.');
+    if (!confirmed) return;
+
+    if (window.SKACHKI_RACE_ENGINE) window.SKACHKI_RACE_ENGINE.destroyRaceGame();
+    if (STORE.reset) STORE.reset();
+    else {
+      try { localStorage.removeItem('skachki_proto_toptrack_v2'); } catch (e) {}
+    }
+
+    newGame();
+    showScreen('stable');
+    if (window.SKACHKI_STABLE) window.SKACHKI_STABLE.renderStable();
+    showToast('Прогресс сброшен');
   }
 
   function loadGame() {
@@ -177,7 +206,7 @@ window.SKACHKI_GAME = (function () {
       var rating = document.createElement('div');
       rating.id = 'ratingScreen';
       rating.className = 'screen';
-      rating.innerHTML = '<div class="topbar"><div class="topbar-row"><button class="icon-btn" id="ratingBackBtn">←</button><div class="topbar-title"><h1>РЕЙТИНГ</h1><p>Лидеры сезона</p></div><div style="width:38px;flex:0 0 auto"></div></div></div><div class="content-scroll"><section class="summary-card"><div class="summary-title">Рейтинг</div><div class="summary-desc">Скоро здесь появятся лидеры сезона, друзья и награды.</div></section></div><div class="footer-actions">' + bottomNav('rating') + '</div>';
+      rating.innerHTML = '<div class="topbar"><div class="topbar-row"><button class="icon-btn" id="ratingBackBtn">←</button><div class="topbar-title"><h1>РЕЙТИНГ</h1><p>Лидеры сезона</p></div><div style="width:38px;flex:0 0 auto"></div></div></div><div class="content-scroll"><section class="summary-card"><div class="summary-title">Рейтинг</div><div class="summary-desc">Скоро здесь появятся лидеры сезона, друзья и награды.</div></section><section class="summary-card rating-settings-card"><div class="summary-title">Настройки</div><div class="summary-desc">Сброс нужен для тестов и начала новой игры.</div><button class="btn reset-progress-btn" id="resetProgressBtn" type="button">Сбросить прогресс</button></section></div><div class="footer-actions">' + bottomNav('rating') + '</div>';
       document.body.insertBefore(rating, document.body.firstChild);
     }
   }
@@ -231,6 +260,14 @@ window.SKACHKI_GAME = (function () {
   }
 
   function bindCommonEvents() {
+    document.addEventListener('click', function (event) {
+      var resetButton = event.target.closest('#resetProgressBtn');
+      if (!resetButton) return;
+      event.preventDefault();
+      event.stopPropagation();
+      resetProgress();
+    });
+
     document.addEventListener('click', function (event) {
       var tile = event.target.closest('[data-menu]');
       if (!tile) return;
@@ -286,6 +323,7 @@ window.SKACHKI_GAME = (function () {
     saveGame: saveGame,
     loadGame: loadGame,
     newGame: newGame,
+    resetProgress: resetProgress,
     averageClass: averageClass,
     showScreen: showScreen,
     openRaceMenu: openRaceMenu,
