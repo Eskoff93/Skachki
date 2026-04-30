@@ -13,6 +13,10 @@ window.SKACHKI_TRAINING = (function () {
     return 'Серия тренировок: ' + (horse.trainingStreakDays || 0) + ' дн.';
   }
 
+  function trainingLimit(horse) {
+    return Math.max(50, Math.min(100, Math.round(Number(horse.potential) || 100)));
+  }
+
   function openTraining(id) {
     var G = game();
     var horse = G.state.horses.find(function (h) { return String(h.id) === String(id); });
@@ -22,6 +26,7 @@ window.SKACHKI_TRAINING = (function () {
 
     var hero = G.byId('trainingHero');
     var options = G.byId('trainingScreenOptions');
+    var limit = trainingLimit(horse);
 
     if (hero) {
       hero.innerHTML =
@@ -38,15 +43,17 @@ window.SKACHKI_TRAINING = (function () {
     if (options) {
       var trainingTypes = G.DATA.trainingTypes || [];
       options.innerHTML = trainingTypes.map(function (type) {
-        var current = horse[type.key];
-        var disabled = G.state.coins < type.cost || current >= 100;
+        var current = Number(horse[type.key]) || 0;
+        var cappedCurrent = Math.min(current, limit);
+        var disabled = G.state.coins < type.cost || current >= limit;
         return '<div class="training-option-card">' +
           '<div class="option-top">' +
             '<div><div class="option-name">' + type.label + '</div><div class="option-desc">' + type.desc + '</div></div>' +
             '<div class="option-price">🪙 ' + type.cost + '</div>' +
           '</div>' +
-          G.statBlock('Текущее значение', current, 'linear-gradient(90deg,#ffd44d,#eeb600)') +
-          '<button class="btn ' + (disabled ? 'btn-dark' : 'btn-blue') + '" data-train-key="' + type.key + '" style="width:100%;margin-top:12px" ' + (disabled ? 'disabled' : '') + '>' + (disabled ? 'Недоступно' : 'Прокачать +2–6') + '</button>' +
+          G.statBlock('Текущее значение', cappedCurrent, 'linear-gradient(90deg,#ffd44d,#eeb600)') +
+          '<div class="training-limit-note">Предел развития: ' + limit + '</div>' +
+          '<button class="btn ' + (disabled ? 'btn-dark' : 'btn-blue') + '" data-train-key="' + type.key + '" style="width:100%;margin-top:12px" ' + (disabled ? 'disabled' : '') + '>' + (disabled ? 'Предел достигнут' : 'Прокачать +2–6') + '</button>' +
         '</div>';
       }).join('');
     }
@@ -76,9 +83,12 @@ window.SKACHKI_TRAINING = (function () {
 
     if (G.state.coins < type.cost) return G.showToast('Недостаточно монет');
 
-    var gain = G.randInt(2, 6);
-    horse[key] = Math.min(100, horse[key] + gain);
-    horse.potential = Math.max(50, horse.potential - G.randInt(1, 2));
+    var limit = trainingLimit(horse);
+    var current = Number(horse[key]) || 0;
+    if (current >= limit) return G.showToast('Показатель уже достиг потенциала');
+
+    var gain = Math.min(G.randInt(2, 6), limit - current);
+    horse[key] = Math.min(limit, current + gain);
     G.state.coins -= type.cost;
 
     var countedToday = updateTrainingForm(horse);
