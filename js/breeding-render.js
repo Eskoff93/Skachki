@@ -63,6 +63,97 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     return Number.isFinite(value) ? value : 0;
   }
 
+  function applyFoalSafetyLayout(card) {
+    if (!card) return;
+
+    var info = card.querySelector('.foal-info-lines');
+    var stars = card.querySelector('.star-rating');
+    var gender = card.querySelector('.foal-gender-badge');
+    var name = card.querySelector('.foal-name-display');
+    var main = card.querySelector('.foal-main-wrap');
+    var top = card.querySelector('.foal-card-top');
+
+    card.style.maxWidth = '100%';
+    card.style.overflow = 'hidden';
+    card.style.boxSizing = 'border-box';
+
+    if (top) {
+      top.style.minWidth = '0';
+      top.style.overflow = 'hidden';
+    }
+
+    if (main) {
+      main.style.minWidth = '0';
+      main.style.overflow = 'hidden';
+    }
+
+    if (name) {
+      name.style.maxWidth = '100%';
+      name.style.overflow = 'hidden';
+      name.style.textOverflow = 'ellipsis';
+      name.style.whiteSpace = 'normal';
+      name.style.wordBreak = 'break-word';
+    }
+
+    if (gender) {
+      gender.style.position = 'absolute';
+      gender.style.right = '6px';
+      gender.style.top = '6px';
+      gender.style.width = '28px';
+      gender.style.height = '28px';
+      gender.style.display = 'flex';
+      gender.style.alignItems = 'center';
+      gender.style.justifyContent = 'center';
+      gender.style.lineHeight = '1';
+      gender.style.padding = '0';
+      gender.style.transform = 'none';
+    }
+
+    if (stars) {
+      stars.style.maxWidth = '96px';
+      stars.style.width = '96px';
+      stars.style.overflow = 'hidden';
+      stars.style.flex = '0 0 auto';
+    }
+
+    if (info) {
+      info.style.display = 'grid';
+      info.style.gridTemplateColumns = 'repeat(3, minmax(0, 1fr))';
+      info.style.gap = '8px';
+      info.style.maxWidth = '100%';
+      info.style.overflow = 'hidden';
+
+      Array.prototype.forEach.call(info.children, function (item) {
+        var label = item.querySelector('span');
+        var value = item.querySelector('b');
+        var labelText = label ? label.textContent.trim() : '';
+
+        if (labelText === 'Пол' || labelText === 'Потенциал') {
+          item.style.display = 'none';
+          return;
+        }
+
+        item.style.minWidth = '0';
+        item.style.overflow = 'hidden';
+        item.style.boxSizing = 'border-box';
+
+        if (label) {
+          label.style.display = 'inline';
+          label.style.whiteSpace = 'nowrap';
+        }
+
+        if (value) {
+          value.style.display = 'inline-block';
+          value.style.maxWidth = '100%';
+          value.style.overflow = 'hidden';
+          value.style.textOverflow = 'ellipsis';
+          value.style.whiteSpace = 'nowrap';
+          value.style.verticalAlign = 'bottom';
+        }
+      });
+    }
+  }
+
   function enhanceFoalResult() {
     var card = document.getElementById('breedResultCard');
     if (!card) return;
@@ -71,7 +162,10 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     // while breeding.js replaces the inner HTML with a fresh raw result.
     // Therefore the real idempotency check is the presence of the medallion,
     // not the class on the reused card.
-    if (card.querySelector('.foal-medallion-wrap')) return;
+    if (card.querySelector('.foal-medallion-wrap')) {
+      applyFoalSafetyLayout(card);
+      return;
+    }
 
     var top = card.querySelector('.foal-card-top');
     var avatar = card.querySelector('.foal-avatar');
@@ -79,7 +173,10 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     var name = card.querySelector('.foal-name-display');
     var stars = card.querySelector('.star-rating');
     var stats = Array.prototype.slice.call(card.querySelectorAll('.foal-stat-grid .breed-stat-chip b'));
-    if (!top || !avatar || !gender || !name || !stars || stats.length < 3) return;
+    if (!top || !avatar || !gender || !name || !stars || stats.length < 3) {
+      applyFoalSafetyLayout(card);
+      return;
+    }
 
     card.classList.add('foal-card-enhanced');
 
@@ -87,6 +184,8 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     var medallion = document.createElement('div');
     var scoreBadge = document.createElement('div');
     var main = document.createElement('div');
+    var header = document.createElement('div');
+    var titleWrap = document.createElement('div');
     var subline = document.createElement('div');
     var editor = name.nextElementSibling && name.nextElementSibling.classList.contains('foal-name-inline-editor')
       ? name.nextElementSibling
@@ -97,21 +196,34 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     scoreBadge.textContent = score;
 
     main.className = 'foal-main-wrap';
+    header.className = 'foal-header-row';
+    titleWrap.className = 'foal-title-wrap';
     subline.className = 'foal-subline';
     subline.textContent = 'Новорождённый потомок';
 
     medallion.appendChild(scoreBadge);
     medallion.appendChild(avatar);
-    medallion.appendChild(gender);
 
-    main.appendChild(name);
+    titleWrap.appendChild(name);
+    titleWrap.appendChild(gender);
+    header.appendChild(titleWrap);
+    header.appendChild(stars);
+
+    main.appendChild(header);
     if (editor) main.appendChild(editor);
-    main.appendChild(stars);
     main.appendChild(subline);
 
     top.textContent = '';
     top.appendChild(medallion);
     top.appendChild(main);
+
+    applyFoalSafetyLayout(card);
+  }
+
+  function runEnhanceSoon() {
+    enhanceFoalResult();
+    setTimeout(enhanceFoalResult, 0);
+    setTimeout(enhanceFoalResult, 80);
   }
 
   function init() {
@@ -119,11 +231,11 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     if (!card) return;
 
     setupFoalNameEditor();
-    enhanceFoalResult();
+    runEnhanceSoon();
 
     new MutationObserver(function () {
       setupFoalNameEditor();
-      enhanceFoalResult();
+      runEnhanceSoon();
     }).observe(card, { childList: true, subtree: true });
   }
 
