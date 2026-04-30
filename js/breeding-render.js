@@ -213,7 +213,7 @@ window.SKACHKI_BREEDING_RENDER = (function () {
   }
 
   function traitForecast(label, value) {
-    return '<div class="breed-trait-chip"><span>' + label + '</span><b>' + value + '</b></div>';
+    return '<div class="breed-trait-chip breed-trait-polished"><span>' + label + '</span><b>' + value + '</b></div>';
   }
 
   function traitPair(valueA, valueB) {
@@ -221,9 +221,9 @@ window.SKACHKI_BREEDING_RENDER = (function () {
   }
 
   function renderFoalPreview() {
-    return '<div class="breed-foal-preview-avatar" style="position:relative;width:86px;height:86px;flex:0 0 86px;border-radius:26px;overflow:hidden;background:linear-gradient(180deg,rgba(16,36,56,.98),rgba(5,14,26,.98));box-shadow:0 0 0 1px rgba(216,169,67,.28) inset,0 12px 28px rgba(0,0,0,.28);">' +
-      '<div class="breed-foal-glow" style="position:absolute;inset:8px;border-radius:50%;background:radial-gradient(circle,rgba(255,211,77,.2),rgba(95,184,255,.08) 55%,transparent 72%);pointer-events:none;"></div>' +
-      '<svg class="breed-foal-preview-svg" style="position:relative;display:block;width:100%;height:100%;border-radius:26px;" viewBox="0 0 120 120" aria-hidden="true">' +
+    return '<div class="breed-foal-preview-avatar" style="position:relative;width:78px;height:78px;flex:0 0 78px;border-radius:24px;overflow:hidden;background:linear-gradient(180deg,rgba(16,36,56,.98),rgba(5,14,26,.98));box-shadow:0 0 0 1px rgba(216,169,67,.28) inset,0 12px 28px rgba(0,0,0,.28);">' +
+      '<div class="breed-foal-glow" style="position:absolute;inset:8px;border-radius:50%;background:radial-gradient(circle,rgba(255,211,77,.22),rgba(95,184,255,.08) 55%,transparent 72%);pointer-events:none;"></div>' +
+      '<svg class="breed-foal-preview-svg" style="position:relative;display:block;width:100%;height:100%;border-radius:24px;" viewBox="0 0 120 120" aria-hidden="true">' +
         '<defs><radialGradient id="breedFoalPreviewBg" cx="50%" cy="36%" r="74%"><stop offset="0" stop-color="#2a4363"/><stop offset=".62" stop-color="#101b2b"/><stop offset="1" stop-color="#040914"/></radialGradient></defs>' +
         '<circle cx="60" cy="60" r="57" fill="url(#breedFoalPreviewBg)"/>' +
         '<path d="M43 96C40 78 43 64 53 53C59 47 66 44 75 44C73 35 76 28 82 22C88 30 90 38 87 46C98 51 105 61 108 73C112 88 104 100 91 101C81 102 74 94 67 84C60 74 53 76 50 88C49 92 49 95 50 100Z" fill="#d8a943" opacity=".9"/>' +
@@ -240,19 +240,10 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     return parent.name + ' ' + (parent.offspringCount + 1) + '/' + parent.offspringLimit;
   }
 
-  function renderPairIntro(ctx, stallion, mare) {
-    var fee = ctx.totalFee(stallion, mare);
-    var desc = 'Выберите жеребца и кобылу. Потомок унаследует породу, масть, характер, показатели и качества родителей.';
-
-    if (ctx.isExternalStud(stallion) && ctx.isExternalMare(mare)) {
-      desc = 'Своих доступных родителей нет. Можно использовать племенного жеребца и племенную кобылу за ' + fee + ' 🪙.';
-    } else if (ctx.isExternalStud(stallion)) {
-      desc = 'Своих доступных жеребцов нет. Можно нанять племенного жеребца за ' + ctx.parentFee(stallion) + ' 🪙.';
-    } else if (ctx.isExternalMare(mare)) {
-      desc = 'Своих доступных кобыл нет. Можно нанять племенную кобылу за ' + ctx.parentFee(mare) + ' 🪙.';
-    }
-
-    return '<section class="breed-intro-card"><div class="summary-title">Разведение</div><div class="summary-desc">' + desc + '</div></section>';
+  function parentLabel(gender) {
+    return gender === 'stallion'
+      ? '<div class="section-label breed-parent-hint"><b>Жеребец</b><span>Нажмите на карточку для выбора</span></div>'
+      : '<div class="section-label breed-parent-hint"><b>Кобыла</b><span>Нажмите на карточку для выбора</span></div>';
   }
 
   function renderParentSlot(ctx, horse, gender) {
@@ -262,22 +253,22 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     var accent = gender === 'stallion' ? 'breed-parent-stallion' : 'breed-parent-mare';
 
     if (!horse || !UI.renderHorseCard) {
-      return '<button class="breed-parent-empty ' + accent + '" data-open-parent-picker="' + gender + '"><span class="breed-empty-symbol">' + symbol + '</span><b>' + buttonText + '</b></button>';
+      return '<button class="breed-parent-empty ' + accent + '" data-open-parent-picker="' + gender + '">' +
+        '<span class="breed-empty-symbol">' + symbol + '</span><b>' + buttonText + '</b>' +
+      '</button>';
     }
 
-    return '<div class="breed-parent-slot ' + accent + '">' +
+    return '<div class="breed-parent-slot breed-parent-selectable ' + accent + '" data-open-parent-picker="' + gender + '" role="button" tabindex="0" aria-label="' + buttonText + '">' +
       UI.renderHorseCard(horse, { extraClass: 'breed-parent-card' }) +
       ctx.serviceNote(horse) +
-      '<button class="breed-change-parent-btn" type="button" data-open-parent-picker="' + gender + '">' + buttonText + '</button>' +
     '</div>';
   }
 
   function renderPairStep(ctx, stallion, mare) {
-    return renderPairIntro(ctx, stallion, mare) +
-      '<div class="section-label">Жеребец</div>' +
+    return parentLabel('stallion') +
       renderParentSlot(ctx, stallion, 'stallion') +
       '<div class="breed-heart-divider" aria-hidden="true">♡</div>' +
-      '<div class="section-label">Кобыла</div>' +
+      parentLabel('mare') +
       renderParentSlot(ctx, mare, 'mare') +
       renderForecast(ctx, stallion, mare);
   }
@@ -293,11 +284,11 @@ window.SKACHKI_BREEDING_RENDER = (function () {
       desc = 'Своих доступных кобыл нет. Доступна племенная кобыла за ' + ctx.parentFee(list[0]) + ' 🪙.';
     } else {
       desc = gender === 'stallion'
-        ? 'Выберите жеребца для пары. Карточки показывают те же параметры, что и в Конюшне.'
-        : 'Выберите кобылу для пары. Карточки показывают те же параметры, что и в Конюшне.';
+        ? 'Выберите жеребца для пары.'
+        : 'Выберите кобылу для пары.';
     }
 
-    return '<section class="breed-intro-card"><div class="summary-title">' + title + '</div><div class="summary-desc">' + desc + '</div></section>' +
+    return '<section class="breed-intro-card breed-picker-title"><div class="summary-title">' + title + '</div><div class="summary-desc">' + desc + '</div></section>' +
       '<div class="section-label">Доступные варианты</div>' +
       list.map(function (horse) {
         var selected = String(horse.id) === String(selectedId);
@@ -319,7 +310,12 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     var potential;
 
     if (!stallion || !mare) {
-      return '<section class="breed-forecast-panel breed-foal-card"><div class="breed-forecast-head"><div><div class="summary-title">Будущий жеребёнок</div><div class="summary-desc">Выберите жеребца и кобылу, чтобы увидеть прогноз.</div></div>' + renderFoalPreview() + '</div></section>';
+      return '<section class="breed-forecast-panel breed-foal-card breed-forecast-polished">' +
+        '<div class="breed-forecast-head breed-foal-head" style="align-items:center;gap:14px;">' +
+          '<div><div class="summary-title">Будущий жеребёнок</div><div class="summary-desc">Выберите пару, чтобы увидеть прогноз.</div></div>' +
+          renderFoalPreview() +
+        '</div>' +
+      '</section>';
     }
 
     forecast = L.forecastVisibleStats ? L.forecastVisibleStats(stallion, mare) : {
@@ -330,17 +326,37 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     expectedClass = forecast.expectedClass || Math.round((forecast.speed + forecast.stamina + forecast.acceleration) / 3);
     potential = potentialForecast(stallion, mare);
 
-    return '<section class="breed-forecast-panel breed-foal-card">' +
-      '<div class="breed-forecast-head breed-foal-head"><div><div class="summary-title">Будущий жеребёнок</div><div class="summary-desc">Прогноз наследования. Точные значения откроются после рождения.</div></div>' + renderFoalPreview() + '</div>' +
-      '<div class="breed-foal-level-row"><span>Прогноз потенциала</span>' + forecastStars(potential.stars, 'Потенциал: ' + potential.label) + '</div>' +
-      '<div class="breed-forecast-note">Потенциал: ' + potential.label + ' • Ожидаемый класс: ' + Math.max(10, expectedClass - 5) + '–' + Math.min(100, expectedClass + 6) + '</div>' +
+    return '<section class="breed-forecast-panel breed-foal-card breed-forecast-polished">' +
+      '<div class="breed-forecast-head breed-foal-head" style="align-items:center;gap:14px;margin-bottom:14px;">' +
+        '<div><div class="summary-title">Будущий жеребёнок</div><div class="summary-desc">Прогноз наследования. Точные значения откроются после рождения.</div></div>' +
+        renderFoalPreview() +
+      '</div>' +
+      '<div class="breed-foal-level-row" style="display:flex;align-items:center;justify-content:space-between;gap:14px;margin:12px 0 10px;">' +
+        '<span style="font-weight:900;color:#ffe6a2;">Прогноз потенциала</span>' +
+        forecastStars(potential.stars, 'Потенциал: ' + potential.label) +
+      '</div>' +
+      '<div class="breed-forecast-note" style="margin-bottom:14px;">Потенциал: ' + potential.label + ' • Ожидаемый класс: ' + Math.max(10, expectedClass - 5) + '–' + Math.min(100, expectedClass + 6) + '</div>' +
       '<div class="breed-forecast-section-title">Вероятные признаки</div>' +
-      '<div class="breed-trait-grid">' + traitForecast('Пол', 'случайный') + traitForecast('Порода', traitPair(stallion.breed, mare.breed)) + traitForecast('Масть', traitPair(stallion.coat, mare.coat)) + traitForecast('Характер', traitPair(stallion.temperament, mare.temperament)) + '</div>' +
-      '<div class="breed-forecast-section-title">Прогноз показателей</div>' +
-      '<div class="breed-forecast-grid">' + statRange('Класс', expectedClass) + statRange('Скорость', forecast.speed) + statRange('Выносливость', forecast.stamina) + statRange('Ускорение', forecast.acceleration) + '</div>' +
-      '<div class="breed-forecast-section-title">Наследование качеств</div>' +
-      '<div class="quality-grid breed-forecast-quality-grid">' + forecastQualityBadge(stallion, mare, 'strength') + forecastQualityBadge(stallion, mare, 'agility') + forecastQualityBadge(stallion, mare, 'instinct') + '</div>' +
-      '<div class="breed-forecast-note">После разведения: ' + parentAfterText(ctx, stallion) + ' • ' + parentAfterText(ctx, mare) + '</div>' +
+      '<div class="breed-trait-grid" style="gap:8px;margin-top:8px;">' +
+        traitForecast('Пол', 'случайный') +
+        traitForecast('Порода', traitPair(stallion.breed, mare.breed)) +
+        traitForecast('Масть', traitPair(stallion.coat, mare.coat)) +
+        traitForecast('Характер', traitPair(stallion.temperament, mare.temperament)) +
+      '</div>' +
+      '<div class="breed-forecast-section-title" style="margin-top:16px;">Прогноз показателей</div>' +
+      '<div class="breed-forecast-grid" style="gap:8px;margin-top:8px;">' +
+        statRange('Класс', expectedClass) +
+        statRange('Скорость', forecast.speed) +
+        statRange('Выносливость', forecast.stamina) +
+        statRange('Ускорение', forecast.acceleration) +
+      '</div>' +
+      '<div class="breed-forecast-section-title" style="margin-top:16px;">Наследование качеств</div>' +
+      '<div class="quality-grid breed-forecast-quality-grid" style="gap:8px;margin-top:8px;">' +
+        forecastQualityBadge(stallion, mare, 'strength') +
+        forecastQualityBadge(stallion, mare, 'agility') +
+        forecastQualityBadge(stallion, mare, 'instinct') +
+      '</div>' +
+      '<div class="breed-forecast-note" style="margin-top:14px;">После разведения: ' + parentAfterText(ctx, stallion) + ' • ' + parentAfterText(ctx, mare) + '</div>' +
     '</section>';
   }
 
