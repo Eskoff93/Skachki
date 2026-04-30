@@ -66,21 +66,51 @@ window.SKACHKI_RACE_MENU = (function () {
     updatePrimaryButton();
   }
 
+  function raceKindLabel(race) {
+    if (race.id === 'rookie') return 'Практика';
+    if (race.id === 'standard') return 'Обычный';
+    if (race.id === 'strong') return 'Испытание';
+    if (race.id === 'elite') return 'Элита';
+    return 'Заезд';
+  }
+
+  function raceRiskLabel(race) {
+    if (race.fee <= 0) return 'Без риска';
+    if (race.classOffset <= 0) return 'Умеренный';
+    if (race.classOffset <= 10) return 'Высокий';
+    return 'Максимальный';
+  }
+
+  function classHint(race) {
+    if (race.classOffset <= -10) return '45–60';
+    if (race.classOffset <= 0) return '55–70';
+    if (race.classOffset <= 10) return '65–80';
+    return '75+';
+  }
+
+  function raceAdvice(race) {
+    if (race.id === 'rookie') return 'Лучше для теста формы и поведения.';
+    if (race.id === 'standard') return 'Хороший основной заезд для стабильного дохода.';
+    if (race.id === 'strong') return 'Нужна сильная лошадь и хорошая форма.';
+    if (race.id === 'elite') return 'Высокий риск: выпускать только лучших.';
+    return race.desc || '';
+  }
+
   function renderRaceStep(raceTypes, horses) {
     var G = game();
-    return '<section class="selection-summary race-menu-summary">' +
+    return '<section class="selection-summary race-menu-summary" style="padding:12px 14px;margin-bottom:10px;">' +
       '<div>' +
-        '<div class="summary-title">Гонки</div>' +
-        '<div class="summary-desc">Сначала выберите тип заезда. Лошадь выберем следующим шагом.</div>' +
+        '<div class="summary-title" style="font-size:20px;line-height:1.05;">Гонки</div>' +
+        '<div class="summary-desc" style="font-size:12px;line-height:1.25;margin-top:4px;">Выберите формат. Лошадь выберем следующим шагом.</div>' +
       '</div>' +
       '<div class="selection-count"><span>🪙</span><small>' + G.state.coins + '</small></div>' +
       '<div class="race-menu-mini-stats">' +
         '<div class="chip-box"><div class="value">' + raceTypes.length + '</div><div class="label">Заездов</div></div>' +
         '<div class="chip-box"><div class="value">' + horses.length + '</div><div class="label">Лошадей</div></div>' +
-        '<div class="chip-box"><div class="value">' + (G.state.selectedRaceTypeId ? '✓' : '—') + '</div><div class="label">Заезд</div></div>' +
+        '<div class="chip-box"><div class="value">20с</div><div class="label">Цель</div></div>' +
       '</div>' +
     '</section>' +
-    '<div class="section-label">Выберите заезд</div>' +
+    '<div class="section-label" style="margin-top:8px;">Выберите заезд</div>' +
     raceTypes.map(renderRaceCard).join('');
   }
 
@@ -90,7 +120,7 @@ window.SKACHKI_RACE_MENU = (function () {
 
     return renderPinnedRace(raceType) +
       '<div class="section-label">Выберите лошадь</div>' +
-      horses.map(renderPlayerHorseCard).join('');
+      (horses.length ? horses.map(renderPlayerHorseCard).join('') : '<section class="summary-card"><div class="summary-title">Нет доступных лошадей</div><div class="summary-desc">В Конюшне нет активных лошадей для гонки.</div></section>');
   }
 
   function renderPinnedRace(race) {
@@ -98,14 +128,17 @@ window.SKACHKI_RACE_MENU = (function () {
       '<div class="race-top">' +
         '<div>' +
           '<div class="race-title">' + race.name + '</div>' +
-          '<div class="race-desc">Текущий заезд. Можно вернуться и поменять.</div>' +
+          '<div class="race-desc">' + raceAdvice(race) + '</div>' +
         '</div>' +
         '<button class="breed-change-btn" type="button" data-race-action="change-race">Изменить</button>' +
       '</div>' +
       '<div class="race-grid">' +
+        '<div class="race-box"><b>' + raceKindLabel(race) + '</b><span>Формат</span></div>' +
         '<div class="race-box"><b>' + raceFeeLabel(race) + '</b><span>Взнос</span></div>' +
-        '<div class="race-box"><b>' + race.distance + ' м</b><span>Дистанция</span></div>' +
         '<div class="race-box"><b>' + raceRewardLabel(race) + '</b><span>Приз</span></div>' +
+        '<div class="race-box"><b>' + race.distance + ' м</b><span>Дистанция</span></div>' +
+        '<div class="race-box"><b>' + race.opponents + '</b><span>Соперники</span></div>' +
+        '<div class="race-box"><b>' + classHint(race) + '</b><span>Класс</span></div>' +
       '</div>' +
     '</section>';
   }
@@ -121,11 +154,17 @@ window.SKACHKI_RACE_MENU = (function () {
   function renderRaceCard(race) {
     var G = game();
     var selected = String(race.id) === String(G.state.selectedRaceTypeId);
+    var canPay = G.state.coins >= race.fee;
+
     return '<button class="race-card premium-race-card ' + (selected ? 'selected' : '') + '" data-race="' + race.id + '" type="button">' +
       '<div class="race-top">' +
         '<div>' +
+          '<div class="select-badges race-badges" style="margin:0 0 8px;">' +
+            '<span class="mini-tag">' + raceKindLabel(race) + '</span>' +
+            '<span class="mini-tag">Риск: ' + raceRiskLabel(race) + '</span>' +
+          '</div>' +
           '<div class="race-title">' + race.name + '</div>' +
-          '<div class="race-desc">' + race.desc + '</div>' +
+          '<div class="race-desc">' + raceAdvice(race) + '</div>' +
         '</div>' +
         '<div class="race-fee">' + raceFeeLabel(race) + '</div>' +
       '</div>' +
@@ -133,9 +172,9 @@ window.SKACHKI_RACE_MENU = (function () {
         '<div class="race-box"><b>' + race.level + '</b><span>Сложность</span></div>' +
         '<div class="race-box"><b>' + race.distance + ' м</b><span>Дистанция</span></div>' +
         '<div class="race-box"><b>' + raceRewardLabel(race) + '</b><span>Приз</span></div>' +
-      '</div>' +
-      '<div class="select-badges race-badges">' +
-        '<span class="mini-tag">Соперников: ' + race.opponents + '</span>' +
+        '<div class="race-box"><b>' + race.opponents + '</b><span>Соперники</span></div>' +
+        '<div class="race-box"><b>' + classHint(race) + '</b><span>Класс</span></div>' +
+        '<div class="race-box"><b>' + (canPay ? 'Доступно' : 'Мало 🪙') + '</b><span>Статус</span></div>' +
       '</div>' +
     '</button>';
   }
@@ -180,12 +219,19 @@ window.SKACHKI_RACE_MENU = (function () {
       return;
     }
 
-    button.disabled = !player;
     if (!player) {
+      button.disabled = true;
       button.textContent = 'Выберите лошадь';
       return;
     }
 
+    if (raceType && G.state.coins < raceType.fee) {
+      button.disabled = true;
+      button.textContent = 'Нужно ' + raceType.fee + ' 🪙';
+      return;
+    }
+
+    button.disabled = false;
     button.textContent = raceType && raceType.fee > 0
       ? 'Начать заезд • взнос ' + raceType.fee + ' 🪙'
       : 'Начать заезд • бесплатно';
