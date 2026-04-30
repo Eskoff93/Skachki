@@ -345,3 +345,74 @@ window.SKACHKI_HORSE_UI = (function () {
     starRating: starRating
   };
 })();
+
+(function () {
+  function potentialStarsFromForecastText(text) {
+    var value = String(text || '');
+    if (value.indexOf('Выдающийся') !== -1) return 5;
+    if (value.indexOf('Высокий') !== -1) return 4;
+    if (value.indexOf('Хороший') !== -1) return 3;
+    if (value.indexOf('Средний') !== -1) return 2;
+    return 1;
+  }
+
+  function findPotentialChip(panel) {
+    var chips = Array.prototype.slice.call(panel.querySelectorAll('.breed-trait-chip'));
+    return chips.find(function (chip) {
+      var label = chip.querySelector('span');
+      return label && label.textContent.trim() === 'Потенциал';
+    });
+  }
+
+  function syncBreedPotentialForecast() {
+    var panels = Array.prototype.slice.call(document.querySelectorAll('#breedScroll .breed-foal-card'));
+    panels.forEach(function (panel) {
+      var row = panel.querySelector('.breed-foal-level-row');
+      var chip = findPotentialChip(panel);
+      var value = chip && chip.querySelector('b') ? chip.querySelector('b').textContent.trim() : '';
+      var label = row ? row.querySelector('span') : null;
+      var rating = row ? row.querySelector('.star-rating') : null;
+      var fill = rating ? rating.querySelector('.star-rating-fill') : null;
+      var stars = potentialStarsFromForecastText(value);
+
+      if (!row || !value || !rating || !fill) return;
+
+      if (label) label.textContent = 'Прогноз потенциала';
+      rating.title = 'Потенциал: ' + value;
+      fill.style.width = (stars * 20) + '%';
+
+      if (chip) {
+        chip.setAttribute('aria-hidden', 'true');
+        chip.style.display = 'none';
+      }
+    });
+  }
+
+  function installBreedPotentialForecastSync() {
+    var scroll = document.getElementById('breedScroll');
+    var scheduled = false;
+
+    function schedule() {
+      if (scheduled) return;
+      scheduled = true;
+      window.requestAnimationFrame(function () {
+        scheduled = false;
+        syncBreedPotentialForecast();
+      });
+    }
+
+    if (!scroll || !window.MutationObserver) {
+      syncBreedPotentialForecast();
+      return;
+    }
+
+    syncBreedPotentialForecast();
+    new MutationObserver(schedule).observe(scroll, { childList: true, subtree: true });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', installBreedPotentialForecastSync);
+  } else {
+    installBreedPotentialForecastSync();
+  }
+})();
