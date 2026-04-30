@@ -51,10 +51,10 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     if (!editor || typeof editor.scrollIntoView !== 'function') return;
 
     function scrollAndLift() {
-      editor.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
+      editor.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
       window.setTimeout(function () {
         if (root && typeof root.scrollBy === 'function') {
-          root.scrollBy({ top: 86, behavior: 'smooth' });
+          root.scrollBy({ top: 28, behavior: 'smooth' });
         }
       }, 80);
     }
@@ -414,10 +414,10 @@ window.SKACHKI_BREEDING_RENDER = (function () {
     if (stats) stats.style.gridTemplateColumns = 'repeat(3, minmax(0, 1fr))';
     if (qualities) qualities.style.gridTemplateColumns = 'repeat(3, minmax(0, 1fr))';
     if (editor) {
-      editor.style.margin = '-8px auto 4px';
+      editor.style.margin = '12px auto 4px';
       editor.style.padding = '8px 10px';
-      editor.style.transform = 'translateY(-12px)';
-      editor.style.scrollMarginBottom = '360px';
+      editor.style.transform = 'none';
+      editor.style.scrollMarginBottom = '320px';
     }
   }
 
