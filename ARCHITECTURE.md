@@ -30,6 +30,7 @@ js/training.js
 js/breeding-service.js
 js/breeding-logic.js
 js/breeding.js
+js/foal-result-render.js
 js/breeding-render.js
 js/race-menu.js
 js/race-engine.js
@@ -69,7 +70,8 @@ ARCHITECTURE.md
 | `js/breeding-service.js` | Племенной жеребец/кобыла, цены, доступность, поиск родителей. |
 | `js/breeding-logic.js` | Наследование, прогноз потомка, создание жеребёнка. |
 | `js/breeding.js` | Координатор Разведения: выбранные родители, шаги, события, вызовы service/logic/render. |
-| `js/breeding-render.js` | HTML-рендер Разведения, экран рождения, анимации, имя. |
+| `js/breeding-render.js` | HTML-рендер Разведения: выбор родителей, прогноз будущего жеребёнка. |
+| `js/foal-result-render.js` | Экран рождения жеребёнка: карточка результата, анимация, смена имени. |
 | `js/race-menu.js` | Выбор гонки и лошади. |
 | `js/race-engine.js` | Phaser-гонка. |
 | `js/results.js` | Результаты гонки и награды. |
