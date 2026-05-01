@@ -1,0 +1,5 @@
+/* Rating screen styles. */
+
+#ratingScreen .summary-card{border-radius:22px;padding:16px}
+#ratingScreen .summary-title{font-size:22px;font-weight:950;color:#fff;margin-bottom:8px}
+#ratingScreen .summary-desc{font-size:14px;color:var(--lux-muted);line-height:1.4}
