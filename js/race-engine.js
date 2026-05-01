@@ -1,11 +1,12 @@
 // Phaser race engine.
-// Coordinates the scene and runner movement. Track drawing and audio live in split modules.
+// Coordinates the scene and runner movement. Track drawing, audio, minimap and AI live in split modules.
 
 window.SKACHKI_RACE_ENGINE = (function () {
   function game() { return window.SKACHKI_GAME; }
   function raceTrack() { return window.SKACHKI_RACE_TRACK || {}; }
   function raceAudio() { return window.SKACHKI_RACE_AUDIO || {}; }
   function raceMinimap() { return window.SKACHKI_RACE_MINIMAP || {}; }
+  function raceAi() { return window.SKACHKI_RACE_AI || {}; }
 
   function destroyRaceGame() {
     var audio = raceAudio();
@@ -75,6 +76,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
     var trackHeight = Math.min(worldHeight * 0.58, 470);
     var trackWidth = Math.min(worldWidth * 0.78, Math.max(620, trackHeight * 1.95));
     var laneSpacing = horseCount > 6 ? 14 : 16;
+    var startProgress = 0.006;
 
     scene.viewportWidth = width;
     scene.viewportHeight = height;
@@ -97,7 +99,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
       makeRunner(scene, 'runner_' + index, horse, index);
 
       var lane = index * scene.track.laneSpacing;
-      var p = track.pointOnTrack(scene.track, 0.006 - index * 0.01, lane);
+      var p = track.pointOnTrack(scene.track, startProgress, lane);
       var scale = horse.isPlayer ? 0.78 : 0.68;
       var sprite = scene.add.image(p.x, p.y, 'runner_' + index).setScale(scale).setDepth(30 + index);
       var name = String(horse.name || '').replace(/^Вы:\s*/, '');
@@ -129,7 +131,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
         sprite: sprite,
         label: label,
         marker: marker,
-        progress: 0.006 - index * 0.01,
+        progress: startProgress,
         lane: lane,
         laneTarget: lane,
         pace: scene.basePace * classFactor * staminaFactor * form * randomFactor,
@@ -137,7 +139,8 @@ window.SKACHKI_RACE_ENGINE = (function () {
         penaltyUntil: 0,
         finished: false,
         finishTime: null,
-        nextEvent: scene.time.now + G.randInt(3600, 6800)
+        nextEvent: scene.time.now + G.randInt(3600, 6800),
+        nextLaneThink: scene.time.now + G.randInt(120, 420)
       };
 
       scene.runners.push(runner);
@@ -154,10 +157,11 @@ window.SKACHKI_RACE_ENGINE = (function () {
     var camera = scene.cameras.main;
     camera.setBounds(0, 0, scene.worldWidth, scene.worldHeight);
     camera.setRoundPixels(false);
+    camera.setZoom(1.26);
 
     if (scene.playerRunner) {
-      camera.startFollow(scene.playerRunner.sprite, true, 0.07, 0.07);
-      camera.setDeadzone(Math.round(scene.viewportWidth * 0.18), Math.round(scene.viewportHeight * 0.16));
+      camera.startFollow(scene.playerRunner.sprite, true, 0.08, 0.08);
+      camera.setDeadzone(Math.round(scene.viewportWidth * 0.11), Math.round(scene.viewportHeight * 0.1));
     }
   }
 
@@ -247,16 +251,18 @@ window.SKACHKI_RACE_ENGINE = (function () {
     var G = game();
     var track = raceTrack();
     var minimap = raceMinimap();
+    var ai = raceAi();
     if (scene.finished) return;
 
     scene.runners.forEach(function (runner) {
       if (runner.finished) return;
 
+      var lineEfficiency = ai.update ? ai.update(scene, runner, time) : 1;
       var wave = 1 + Math.sin(time / 740 + G.horseClass(runner.horse)) * 0.01;
       var lateRace = Math.max(0, runner.progress / scene.totalLaps - 0.62);
       var staminaReserve = (Number(runner.horse.stamina) || 60) / 100;
       var fatigue = 1 - lateRace * (0.105 - staminaReserve * 0.052);
-      var speed = runner.pace * wave * Math.max(0.9, fatigue);
+      var speed = runner.pace * wave * Math.max(0.9, fatigue) * lineEfficiency;
 
       if (time < runner.burstUntil) speed *= 1.17;
       if (time < runner.penaltyUntil) speed *= 0.76;
@@ -266,7 +272,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
         runner.nextEvent = time + G.randInt(4200, 7600);
       }
 
-      runner.lane += (runner.laneTarget - runner.lane) * Math.min(1, delta / 380);
+      runner.lane += (runner.laneTarget - runner.lane) * Math.min(1, delta / 440);
       runner.progress += speed * delta;
 
       var p = track.pointOnTrack(scene.track, ((runner.progress % 1) + 1) % 1, runner.lane);
@@ -322,18 +328,14 @@ window.SKACHKI_RACE_ENGINE = (function () {
     var roll = Math.random();
     var audio = raceAudio();
 
-    if (temperament === 'Резкая' || roll < 0.2) {
-      runner.laneTarget = G.clamp(runner.laneTarget + G.randInt(-1, 1) * scene.track.laneSpacing, 0, scene.track.laneSpacing * Math.max(0, scene.track.laneCount - 1));
-    }
-
-    if (roll < 0.36 || temperament === 'Быстрая') {
+    if (roll < 0.28 || temperament === 'Быстрая') {
       runner.burstUntil = time + 900;
       if (audio.playBurst) audio.playBurst();
       addRaceEvent(scene, runner, 'Рывок!');
       return;
     }
 
-    if (roll > 0.84 && agility < 72) {
+    if (roll > 0.88 && agility < 72) {
       runner.penaltyUntil = time + 850;
       if (audio.playMistake) audio.playMistake();
       addRaceEvent(scene, runner, 'Сбилась!');
