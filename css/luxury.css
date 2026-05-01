@@ -145,315 +145,310 @@
 
 /* Training center screen */
 #trainingScreen{
-  background:radial-gradient(circle at 50% -8%,rgba(57,91,122,.5),transparent 36%),linear-gradient(180deg,#061526,#030812 74%)!important;
+  background:radial-gradient(circle at 50% -12%,rgba(57,91,122,.48),transparent 34%),linear-gradient(180deg,#061526,#030812 78%)!important;
 }
 #trainingScreen .topbar{display:none!important}
 #trainingScreen .content-scroll{
-  padding:calc(var(--safe-top) + 18px) 14px calc(34px + var(--safe-bottom))!important;
+  height:100%;
+  padding:calc(var(--safe-top) + 8px) 10px calc(10px + var(--safe-bottom))!important;
+  overflow:hidden!important;
 }
 #trainingScreen .training-hero{
   padding:0!important;
-  margin:0 0 10px!important;
+  margin:0!important;
   background:transparent!important;
   border:0!important;
   box-shadow:none!important;
 }
-.training-center-head{
-  position:relative;
-  margin-bottom:10px;
-  padding:50px 14px 14px;
-  border-radius:26px;
-  background:radial-gradient(circle at 82% 12%,rgba(216,169,67,.2),transparent 33%),linear-gradient(120deg,rgba(6,17,31,.96),rgba(10,29,47,.96));
-  border:1px solid rgba(216,169,67,.34);
-  box-shadow:0 18px 48px rgba(0,0,0,.42),inset 0 0 0 1px rgba(255,255,255,.035);
-  overflow:hidden;
+#trainingScreenOptions{margin-top:8px}
+.training-svg-icon{
+  width:18px;
+  height:18px;
+  display:block;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2;
+  stroke-linecap:round;
+  stroke-linejoin:round;
 }
-.training-center-head:before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:linear-gradient(110deg,rgba(255,230,162,.1),transparent 38%),radial-gradient(circle at 85% 50%,rgba(216,169,67,.12),transparent 30%);
-  pointer-events:none;
+.training-topline{
+  height:36px;
+  display:grid;
+  grid-template-columns:36px 1fr auto;
+  gap:8px;
+  align-items:center;
+  margin-bottom:7px;
+}
+.training-back-btn,
+.training-coin-pill{
+  height:36px;
+  border-radius:14px;
+  border:1px solid rgba(216,169,67,.3);
+  background:rgba(6,18,32,.78);
+  color:#ffe6a2;
+  box-shadow:0 8px 20px rgba(0,0,0,.28);
 }
 .training-back-btn{
-  position:absolute;
-  left:12px;
-  top:12px;
-  z-index:2;
-  width:42px;
-  height:42px;
-  border-radius:15px;
-  border:1px solid rgba(216,169,67,.34);
-  background:rgba(4,14,25,.72);
-  color:#fff;
-  font-size:22px;
-  font-weight:950;
-  box-shadow:0 10px 24px rgba(0,0,0,.3);
-}
-.training-center-title{
-  position:absolute;
-  top:16px;
-  left:64px;
-  right:64px;
-  z-index:2;
-  text-align:center;
-  color:#ffe6a2;
-  font-size:16px;
-  font-weight:950;
-  text-transform:uppercase;
-  letter-spacing:.08em;
-  line-height:1.05;
-  text-shadow:0 2px 18px rgba(216,169,67,.28);
-}
-.training-center-emblem{
-  position:absolute;
-  right:14px;
-  top:12px;
-  z-index:2;
-  width:42px;
-  height:42px;
-  border-radius:15px;
-  border:1px solid rgba(216,169,67,.34);
-  background:radial-gradient(circle at 50% 0,rgba(255,230,162,.2),transparent 52%),rgba(4,14,25,.72);
+  width:36px;
   display:flex;
   align-items:center;
   justify-content:center;
-  color:#ffe6a2;
-  font-size:24px;
-  box-shadow:0 10px 24px rgba(0,0,0,.3);
 }
-.training-profile{
-  position:relative;
-  z-index:1;
+.training-coin-pill{
   display:flex;
   align-items:center;
-  gap:15px;
-  min-height:112px;
+  gap:7px;
+  padding:0 11px;
+  font-size:13px;
+  font-weight:950;
+}
+.training-title{
+  text-align:center;
+  color:#ffe6a2;
+  font-size:14px;
+  font-weight:950;
+  text-transform:uppercase;
+  letter-spacing:.075em;
+  line-height:1;
+}
+.training-profile-card{
+  height:72px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:8px 10px;
+  border-radius:21px;
+  background:radial-gradient(circle at 86% 0,rgba(216,169,67,.18),transparent 36%),linear-gradient(180deg,rgba(12,33,52,.96),rgba(5,16,29,.98));
+  border:1px solid rgba(216,169,67,.34);
+  box-shadow:0 14px 34px rgba(0,0,0,.36),inset 0 0 0 1px rgba(255,255,255,.035);
+  overflow:hidden;
 }
 .training-portrait{
   position:relative;
-  flex:0 0 112px;
-  width:112px;
-  height:112px;
+  flex:0 0 56px;
+  width:56px;
+  height:56px;
   border-radius:50%;
-  padding:5px;
+  padding:3px;
   background:linear-gradient(135deg,#fff0a8,#d4a341,#5a340f);
-  box-shadow:0 12px 30px rgba(0,0,0,.5),0 0 0 6px rgba(216,169,67,.08);
+  box-shadow:0 8px 20px rgba(0,0,0,.42),0 0 0 4px rgba(216,169,67,.07);
 }
 .training-portrait .horse-portrait-svg{
   position:absolute!important;
-  inset:5px!important;
-  width:calc(100% - 10px)!important;
-  height:calc(100% - 10px)!important;
+  inset:3px!important;
+  width:calc(100% - 6px)!important;
+  height:calc(100% - 6px)!important;
   border-radius:50%!important;
 }
-.training-portrait span{
+.training-sex-badge{
   position:absolute;
   right:-3px;
-  top:9px;
-  width:30px;
-  height:30px;
+  top:1px;
+  width:20px;
+  height:20px;
   border-radius:50%;
   display:flex;
   align-items:center;
   justify-content:center;
   background:#071525;
   border:1px solid rgba(255,255,255,.18);
+  font-size:13px;
+  font-weight:950;
+  box-shadow:0 6px 14px rgba(0,0,0,.32);
+}
+.training-sex-stallion{color:#77c8ff!important}
+.training-sex-mare{color:#ff86c0!important}
+.training-profile-main{
+  flex:1;
+  min-width:0;
+}
+.training-horse-name{
   font-size:19px;
   font-weight:950;
-  box-shadow:0 8px 16px rgba(0,0,0,.34);
-}
-.training-sex-stallion span,
-.training-sex-symbol.training-sex-stallion{color:#77c8ff!important}
-.training-sex-mare span,
-.training-sex-symbol.training-sex-mare{color:#ff86c0!important}
-.training-profile-main{min-width:0;flex:1}
-.training-horse-name{
-  font-size:30px;
-  font-weight:950;
-  line-height:1.02;
   color:#fff;
-  text-shadow:0 2px 16px rgba(255,255,255,.12);
-  word-break:break-word;
-}
-.training-sex-symbol{
-  font-size:23px;
-  vertical-align:middle;
+  line-height:1.03;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 .training-profile-main .star-rating{
-  margin-top:8px;
-  font-size:20px;
-  width:106px;
-  height:23px;
+  margin-top:3px;
+  font-size:14px;
+  width:78px;
+  height:16px;
 }
 .training-form-chip{
+  margin-top:4px;
   display:inline-flex;
-  margin-top:12px;
-  padding:8px 12px;
+  align-items:center;
+  padding:4px 8px;
   border-radius:999px;
   background:rgba(255,255,255,.055);
-  border:1px solid rgba(216,169,67,.22);
+  border:1px solid rgba(216,169,67,.18);
+  font-size:10px;
+  font-weight:900;
   color:#dce8f3;
-  font-size:13px;
-  font-weight:850;
 }
 .training-form-chip b{
+  margin-left:4px;
   color:#8de691;
-  margin-left:5px;
 }
 .training-status-grid{
   display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:8px;
-  margin:10px 0;
+  grid-template-columns:repeat(3,1fr);
+  gap:6px;
+  margin-top:7px;
 }
 .training-status-cell{
-  min-height:72px;
-  border-radius:18px;
-  background:linear-gradient(180deg,rgba(15,34,54,.96),rgba(6,18,32,.96));
-  border:1px solid rgba(216,169,67,.24);
-  box-shadow:0 10px 24px rgba(0,0,0,.24),inset 0 0 0 1px rgba(255,255,255,.025);
-  padding:10px;
+  height:47px;
+  border-radius:15px;
+  background:linear-gradient(180deg,rgba(13,31,50,.96),rgba(5,16,29,.96));
+  border:1px solid rgba(216,169,67,.22);
+  padding:7px;
   display:grid;
-  grid-template-columns:30px 1fr;
+  grid-template-columns:22px 1fr;
   grid-template-rows:auto auto;
-  column-gap:8px;
+  column-gap:6px;
   align-items:center;
 }
 .training-status-cell i{
   grid-row:1/3;
-  width:30px;
-  height:30px;
-  border-radius:10px;
-  background:linear-gradient(135deg,rgba(255,230,162,.95),rgba(216,169,67,.72));
-  color:#1c1004;
+  width:22px;
+  height:22px;
+  border-radius:8px;
+  background:linear-gradient(135deg,rgba(255,230,162,.96),rgba(216,169,67,.74));
+  color:#1d1004;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-style:normal;
-  font-weight:950;
+}
+.training-status-cell i .training-svg-icon{
+  width:14px;
+  height:14px;
+  stroke-width:2.3;
 }
 .training-status-cell span{
-  color:#aebfd0;
-  font-size:11px;
-  line-height:1.1;
-  font-weight:850;
+  font-size:9px;
+  color:#9fb3c6;
+  font-weight:900;
+  line-height:1;
+  text-transform:uppercase;
+  letter-spacing:.02em;
 }
 .training-status-cell b{
+  font-size:12px;
   color:#ffe6a2;
-  font-size:15px;
-  line-height:1.1;
   font-weight:950;
+  line-height:1.1;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 .training-tabs{
   display:grid;
   grid-template-columns:repeat(3,1fr);
-  gap:7px;
-  margin:8px 0 0;
+  gap:6px;
+  margin-top:7px;
 }
 .training-tab{
-  min-height:58px;
-  border-radius:18px;
+  height:42px;
+  border-radius:15px;
   border:1px solid rgba(216,169,67,.22);
   background:linear-gradient(180deg,rgba(13,31,50,.96),rgba(5,16,29,.96));
   color:#c5d2df;
+  font-size:10px;
   font-weight:950;
-  font-size:13px;
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:6px;
-  box-shadow:0 10px 24px rgba(0,0,0,.24);
+  gap:5px;
+  box-shadow:0 8px 20px rgba(0,0,0,.24);
 }
-.training-tab i{
-  font-style:normal;
+.training-tab .training-svg-icon{
+  width:16px;
+  height:16px;
   color:#d8a943;
-  font-size:18px;
 }
 .training-tab.active{
   color:#ffe6a2;
-  border-color:rgba(255,211,77,.72);
+  border-color:rgba(255,211,77,.68);
   background:radial-gradient(circle at 50% 0,rgba(255,211,77,.22),transparent 55%),linear-gradient(180deg,rgba(30,48,66,.98),rgba(8,20,34,.98));
-  box-shadow:0 0 0 1px rgba(255,211,77,.2) inset,0 14px 30px rgba(0,0,0,.32);
+  box-shadow:0 0 0 1px rgba(255,211,77,.16) inset,0 10px 22px rgba(0,0,0,.3);
 }
 .training-center-panel{
+  height:calc(100vh - var(--safe-top) - var(--safe-bottom) - 232px);
+  min-height:312px;
+  max-height:360px;
   position:relative;
-  padding:16px 14px 15px;
-  border-radius:28px;
-  background:radial-gradient(circle at 50% 0,rgba(216,169,67,.14),transparent 34%),linear-gradient(180deg,rgba(10,28,46,.98),rgba(4,14,26,.98));
+  padding:10px;
+  border-radius:23px;
+  background:radial-gradient(circle at 50% 0,rgba(216,169,67,.16),transparent 34%),linear-gradient(180deg,rgba(10,28,46,.98),rgba(4,14,26,.98));
   border:1px solid rgba(216,169,67,.38);
-  box-shadow:0 22px 60px rgba(0,0,0,.44),inset 0 0 0 1px rgba(255,255,255,.035);
+  box-shadow:0 18px 46px rgba(0,0,0,.42),inset 0 0 0 1px rgba(255,255,255,.035);
   overflow:hidden;
-}
-.training-center-panel:before{
-  content:"";
-  position:absolute;
-  left:6%;
-  right:6%;
-  top:0;
-  height:1px;
-  background:linear-gradient(90deg,transparent,rgba(255,211,77,.9),transparent);
-  box-shadow:0 0 18px rgba(216,169,67,.36);
+  display:flex;
+  flex-direction:column;
 }
 .training-gauge-title{
   text-align:center;
   color:#ffe6a2;
-  font-size:24px;
+  font-size:18px;
   font-weight:950;
-  line-height:1.05;
-  margin:4px 0 10px;
-  text-shadow:0 2px 18px rgba(216,169,67,.2);
+  line-height:1;
+  margin:2px 0;
 }
 .training-gauge{
   position:relative;
-  height:205px;
+  height:125px;
+  flex:0 0 125px;
   margin:0 auto;
-  max-width:350px;
+  width:100%;
+  max-width:300px;
 }
 .training-gauge-arc{
   position:absolute;
   left:50%;
-  top:16px;
-  width:250px;
-  height:250px;
+  top:0;
+  width:196px;
+  height:196px;
   transform:translateX(-50%);
   border-radius:50%;
-  background:conic-gradient(from 225deg,#3aa0ff 0deg,#6bb7ff 58deg,#d8a943 126deg,#ff8a3d 180deg,transparent 181deg,transparent 360deg);
-  mask:radial-gradient(circle,transparent 0 54%,#000 55% 63%,transparent 64%);
-  -webkit-mask:radial-gradient(circle,transparent 0 54%,#000 55% 63%,transparent 64%);
-  filter:drop-shadow(0 0 12px rgba(95,184,255,.2));
+  background:conic-gradient(from 225deg,#3aa0ff 0deg,#6bb7ff 56deg,#d8a943 126deg,#ff8a3d 180deg,transparent 181deg,transparent 360deg);
+  mask:radial-gradient(circle,transparent 0 53%,#000 54% 62%,transparent 63%);
+  -webkit-mask:radial-gradient(circle,transparent 0 53%,#000 54% 62%,transparent 63%);
+  filter:drop-shadow(0 0 10px rgba(95,184,255,.18));
 }
 .training-gauge:after{
   content:"";
   position:absolute;
   left:50%;
-  top:34px;
-  width:210px;
-  height:210px;
+  top:15px;
+  width:160px;
+  height:160px;
   transform:translateX(-50%);
   border-radius:50%;
-  border:1px solid rgba(216,169,67,.2);
+  border:1px solid rgba(216,169,67,.18);
 }
 .training-gauge-needle{
   position:absolute;
   left:var(--needle-left);
-  top:50px;
+  top:24px;
   width:3px;
-  height:94px;
+  height:70px;
   transform:translateX(-50%) rotate(18deg);
-  transform-origin:50% 90%;
+  transform-origin:50% 88%;
   background:linear-gradient(180deg,#ffe6a2,#d8a943);
   border-radius:999px;
-  box-shadow:0 0 14px rgba(216,169,67,.45);
+  box-shadow:0 0 12px rgba(216,169,67,.42);
 }
 .training-gauge-value{
   position:absolute;
   left:0;
   right:0;
-  top:80px;
+  top:44px;
   text-align:center;
-  font-size:66px;
-  font-weight:300;
+  font-size:50px;
+  font-weight:350;
   color:#fff;
   line-height:1;
   text-shadow:0 0 18px rgba(255,255,255,.12);
@@ -462,21 +457,21 @@
   position:absolute;
   left:0;
   right:0;
-  top:150px;
+  top:95px;
   text-align:center;
   color:#aebfd0;
-  font-size:11px;
+  font-size:9px;
   text-transform:uppercase;
   font-weight:900;
   letter-spacing:.05em;
 }
 .training-potential-track{
   position:relative;
-  height:18px;
-  margin:0 14px 14px;
+  height:13px;
+  margin:0 11px 6px;
   border-radius:999px;
   background:linear-gradient(90deg,rgba(43,125,224,.25),rgba(216,169,67,.22),rgba(255,118,58,.22));
-  border:1px solid rgba(255,255,255,.11);
+  border:1px solid rgba(255,255,255,.1);
   overflow:visible;
 }
 .training-progress-fill{
@@ -486,218 +481,137 @@
   bottom:3px;
   border-radius:999px;
   background:linear-gradient(90deg,#3aa0ff,#78caff);
-  box-shadow:0 0 14px rgba(95,184,255,.35);
+  box-shadow:0 0 12px rgba(95,184,255,.32);
 }
 .training-limit-marker{
   position:absolute;
-  top:-6px;
-  width:20px;
-  height:30px;
+  top:-5px;
+  width:14px;
+  height:23px;
   transform:translateX(-50%);
 }
 .training-limit-marker:before{
   content:"";
   position:absolute;
-  left:8px;
+  left:6px;
   top:0;
   bottom:0;
-  width:3px;
+  width:2px;
   border-radius:99px;
   background:#ffd34d;
-  box-shadow:0 0 15px rgba(255,211,77,.54);
+  box-shadow:0 0 13px rgba(255,211,77,.5);
 }
 .training-limit-marker:after{
   content:"";
   position:absolute;
-  left:4px;
-  top:-2px;
-  width:11px;
-  height:11px;
+  left:2px;
+  top:-1px;
+  width:9px;
+  height:9px;
   border-radius:50%;
   background:#ffd34d;
   border:2px solid rgba(5,15,27,.96);
 }
-.training-zone-row{
+.training-summary-row{
   display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:4px;
-  margin:0 2px 14px;
-  text-align:center;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+  margin-top:6px;
 }
-.training-zone-row div{
-  padding:0 4px;
-  border-right:1px solid rgba(216,169,67,.18);
-}
-.training-zone-row div:last-child{border-right:0}
-.training-zone-row b{
-  display:block;
-  color:#d8a943;
-  font-size:10px;
-  text-transform:uppercase;
-  line-height:1.15;
-}
-.training-zone-row span{
-  display:block;
-  color:#9fb3c6;
-  font-size:10px;
-  line-height:1.28;
-  margin-top:4px;
-}
-.training-plan-grid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:8px;
-  margin-top:12px;
-}
-.training-plan-cell{
-  min-height:70px;
-  border-radius:18px;
-  padding:10px;
+.training-summary-cell{
+  height:52px;
+  border-radius:15px;
+  padding:7px 8px;
   background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.025));
   border:1px solid rgba(216,169,67,.2);
   display:grid;
-  grid-template-columns:34px 1fr;
+  grid-template-columns:25px 1fr;
   grid-template-rows:auto auto;
-  column-gap:8px;
+  column-gap:7px;
   align-items:center;
 }
-.training-plan-cell i{
+.training-summary-cell i{
   grid-row:1/3;
-  width:34px;
-  height:34px;
+  width:25px;
+  height:25px;
   border-radius:50%;
   background:rgba(95,184,255,.12);
-  border:1px solid rgba(95,184,255,.4);
+  border:1px solid rgba(95,184,255,.38);
   color:#8ccfff;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-style:normal;
-  font-weight:950;
 }
-.training-plan-cell span{
-  font-size:11px;
+.training-summary-cell i .training-svg-icon{
+  width:15px;
+  height:15px;
+}
+.training-summary-cell span{
+  font-size:9px;
   color:#aebfd0;
-  font-weight:850;
-  line-height:1.1;
+  font-weight:900;
+  line-height:1;
+  text-transform:uppercase;
 }
-.training-plan-cell b{
-  font-size:22px;
+.training-summary-cell b{
+  font-size:17px;
   color:#ffe6a2;
   font-weight:950;
   line-height:1.05;
 }
-.training-plan-eff.training-eff-high b{color:#87e68f}
-.training-plan-eff.training-eff-medium b{color:#ffd34d}
-.training-plan-eff.training-eff-low b,
-.training-plan-eff.training-eff-minimal b{color:#ff8a65}
-.training-info-note{
-  display:flex;
-  align-items:center;
-  gap:11px;
-  margin-top:10px;
-  padding:12px;
-  border-radius:18px;
-  background:rgba(216,169,67,.08);
-  border:1px solid rgba(216,169,67,.22);
-  color:#dfe8f1;
-  font-size:13px;
-  line-height:1.35;
-}
-.training-info-note i{
-  flex:0 0 30px;
-  width:30px;
-  height:30px;
-  border-radius:50%;
+.training-one-line-note{
+  margin-top:6px;
+  min-height:28px;
+  color:#9fb3c6;
+  font-size:10px;
+  line-height:1.3;
+  text-align:center;
   display:flex;
   align-items:center;
   justify-content:center;
-  border:1px solid rgba(216,169,67,.5);
-  color:#ffe6a2;
-  font-style:normal;
-  font-weight:950;
 }
 .training-start-btn{
+  margin-top:auto;
   width:100%;
-  min-height:58px;
-  margin-top:14px;
-  border-radius:22px!important;
-  font-size:21px!important;
+  min-height:48px;
+  border-radius:18px!important;
+  font-size:17px!important;
   color:#211303!important;
-  text-shadow:0 1px rgba(255,255,255,.24);
-  box-shadow:0 18px 36px rgba(0,0,0,.36),0 0 0 1px rgba(255,255,255,.18) inset!important;
+  box-shadow:0 14px 30px rgba(0,0,0,.34),0 0 0 1px rgba(255,255,255,.18) inset!important;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
 }
-.training-start-btn span{margin-right:10px}
+.training-start-btn .training-svg-icon{
+  width:19px;
+  height:19px;
+  stroke-width:2.2;
+}
 .training-start-btn:disabled{
   opacity:.55;
   filter:grayscale(.35);
 }
-.training-bottom-note{
-  margin-top:10px;
-  text-align:center;
-  color:#8fa4b8;
-  font-size:11px;
-  line-height:1.32;
-}
 
-@media(max-width:420px){
-  #trainingScreen .content-scroll{
-    padding-left:10px!important;
-    padding-right:10px!important;
+@media(max-height:760px){
+  #trainingScreen .content-scroll{padding-top:calc(var(--safe-top) + 5px)!important}
+  .training-topline{height:32px;margin-bottom:5px}
+  .training-back-btn,.training-coin-pill{height:32px}
+  .training-profile-card{height:66px;padding:6px 9px}
+  .training-portrait{width:51px;height:51px;flex-basis:51px}
+  .training-horse-name{font-size:17px}
+  .training-profile-main .star-rating{font-size:12px;width:70px;height:14px}
+  .training-status-cell{height:42px}
+  .training-tab{height:38px}
+  .training-center-panel{
+    height:calc(100vh - var(--safe-top) - var(--safe-bottom) - 211px);
+    min-height:292px;
   }
-  .training-center-head{padding:48px 12px 12px}
-  .training-center-title{
-    font-size:14px;
-    left:58px;
-    right:58px;
-  }
-  .training-profile{gap:12px}
-  .training-portrait{
-    width:96px;
-    height:96px;
-    flex-basis:96px;
-  }
-  .training-horse-name{font-size:24px}
-  .training-status-grid{gap:6px}
-  .training-status-cell{
-    padding:8px;
-    grid-template-columns:27px 1fr;
-    min-height:66px;
-  }
-  .training-status-cell i{
-    width:27px;
-    height:27px;
-  }
-  .training-status-cell span{font-size:10px}
-  .training-status-cell b{font-size:13px}
-  .training-tab{
-    font-size:11px;
-    min-height:54px;
-  }
-  .training-gauge{height:188px}
-  .training-gauge-arc{
-    width:226px;
-    height:226px;
-  }
-  .training-gauge:after{
-    width:190px;
-    height:190px;
-  }
-  .training-gauge-value{
-    font-size:56px;
-    top:76px;
-  }
-  .training-gauge-label{top:138px}
-  .training-zone-row b{font-size:9px}
-  .training-zone-row span{font-size:9px}
-  .training-plan-cell{
-    grid-template-columns:30px 1fr;
-    min-height:66px;
-  }
-  .training-plan-cell i{
-    width:30px;
-    height:30px;
-  }
-  .training-plan-cell b{font-size:19px}
-  .training-start-btn{font-size:18px!important}
+  .training-gauge{height:110px;flex-basis:110px}
+  .training-gauge-arc{width:176px;height:176px}
+  .training-gauge:after{width:144px;height:144px}
+  .training-gauge-value{top:38px;font-size:44px}
+  .training-gauge-label{top:84px}
+  .training-summary-cell{height:46px}
+  .training-start-btn{min-height:44px;font-size:16px!important}
 }
