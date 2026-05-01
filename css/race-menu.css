@@ -1,0 +1,6 @@
+/* Race menu premium styles. */
+
+#raceMenuScreen .race-start-panel{padding:12px 14px calc(10px + var(--safe-bottom))!important;background:linear-gradient(180deg,rgba(4,11,20,0),rgba(4,11,20,.92) 22%,rgba(4,11,20,.98))!important;border-top:1px solid rgba(216,169,67,.18)!important}
+#raceMenuScreen .race-start-panel .btn{min-height:46px;margin-bottom:10px}
+#raceMenuScreen .race-start-panel .bottom-nav{margin-top:0}
+#raceMenuScreen .content-scroll{padding-bottom:calc(174px + var(--safe-bottom))!important}
