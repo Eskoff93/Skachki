@@ -19,6 +19,7 @@ css/training.css
 css/rating.css
 js/bootstrap.js
 js/game.js
+js/navigation.js
 js/data.js
 js/horse.js
 js/state.js
@@ -60,7 +61,8 @@ ARCHITECTURE.md
 | `css/training.css` | Экран Тренировки. |
 | `css/rating.css` | Экран Рейтинга. |
 | `js/bootstrap.js` | Запуск приложения. |
-| `js/game.js` | Центральное состояние, сохранение, переходы экранов, общие helper-функции. |
+| `js/game.js` | Ядро игры: состояние, сохранение, загрузка, reset progress, стартовые лошади, общие helper-функции. |
+| `js/navigation.js` | Создание системных экранов, переключение экранов, нижнее меню, переходы между основными разделами. |
 | `js/data.js` | Справочники и баланс-данные. |
 | `js/horse.js` | Доменная логика лошади: создание, нормализация, класс, пол, форма, ранги, скрытые качества. |
 | `js/state.js` | `localStorage`, миграции, сериализация. |
