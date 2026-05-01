@@ -37,6 +37,7 @@ js/race-menu.js
 js/race-track.js
 js/race-audio.js
 js/race-minimap.js
+js/race-ai.js
 js/race-engine.js
 js/results.js
 js/utils.js
@@ -81,6 +82,7 @@ ARCHITECTURE.md
 | `js/race-track.js` | Геометрия трассы, отрисовка ипподрома, точки движения по треку. |
 | `js/race-audio.js` | Звук копыт, финиша и короткие race tones. |
 | `js/race-minimap.js` | Миникарта гонки: овал трассы и позиции участников поверх камеры. |
+| `js/race-ai.js` | Тактика гонки: выбор линии, обгон, блокировка, возврат к внутренней дорожке. |
 | `js/race-engine.js` | Координатор Phaser-сцены, движение лошадей, события гонки, leaderboard и HUD. |
 | `js/results.js` | Результаты гонки и награды. |
 | `js/utils.js` | Общие утилиты без состояния. |
@@ -139,6 +141,7 @@ ARCHITECTURE.md
 - `js/race-track.js` отвечает только за трассу и расчёт координат по треку.
 - `js/race-audio.js` отвечает только за звук гонки.
 - `js/race-minimap.js` отвечает только за миникарту гонки.
+- `js/race-ai.js` отвечает только за тактику линии, обгон и блокировку.
 - `js/race-engine.js` отвечает за Phaser-сцену, движение участников, события гонки и HUD.
 
 ## Telegram Mini App
