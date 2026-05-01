@@ -33,6 +33,8 @@ js/breeding.js
 js/foal-result-render.js
 js/breeding-render.js
 js/race-menu.js
+js/race-track.js
+js/race-audio.js
 js/race-engine.js
 js/results.js
 js/utils.js
@@ -73,7 +75,9 @@ ARCHITECTURE.md
 | `js/breeding-render.js` | HTML-рендер Разведения: выбор родителей, прогноз будущего жеребёнка. |
 | `js/foal-result-render.js` | Экран рождения жеребёнка: карточка результата, анимация, смена имени. |
 | `js/race-menu.js` | Выбор гонки и лошади. |
-| `js/race-engine.js` | Phaser-гонка. |
+| `js/race-track.js` | Геометрия трассы, отрисовка ипподрома, точки движения по треку. |
+| `js/race-audio.js` | Звук копыт, финиша и короткие race tones. |
+| `js/race-engine.js` | Координатор Phaser-сцены, движение лошадей, события гонки, leaderboard. |
 | `js/results.js` | Результаты гонки и награды. |
 | `js/utils.js` | Общие утилиты без состояния. |
 
@@ -124,6 +128,13 @@ ARCHITECTURE.md
 - `Будущий жеребёнок` показывает прогноз, не точные значения.
 - Точные значения открываются после рождения.
 - Имя жеребёнка можно изменить на экране рождения.
+
+## Гонка
+
+- `js/race-menu.js` отвечает за выбор гонки и лошади.
+- `js/race-track.js` отвечает только за трассу и расчёт координат по треку.
+- `js/race-audio.js` отвечает только за звук гонки.
+- `js/race-engine.js` отвечает за Phaser-сцену, движение участников и события гонки.
 
 ## Технический долг
 
