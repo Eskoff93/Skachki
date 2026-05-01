@@ -138,10 +138,6 @@ ARCHITECTURE.md
 - `js/race-audio.js` отвечает только за звук гонки.
 - `js/race-engine.js` отвечает за Phaser-сцену, движение участников и события гонки.
 
-## Технический долг
-
-- Стили `class-score-badge` сейчас временно в `css/core.css`; при следующей чистке `css/horse-card.css` перенести их туда.
-
 ## Telegram Mini App
 
 - Верх не должен перекрываться интерфейсом Telegram.
