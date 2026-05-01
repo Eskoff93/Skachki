@@ -5,6 +5,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
   function game() { return window.SKACHKI_GAME; }
   function raceTrack() { return window.SKACHKI_RACE_TRACK || {}; }
   function raceAudio() { return window.SKACHKI_RACE_AUDIO || {}; }
+  function raceMinimap() { return window.SKACHKI_RACE_MINIMAP || {}; }
 
   function destroyRaceGame() {
     var audio = raceAudio();
@@ -146,6 +147,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
     if (!scene.playerRunner && scene.runners.length) scene.playerRunner = scene.runners[0];
     setupCamera(scene);
     setupHud(scene, width, height);
+    setupMinimap(scene, width, height);
   }
 
   function setupCamera(scene) {
@@ -216,6 +218,11 @@ window.SKACHKI_RACE_ENGINE = (function () {
     }).setOrigin(0.5).setDepth(320).setShadow(0, 2, '#000', 3).setScrollFactor(0);
   }
 
+  function setupMinimap(scene, width, height) {
+    var minimap = raceMinimap();
+    if (minimap.setup) minimap.setup(scene, width, height);
+  }
+
   function updateSoundButton(scene) {
     var audio = raceAudio();
     if (!scene || !scene.soundToggle) return;
@@ -239,6 +246,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
   function updateRaceScene(scene, time, delta) {
     var G = game();
     var track = raceTrack();
+    var minimap = raceMinimap();
     if (scene.finished) return;
 
     scene.runners.forEach(function (runner) {
@@ -290,6 +298,8 @@ window.SKACHKI_RACE_ENGINE = (function () {
         }
       }
     });
+
+    if (minimap.update) minimap.update(scene);
 
     if (time - scene.lastBoard > 250) {
       updateLeaderboard(scene);
