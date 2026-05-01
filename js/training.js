@@ -256,10 +256,10 @@ window.SKACHKI_TRAINING = (function () {
       renderGauge(plan) +
       '<div class="training-summary-row">' +
         '<div class="training-summary-cell"><i>' + icon('gain') + '</i><span>Прирост</span><b>' + gainText(plan) + '</b></div>' +
-        '<div class="training-summary-cell"><i>' + icon('coin') + '</i><span>Стоимость</span><b>' + plan.cost + ' 🪙</b></div>' +
+        '<div class="training-summary-cell"><i>' + icon('coin') + '</i><span>Стоимость</span><b>' + plan.cost + '</b></div>' +
       '</div>' +
       '<div class="training-one-line-note">' + plan.note + '</div>' +
-      '<button class="btn btn-gold training-start-btn" data-train-key="' + plan.key + '" type="button" ' + (disabled ? 'disabled' : '') + '>' +
+      '<button class="btn btn-gold training-start-btn ' + (disabled ? 'is-disabled' : '') + '" data-train-key="' + plan.key + '" type="button" ' + (disabled ? 'disabled' : '') + '>' +
         icon('horse') +
         '<span>' + trainButtonText(plan, hasCoins) + '</span>' +
       '</button>' +
