@@ -1,10 +1,15 @@
 // Phaser race engine.
+// Coordinates the scene and runner movement. Track drawing and audio live in split modules.
 
 window.SKACHKI_RACE_ENGINE = (function () {
   function game() { return window.SKACHKI_GAME; }
+  function raceTrack() { return window.SKACHKI_RACE_TRACK || {}; }
+  function raceAudio() { return window.SKACHKI_RACE_AUDIO || {}; }
 
   function destroyRaceGame() {
-    stopHoofSound();
+    var audio = raceAudio();
+    if (audio.stopHoofSound) audio.stopHoofSound();
+
     var G = game();
     if (G.state.raceGame) {
       G.state.raceGame.destroy(true);
@@ -28,7 +33,8 @@ window.SKACHKI_RACE_ENGINE = (function () {
     var status = G.byId('raceStatus');
     if (status) status.textContent = 'Старт! Лошади выходят на дистанцию.';
 
-    startHoofSound();
+    var audio = raceAudio();
+    if (audio.startHoofSound) audio.startHoofSound();
 
     G.state.raceGame = new Phaser.Game({
       type: Phaser.AUTO,
@@ -47,13 +53,14 @@ window.SKACHKI_RACE_ENGINE = (function () {
 
   function setupRaceScene(scene, width, height) {
     var G = game();
+    var track = raceTrack();
     var raceType = G.state.activeRaceType || {};
     var horseCount = G.state.currentRaceHorses.length;
     var trackHeight = Math.min(height * 0.55, 310);
     var trackWidth = Math.min(width * 0.86, Math.max(330, trackHeight * 1.72));
     var laneSpacing = horseCount > 6 ? 9 : 11;
 
-    scene.track = makeTrackGeometry(width, height, trackWidth, trackHeight, laneSpacing, horseCount);
+    scene.track = track.makeTrackGeometry(width, height, trackWidth, trackHeight, laneSpacing, horseCount);
     scene.runners = [];
     scene.totalLaps = 1.28;
     scene.targetRaceTime = raceTargetTime(raceType);
@@ -63,13 +70,13 @@ window.SKACHKI_RACE_ENGINE = (function () {
     scene.startTime = scene.time.now;
     scene.lastBoard = 0;
 
-    drawTrack(scene, width, height);
+    track.drawTrack(scene, width, height);
 
     G.state.currentRaceHorses.forEach(function (horse, index) {
       makeRunner(scene, 'runner_' + index, horse, index);
 
       var lane = index * scene.track.laneSpacing;
-      var p = pointOnTrack(scene.track, 0.006 - index * 0.01, lane);
+      var p = track.pointOnTrack(scene.track, 0.006 - index * 0.01, lane);
       var sprite = scene.add.image(p.x, p.y, 'runner_' + index).setScale(0.46).setDepth(30 + index);
       var name = String(horse.name || '').replace(/^Вы:\s*/, '');
       var labelText = horse.isPlayer ? 'Вы' : String(index + 1);
@@ -124,28 +131,6 @@ window.SKACHKI_RACE_ENGINE = (function () {
     }).setOrigin(0.5).setDepth(320).setShadow(0, 2, '#000', 3);
   }
 
-  function makeTrackGeometry(width, height, trackWidth, trackHeight, laneSpacing, horseCount) {
-    var cx = width / 2;
-    var cy = height / 2 + 12;
-    var radius = trackHeight / 2 - Math.max(32, laneSpacing * horseCount * 0.58);
-    var straight = Math.max(120, trackWidth - radius * 2);
-
-    return {
-      cx: cx,
-      cy: cy,
-      w: straight + radius * 2,
-      h: radius * 2,
-      r: radius,
-      straight: straight,
-      leftCx: cx - straight / 2,
-      rightCx: cx + straight / 2,
-      laneSpacing: laneSpacing,
-      laneCount: horseCount,
-      laneOuter: laneSpacing * Math.max(1, horseCount - 1) + 18,
-      laneInner: 24
-    };
-  }
-
   function raceTargetTime(raceType) {
     var distance = Number(raceType.distance) || 1600;
     var distanceFactor = Math.max(-900, Math.min(1100, (distance - 1600) * 0.55));
@@ -162,6 +147,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
 
   function updateRaceScene(scene, time, delta) {
     var G = game();
+    var track = raceTrack();
     if (scene.finished) return;
 
     scene.runners.forEach(function (runner) {
@@ -184,7 +170,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
       runner.lane += (runner.laneTarget - runner.lane) * Math.min(1, delta / 380);
       runner.progress += speed * delta;
 
-      var p = pointOnTrack(scene.track, ((runner.progress % 1) + 1) % 1, runner.lane);
+      var p = track.pointOnTrack(scene.track, ((runner.progress % 1) + 1) % 1, runner.lane);
       runner.sprite.x = p.x;
       runner.sprite.y = p.y;
       runner.sprite.rotation = p.angle + Math.PI / 2;
@@ -201,7 +187,8 @@ window.SKACHKI_RACE_ENGINE = (function () {
           scene.statusText.setText('Победитель: ' + runner.horse.name);
           var status = G.byId('raceStatus');
           if (status) status.textContent = 'Финиш! Победитель: ' + runner.horse.name;
-          playFinish();
+          var audio = raceAudio();
+          if (audio.playFinish) audio.playFinish();
         }
       }
     });
@@ -239,116 +226,6 @@ window.SKACHKI_RACE_ENGINE = (function () {
       runner.penaltyUntil = time + 850;
       addRaceEvent(scene, runner, 'Сбилась!');
     }
-  }
-
-  function drawTrack(scene, width, height) {
-    var track = scene.track;
-    var g = scene.add.graphics();
-    var outer = track.laneOuter;
-    var inner = track.laneInner;
-
-    g.fillStyle(0x0f4c35, 1).fillRoundedRect(0, 0, width, height, 18);
-
-    for (var s = 0; s < 18; s++) {
-      g.lineStyle(1, 0xffffff, 0.025);
-      g.lineBetween(0, s * 36, width, s * 36 + 18);
-    }
-
-    g.fillStyle(0x215f3d, 1).fillRoundedRect(
-      track.cx - (track.w + outer * 2 + 34) / 2,
-      track.cy - (track.h + outer * 2 + 34) / 2,
-      track.w + outer * 2 + 34,
-      track.h + outer * 2 + 34,
-      track.r + outer + 17
-    );
-
-    g.fillStyle(0x9a5a35, 1).fillRoundedRect(
-      track.cx - (track.w + outer * 2) / 2,
-      track.cy - (track.h + outer * 2) / 2,
-      track.w + outer * 2,
-      track.h + outer * 2,
-      track.r + outer
-    );
-
-    g.fillStyle(0xd28a48, 1).fillRoundedRect(
-      track.cx - (track.w + outer * 2 - 12) / 2,
-      track.cy - (track.h + outer * 2 - 12) / 2,
-      track.w + outer * 2 - 12,
-      track.h + outer * 2 - 12,
-      track.r + outer - 6
-    );
-
-    g.fillStyle(0x17623f, 1).fillRoundedRect(
-      track.cx - (track.w - inner * 2) / 2,
-      track.cy - (track.h - inner * 2) / 2,
-      track.w - inner * 2,
-      track.h - inner * 2,
-      Math.max(20, track.r - inner)
-    );
-
-    g.lineStyle(2, 0xf3d8aa, 0.54);
-    for (var i = 0; i < track.laneCount; i++) {
-      var lane = i * track.laneSpacing;
-      g.strokeRoundedRect(
-        track.cx - (track.w + lane * 2) / 2,
-        track.cy - (track.h + lane * 2) / 2,
-        track.w + lane * 2,
-        track.h + lane * 2,
-        track.r + lane
-      );
-    }
-
-    g.lineStyle(4, 0xffffff, 0.94);
-    var finishX = track.rightCx;
-    var topY = track.cy - track.r - 4;
-    g.lineBetween(finishX, topY - 18, finishX, topY + track.laneOuter + 4);
-    g.lineStyle(2, 0x111111, 0.42);
-    g.lineBetween(finishX + 6, topY - 18, finishX + 6, topY + track.laneOuter + 4);
-
-    scene.add.text(finishX + 10, topY + 8, 'ФИНИШ', {
-      fontFamily: 'Arial',
-      fontSize: '13px',
-      fontStyle: '900',
-      color: '#ffffff'
-    }).setShadow(0, 2, '#000', 3).setDepth(40);
-  }
-
-  function pointOnTrack(track, progress, lane) {
-    var r = track.r + lane;
-    var topY = track.cy - r;
-    var bottomY = track.cy + r;
-    var straight = track.straight;
-    var arc = Math.PI * r;
-    var perimeter = straight * 2 + arc * 2;
-    var d = ((progress % 1) + 1) % 1 * perimeter;
-    var x;
-    var y;
-    var angle;
-
-    if (d < straight) {
-      x = track.rightCx - d;
-      y = topY;
-      angle = Math.PI;
-    } else if (d < straight + arc) {
-      var leftArc = (d - straight) / arc;
-      var a1 = -Math.PI / 2 - leftArc * Math.PI;
-      x = track.leftCx + Math.cos(a1) * r;
-      y = track.cy + Math.sin(a1) * r;
-      angle = a1 - Math.PI / 2;
-    } else if (d < straight * 2 + arc) {
-      var bottomD = d - straight - arc;
-      x = track.leftCx + bottomD;
-      y = bottomY;
-      angle = 0;
-    } else {
-      var rightArc = (d - straight * 2 - arc) / arc;
-      var a2 = Math.PI / 2 - rightArc * Math.PI;
-      x = track.rightCx + Math.cos(a2) * r;
-      y = track.cy + Math.sin(a2) * r;
-      angle = a2 - Math.PI / 2;
-    }
-
-    return { x: x, y: y, angle: angle };
   }
 
   function coatColor(horse, index) {
@@ -418,52 +295,16 @@ window.SKACHKI_RACE_ENGINE = (function () {
     });
   }
 
-  function playTone(freq, duration, type, volume) {
-    var G = game();
-    try {
-      if (!G.state.audioCtx) {
-        var AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContextClass) return;
-        G.state.audioCtx = new AudioContextClass();
-      }
-      var osc = G.state.audioCtx.createOscillator();
-      var gain = G.state.audioCtx.createGain();
-      osc.type = type || 'sine';
-      osc.frequency.value = freq || 440;
-      gain.gain.setValueAtTime(volume || 0.05, G.state.audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, G.state.audioCtx.currentTime + (duration || 0.08));
-      osc.connect(gain);
-      gain.connect(G.state.audioCtx.destination);
-      osc.start();
-      osc.stop(G.state.audioCtx.currentTime + (duration || 0.08));
-    } catch (e) {}
-  }
-
-  function startHoofSound() {
-    stopHoofSound();
-    var G = game();
-    G.state.hoofTimer = setInterval(function () {
-      playTone(88 + Math.random() * 30, 0.034, 'triangle', 0.03);
-    }, 205);
-  }
-
-  function stopHoofSound() {
-    var G = game();
-    if (G.state.hoofTimer) clearInterval(G.state.hoofTimer);
-    G.state.hoofTimer = null;
-  }
-
-  function playFinish() {
-    stopHoofSound();
-    playTone(720, 0.08, 'sine', 0.07);
-    setTimeout(function () { playTone(960, 0.09, 'sine', 0.07); }, 90);
-  }
-
   function bind() {
     var G = game();
     var back = G.byId('raceBackBtn');
     var restart = G.byId('restartRaceBtn');
-    if (back) back.onclick = function () { destroyRaceGame(); G.showScreen('raceMenu'); };
+
+    if (back) back.onclick = function () {
+      destroyRaceGame();
+      G.showScreen('raceMenu');
+    };
+
     if (restart) restart.onclick = function () {
       if (window.SKACHKI_RACE_MENU) window.SKACHKI_RACE_MENU.startRace();
     };
