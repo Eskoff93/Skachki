@@ -17,6 +17,10 @@ window.SKACHKI_RACE_ENGINE = (function () {
     }
   }
 
+  function raceRenderResolution() {
+    return Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
+  }
+
   function createRaceGame() {
     var G = game();
     destroyRaceGame();
@@ -29,6 +33,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
     var rect = box.getBoundingClientRect();
     var width = Math.max(360, Math.floor(rect.width));
     var height = Math.max(470, Math.floor(rect.height));
+    var resolution = raceRenderResolution();
 
     var status = G.byId('raceStatus');
     if (status) status.textContent = 'Старт! Камера следует за вашей лошадью.';
@@ -41,9 +46,16 @@ window.SKACHKI_RACE_ENGINE = (function () {
       parent: 'phaser-game',
       width: width,
       height: height,
+      resolution: resolution,
       backgroundColor: '#0d2d26',
       scale: { mode: Phaser.Scale.RESIZE, autoCenter: Phaser.Scale.CENTER_BOTH },
-      render: { antialias: true, roundPixels: false },
+      render: {
+        antialias: true,
+        antialiasGL: true,
+        roundPixels: false,
+        pixelArt: false,
+        powerPreference: 'high-performance'
+      },
       scene: {
         create: function () { setupRaceScene(this, width, height); },
         update: function (time, delta) { updateRaceScene(this, time, delta); }
@@ -90,11 +102,12 @@ window.SKACHKI_RACE_ENGINE = (function () {
       var labelText = horse.isPlayer ? 'Вы' : String(index + 1);
       var label = scene.add.text(p.x, p.y - 42, labelText, {
         fontFamily: 'Arial',
-        fontSize: horse.isPlayer ? '14px' : '12px',
+        fontSize: horse.isPlayer ? '16px' : '14px',
         fontStyle: '900',
         color: '#ffffff',
-        backgroundColor: horse.isPlayer ? 'rgba(255,176,52,.88)' : 'rgba(0,0,0,.52)',
-        padding: { left: 6, right: 6, top: 3, bottom: 3 }
+        backgroundColor: horse.isPlayer ? 'rgba(255,176,52,.9)' : 'rgba(0,0,0,.56)',
+        padding: { left: 7, right: 7, top: 4, bottom: 4 },
+        resolution: 2
       }).setOrigin(0.5).setDepth(200);
 
       var cls = G.horseClass(horse);
@@ -148,33 +161,37 @@ window.SKACHKI_RACE_ENGINE = (function () {
   function setupHud(scene, width, height) {
     var G = game();
 
-    scene.boardBox = scene.add.rectangle(10, 10, 172, 116, 0x071827, 0.78).setOrigin(0, 0).setDepth(300).setScrollFactor(0);
-    scene.boardBox.setStrokeStyle(1, 0xd8a943, 0.26);
+    scene.boardBox = scene.add.rectangle(10, 10, 188, 128, 0x071827, 0.84).setOrigin(0, 0).setDepth(300).setScrollFactor(0);
+    scene.boardBox.setStrokeStyle(1, 0xd8a943, 0.34);
     scene.boardLines = [];
 
     for (var i = 0; i < Math.min(5, G.state.currentRaceHorses.length); i++) {
-      scene.boardLines.push(scene.add.text(20, 22 + i * 18, '', {
+      scene.boardLines.push(scene.add.text(20, 23 + i * 20, '', {
         fontFamily: 'Arial',
-        fontSize: '11px',
-        color: '#fff'
+        fontSize: '13px',
+        fontStyle: '800',
+        color: '#ffffff',
+        resolution: 2
       }).setDepth(310).setScrollFactor(0));
     }
 
     scene.playerHud = scene.add.text(width - 14, 14, '', {
       fontFamily: 'Arial',
-      fontSize: '12px',
+      fontSize: '14px',
       fontStyle: '900',
       color: '#ffe6a2',
       align: 'right',
-      backgroundColor: 'rgba(7,24,39,.78)',
-      padding: { left: 8, right: 8, top: 6, bottom: 6 }
+      backgroundColor: 'rgba(7,24,39,.86)',
+      padding: { left: 10, right: 10, top: 8, bottom: 8 },
+      resolution: 2
     }).setOrigin(1, 0).setDepth(315).setScrollFactor(0);
 
-    scene.statusText = scene.add.text(width / 2, height - 36, '', {
+    scene.statusText = scene.add.text(width / 2, height - 38, '', {
       fontFamily: 'Arial',
-      fontSize: '16px',
+      fontSize: '18px',
       fontStyle: '900',
-      color: '#fff'
+      color: '#fff',
+      resolution: 2
     }).setOrigin(0.5).setDepth(320).setShadow(0, 2, '#000', 3).setScrollFactor(0);
   }
 
@@ -223,7 +240,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
       runner.sprite.rotation = p.angle + Math.PI / 2;
       runner.sprite.setDepth(30 + Math.floor(p.y));
       runner.label.x = p.x;
-      runner.label.y = p.y - 42;
+      runner.label.y = p.y - 44;
 
       if (runner.marker) {
         runner.marker.x = p.x;
@@ -325,11 +342,12 @@ window.SKACHKI_RACE_ENGINE = (function () {
     if (status) status.textContent = runner.horse.name + ': ' + text;
     var eventText = scene.add.text(runner.sprite.x, runner.sprite.y - 58, text, {
       fontFamily: 'Arial',
-      fontSize: '14px',
+      fontSize: '16px',
       fontStyle: '900',
       color: '#fff',
-      backgroundColor: 'rgba(0,0,0,.56)',
-      padding: { left: 6, right: 6, top: 3, bottom: 3 }
+      backgroundColor: 'rgba(0,0,0,.62)',
+      padding: { left: 8, right: 8, top: 4, bottom: 4 },
+      resolution: 2
     }).setOrigin(0.5).setDepth(330);
     scene.tweens.add({
       targets: eventText,
