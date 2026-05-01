@@ -39,6 +39,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
     if (status) status.textContent = 'Старт! Камера следует за вашей лошадью.';
 
     var audio = raceAudio();
+    if (audio.bindUnlock) audio.bindUnlock();
     if (audio.startHoofSound) audio.startHoofSound();
 
     G.state.raceGame = new Phaser.Game({
@@ -186,6 +187,26 @@ window.SKACHKI_RACE_ENGINE = (function () {
       resolution: 2
     }).setOrigin(1, 0).setDepth(315).setScrollFactor(0);
 
+    scene.soundToggle = scene.add.text(width - 14, 116, '', {
+      fontFamily: 'Arial',
+      fontSize: '15px',
+      fontStyle: '900',
+      color: '#ffffff',
+      backgroundColor: 'rgba(7,24,39,.86)',
+      padding: { left: 9, right: 9, top: 7, bottom: 7 },
+      resolution: 2
+    }).setOrigin(1, 0).setDepth(316).setScrollFactor(0).setInteractive({ useHandCursor: true });
+
+    scene.soundToggle.on('pointerdown', function (pointer, localX, localY, event) {
+      var audio = raceAudio();
+      if (event && event.stopPropagation) event.stopPropagation();
+      if (audio.toggleMuted) audio.toggleMuted();
+      if (audio.unlockAudio) audio.unlockAudio();
+      if (audio.isMuted && !audio.isMuted() && !scene.finished && audio.startHoofSound) audio.startHoofSound();
+      updateSoundButton(scene);
+    });
+    updateSoundButton(scene);
+
     scene.statusText = scene.add.text(width / 2, height - 38, '', {
       fontFamily: 'Arial',
       fontSize: '18px',
@@ -193,6 +214,12 @@ window.SKACHKI_RACE_ENGINE = (function () {
       color: '#fff',
       resolution: 2
     }).setOrigin(0.5).setDepth(320).setShadow(0, 2, '#000', 3).setScrollFactor(0);
+  }
+
+  function updateSoundButton(scene) {
+    var audio = raceAudio();
+    if (!scene || !scene.soundToggle) return;
+    scene.soundToggle.setText(audio.isMuted && audio.isMuted() ? '🔇 Звук' : '🔊 Звук');
   }
 
   function raceTargetTime(raceType) {
@@ -259,6 +286,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
           if (status) status.textContent = 'Финиш! Победитель: ' + runner.horse.name;
           var audio = raceAudio();
           if (audio.playFinish) audio.playFinish();
+          updateSoundButton(scene);
         }
       }
     });
@@ -282,6 +310,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
     var temperament = runner.horse.temperament;
     var agility = Number(runner.horse.agility) || 60;
     var roll = Math.random();
+    var audio = raceAudio();
 
     if (temperament === 'Резкая' || roll < 0.2) {
       runner.laneTarget = G.clamp(runner.laneTarget + G.randInt(-1, 1) * scene.track.laneSpacing, 0, scene.track.laneSpacing * Math.max(0, scene.track.laneCount - 1));
@@ -289,12 +318,14 @@ window.SKACHKI_RACE_ENGINE = (function () {
 
     if (roll < 0.36 || temperament === 'Быстрая') {
       runner.burstUntil = time + 900;
+      if (audio.playBurst) audio.playBurst();
       addRaceEvent(scene, runner, 'Рывок!');
       return;
     }
 
     if (roll > 0.84 && agility < 72) {
       runner.penaltyUntil = time + 850;
+      if (audio.playMistake) audio.playMistake();
       addRaceEvent(scene, runner, 'Сбилась!');
     }
   }
