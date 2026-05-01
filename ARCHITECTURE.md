@@ -22,7 +22,7 @@ js/game.js
 js/data.js
 js/horse.js
 js/state.js
-js/ui.js
+js/ui-core.js
 js/horse-portrait.js
 js/horse-ui.js
 js/stable.js
@@ -61,7 +61,7 @@ ARCHITECTURE.md
 | `js/data.js` | Справочники и баланс-данные. |
 | `js/horse.js` | Доменная логика лошади: создание, нормализация, класс, пол, форма, ранги, скрытые качества. |
 | `js/state.js` | `localStorage`, миграции, сериализация. |
-| `js/ui.js` | Базовые UI-хелперы: DOM, переключение экранов, toast. Сейчас содержит старый legacy horse UI до финальной очистки. |
+| `js/ui-core.js` | Базовые UI-хелперы: DOM, переключение экранов, toast. |
 | `js/horse-portrait.js` | Генерация SVG-портрета лошади по породе, масти и seed. |
 | `js/horse-ui.js` | Карточка лошади, звёзды потенциала, качества, медальон, общий `SKACHKI_HORSE_UI`. |
 | `js/stable.js` | Экран Конюшни. |
@@ -125,8 +125,6 @@ ARCHITECTURE.md
 
 ## Технический долг
 
-- `js/ui.js` нужно финально очистить от legacy `SKACHKI_HORSE_UI`, когда GitHub-инструмент позволит безопасно заменить файл.
-- После очистки `js/ui.js` должен содержать только базовые UI-хелперы.
 - Стили `class-score-badge` сейчас временно в `css/core.css`; при следующей чистке `css/horse-card.css` перенести их туда.
 
 ## Telegram Mini App
