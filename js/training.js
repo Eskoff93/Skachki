@@ -7,22 +7,19 @@ window.SKACHKI_TRAINING = (function () {
 
   var TRAINING_META = {
     speed: {
-      icon: '➤',
       short: 'Скорость',
       title: 'Скорость',
       hint: 'Максимальный темп на дистанции.'
     },
     stamina: {
-      icon: '♡',
       short: 'Выносливость',
       title: 'Выносливость',
-      hint: 'Стабильность ближе к финишу и длинные дистанции.'
+      hint: 'Стабильность ближе к финишу.'
     },
     acceleration: {
-      icon: '⚡',
       short: 'Ускорение',
       title: 'Ускорение',
-      hint: 'Старт, рывки, выход из поворотов и смена темпа.'
+      hint: 'Старт, рывки и смена темпа.'
     }
   };
 
@@ -33,10 +30,21 @@ window.SKACHKI_TRAINING = (function () {
     return new Date().toISOString().slice(0, 10);
   }
 
-  function progressText(horse) {
-    var horseTools = window.SKACHKI_HORSE || {};
-    if (horseTools.trainingProgressText) return horseTools.trainingProgressText(horse);
-    return 'Серия тренировок: ' + (horse.trainingStreakDays || 0) + ' дн.';
+  function icon(name) {
+    var paths = {
+      back: '<path d="M15 6l-6 6 6 6"/><path d="M9 12h12"/>',
+      coin: '<circle cx="12" cy="12" r="8"/><path d="M12 8v8"/><path d="M9.5 10h5"/><path d="M9.5 14h5"/>',
+      streak: '<path d="M12 3v5"/><path d="M7 7l3 3"/><path d="M17 7l-3 3"/><path d="M5 14c2 4 5 6 7 6s5-2 7-6"/>',
+      center: '<path d="M4 19h16"/><path d="M6 19V9l6-4 6 4v10"/><path d="M10 19v-6h4v6"/>',
+      speed: '<path d="M4 15c4-6 10-8 16-8"/><path d="M16 5l4 2-3 4"/><path d="M5 18h10"/>',
+      stamina: '<path d="M12 21s7-4 7-11V5l-7-3-7 3v5c0 7 7 11 7 11z"/><path d="M8.5 12h2l1.2-3 2 6 1-3h1.8"/>',
+      acceleration: '<path d="M13 2L5 14h6l-1 8 8-12h-6l1-8z"/>',
+      gain: '<path d="M5 16l5-5 3 3 6-7"/><path d="M15 7h4v4"/>',
+      efficiency: '<circle cx="12" cy="12" r="8"/><path d="M12 12l5-4"/><path d="M8 16h8"/>',
+      horse: '<path d="M8 19c2-5 1-9 5-12 4 2 6 5 5 9"/><path d="M11 8c-2 1-3 3-3 5"/><path d="M14 6l2-3 2 4"/>'
+    };
+
+    return '<svg class="training-svg-icon" viewBox="0 0 24 24" aria-hidden="true">' + (paths[name] || paths.horse) + '</svg>';
   }
 
   function naturalLimit(horse) {
@@ -76,7 +84,7 @@ window.SKACHKI_TRAINING = (function () {
         gainMin: 0,
         gainMax: 0,
         cost: 0,
-        note: 'Показатель уже находится на максимуме.'
+        note: 'Показатель уже на максимуме.'
       };
     }
 
@@ -87,7 +95,7 @@ window.SKACHKI_TRAINING = (function () {
         gainMin: 4,
         gainMax: 6,
         cost: roundCost(baseCost),
-        note: 'Лошадь ещё далека от природного предела — тренировка даёт лучший прирост.'
+        note: 'Далеко от предела: прирост выше, цена базовая.'
       };
     }
 
@@ -98,7 +106,7 @@ window.SKACHKI_TRAINING = (function () {
         gainMin: 2,
         gainMax: 4,
         cost: roundCost(baseCost * 1.25),
-        note: 'Рост становится сложнее: эффективность средняя, стоимость выше базовой.'
+        note: 'Средняя зона: прирост ниже, цена чуть выше.'
       };
     }
 
@@ -109,7 +117,7 @@ window.SKACHKI_TRAINING = (function () {
         gainMin: 1,
         gainMax: 2,
         cost: roundCost(baseCost * 1.75),
-        note: 'Показатель близок к природному пределу — прирост слабее, тренировка дороже.'
+        note: 'Близко к пределу: тренировка дороже и слабее.'
       };
     }
 
@@ -119,7 +127,7 @@ window.SKACHKI_TRAINING = (function () {
       gainMin: 0,
       gainMax: 1,
       cost: roundCost(baseCost * 2.35),
-      note: 'Дальше развивать можно, но прирост почти не гарантирован и стоит дорого.'
+      note: 'Выше природного предела: редкий прирост и высокая цена.'
     };
   }
 
@@ -138,6 +146,12 @@ window.SKACHKI_TRAINING = (function () {
     return plan;
   }
 
+  function progressText(horse) {
+    var horseTools = window.SKACHKI_HORSE || {};
+    if (horseTools.trainingProgressText) return horseTools.trainingProgressText(horse);
+    return 'Серия: ' + (horse.trainingStreakDays || 0) + ' дн.';
+  }
+
   function gainText(plan) {
     if (plan.gainMax <= 0) return '+0';
     if (plan.gainMin === plan.gainMax) return '+' + plan.gainMax;
@@ -147,7 +161,7 @@ window.SKACHKI_TRAINING = (function () {
   function trainButtonText(plan, hasCoins) {
     if (plan.current >= 100) return 'Максимум достигнут';
     if (!hasCoins) return 'Недостаточно монет';
-    return 'Начать тренировку';
+    return 'Тренировать';
   }
 
   function sexSymbol(horse) {
@@ -160,112 +174,95 @@ window.SKACHKI_TRAINING = (function () {
 
   function renderStars(horse) {
     var UI = horseUi();
-    if (UI.starRating) return UI.starRating(horse);
-    return '';
+    return UI.starRating ? UI.starRating(horse) : '';
   }
 
   function renderPortrait(horse) {
     var UI = horseUi();
-    if (UI.horsePortrait) return UI.horsePortrait(horse);
-    return '<img src="./horse_icon.png" alt="horse">';
+    return UI.horsePortrait ? UI.horsePortrait(horse) : '<img src="./horse_icon.png" alt="horse">';
   }
 
-  function renderTopHeader(horse) {
+  function renderTopline(coins) {
+    return '<div class="training-topline">' +
+      '<button class="training-back-btn" type="button" data-training-back>' + icon('back') + '</button>' +
+      '<div class="training-title">Тренировочный центр</div>' +
+      '<div class="training-coin-pill">' + icon('coin') + '<b>' + coins + '</b></div>' +
+    '</div>';
+  }
+
+  function renderProfile(horse) {
     var G = game();
 
-    return '<section class="training-center-head">' +
-      '<button class="training-back-btn" type="button" data-training-back>←</button>' +
-      '<div class="training-center-title">Тренировочный центр</div>' +
-      '<div class="training-center-emblem">♞</div>' +
-      '<div class="training-profile">' +
-        '<div class="training-portrait training-sex-' + sexClass(horse) + '">' +
-          renderPortrait(horse) +
-          '<span>' + sexSymbol(horse) + '</span>' +
-        '</div>' +
-        '<div class="training-profile-main">' +
-          '<div class="training-horse-name">' +
-            horse.name +
-            ' <span class="training-sex-symbol training-sex-' + sexClass(horse) + '">' + sexSymbol(horse) + '</span>' +
-          '</div>' +
-          renderStars(horse) +
-          '<div class="training-form-chip">Форма: <b>' + G.formLabel(horse.form) + '</b></div>' +
-        '</div>' +
+    return '<section class="training-profile-card">' +
+      '<div class="training-portrait">' +
+        renderPortrait(horse) +
+        '<span class="training-sex-badge training-sex-' + sexClass(horse) + '">' + sexSymbol(horse) + '</span>' +
+      '</div>' +
+      '<div class="training-profile-main">' +
+        '<div class="training-horse-name">' + horse.name + '</div>' +
+        renderStars(horse) +
+        '<div class="training-form-chip">Форма <b>' + G.formLabel(horse.form) + '</b></div>' +
       '</div>' +
     '</section>';
   }
 
-  function renderStatusBar(horse) {
+  function renderStatusBar(horse, plan) {
     var G = game();
 
     return '<section class="training-status-grid">' +
-      '<div class="training-status-cell"><i>▦</i><span>Серия</span><b>' + (horse.trainingStreakDays || 0) + ' дн.</b></div>' +
-      '<div class="training-status-cell"><i>◉</i><span>Монеты</span><b>' + G.state.coins + '</b></div>' +
-      '<div class="training-status-cell"><i>▣</i><span>Тренировочный центр</span><b>Уровень ' + (G.state.stableLevel || 1) + '</b></div>' +
+      '<div class="training-status-cell"><i>' + icon('streak') + '</i><span>Серия</span><b>' + (horse.trainingStreakDays || 0) + ' дн.</b></div>' +
+      '<div class="training-status-cell"><i>' + icon('efficiency') + '</i><span>Эффект</span><b>' + plan.label + '</b></div>' +
+      '<div class="training-status-cell"><i>' + icon('center') + '</i><span>Центр</span><b>Ур. ' + (G.state.stableLevel || 1) + '</b></div>' +
     '</section>';
   }
 
   function renderTabs(activeKey) {
     return '<div class="training-tabs">' + primaryTrainingTypes().map(function (type) {
-      var meta = TRAINING_META[type.key] || {};
       var active = type.key === activeKey;
+      var meta = TRAINING_META[type.key] || {};
 
       return '<button class="training-tab ' + (active ? 'active' : '') + '" type="button" data-train-tab="' + type.key + '">' +
-        '<i>' + (meta.icon || '●') + '</i>' +
+        icon(type.key) +
         '<span>' + (meta.short || type.label) + '</span>' +
       '</button>';
     }).join('') + '</div>';
   }
 
   function renderHero(horse, plan) {
-    return renderTopHeader(horse) + renderStatusBar(horse) + renderTabs(plan.key);
+    var G = game();
+    return renderTopline(G.state.coins) + renderProfile(horse) + renderStatusBar(horse, plan) + renderTabs(plan.key);
   }
 
   function renderGauge(plan) {
-    var markerLeft = plan.limitPercent;
-
-    return '<div class="training-gauge-wrap training-eff-' + plan.level + '">' +
-      '<div class="training-gauge-title">' + (TRAINING_META[plan.key].title || plan.type.label) + '</div>' +
+    return '<div class="training-gauge-title">' + (TRAINING_META[plan.key].title || plan.type.label) + '</div>' +
       '<div class="training-gauge">' +
         '<div class="training-gauge-arc"></div>' +
-        '<div class="training-gauge-needle" style="--needle-left:' + markerLeft + '%"></div>' +
+        '<div class="training-gauge-needle" style="--needle-left:' + plan.limitPercent + '%"></div>' +
         '<div class="training-gauge-value">' + plan.current + '</div>' +
         '<div class="training-gauge-label">Текущий уровень</div>' +
       '</div>' +
       '<div class="training-potential-track">' +
         '<span class="training-progress-fill" style="width:' + plan.progressPercent + '%"></span>' +
-        '<span class="training-limit-marker" style="left:' + markerLeft + '%" title="Природный предел"></span>' +
-      '</div>' +
-      '<div class="training-zone-row">' +
-        '<div><b>Далеко от предела</b><span>Высокая эффективность<br>Низкая стоимость</span></div>' +
-        '<div><b>Средняя зона</b><span>Средняя эффективность<br>Средняя стоимость</span></div>' +
-        '<div><b>Близко к пределу</b><span>Низкая эффективность<br>Высокая стоимость</span></div>' +
-      '</div>' +
-    '</div>';
+        '<span class="training-limit-marker" style="left:' + plan.limitPercent + '%" title="Природный предел"></span>' +
+      '</div>';
   }
 
-  function renderPlanStats(plan) {
-    return '<div class="training-plan-grid">' +
-      '<div class="training-plan-cell"><i>▥</i><span>Текущий уровень</span><b>' + plan.current + '</b></div>' +
-      '<div class="training-plan-cell training-plan-eff training-eff-' + plan.level + '"><i>◎</i><span>Эффективность</span><b>' + plan.label + '</b></div>' +
-      '<div class="training-plan-cell"><i>↗</i><span>Ожидаемый прирост</span><b>' + gainText(plan) + '</b></div>' +
-      '<div class="training-plan-cell"><i>◉</i><span>Стоимость</span><b>' + plan.cost + ' 🪙</b></div>' +
-    '</div>';
-  }
-
-  function renderTrainingPanel(horse, plan) {
+  function renderTrainingPanel(plan) {
     var G = game();
     var hasCoins = G.state.coins >= plan.cost;
     var disabled = plan.current >= 100 || !hasCoins;
-    var meta = TRAINING_META[plan.key] || {};
 
     return '<section class="training-center-panel training-eff-' + plan.level + '">' +
       renderGauge(plan) +
-      renderPlanStats(plan) +
-      '<div class="training-info-note"><i>i</i><span>' + plan.note + '</span></div>' +
+      '<div class="training-summary-row">' +
+        '<div class="training-summary-cell"><i>' + icon('gain') + '</i><span>Прирост</span><b>' + gainText(plan) + '</b></div>' +
+        '<div class="training-summary-cell"><i>' + icon('coin') + '</i><span>Стоимость</span><b>' + plan.cost + ' 🪙</b></div>' +
+      '</div>' +
+      '<div class="training-one-line-note">' + plan.note + '</div>' +
       '<button class="btn btn-gold training-start-btn" data-train-key="' + plan.key + '" type="button" ' + (disabled ? 'disabled' : '') + '>' +
-        '<span>♞</span>' + trainButtonText(plan, hasCoins) +
+        icon('horse') +
+        '<span>' + trainButtonText(plan, hasCoins) + '</span>' +
       '</button>' +
-      '<div class="training-bottom-note">' + (meta.hint || plan.type.desc || '') + ' ' + progressText(horse) + '</div>' +
     '</section>';
   }
 
@@ -281,7 +278,7 @@ window.SKACHKI_TRAINING = (function () {
     var plan = trainingPlan(horse, type);
 
     if (hero) hero.innerHTML = renderHero(horse, plan);
-    if (options) options.innerHTML = renderTrainingPanel(horse, plan);
+    if (options) options.innerHTML = renderTrainingPanel(plan);
   }
 
   function openTraining(id) {
@@ -326,10 +323,8 @@ window.SKACHKI_TRAINING = (function () {
     G.state.coins -= plan.cost;
 
     var countedToday = updateTrainingForm(horse);
-    var resultText = gain > 0 ? ' +' + gain : ': без прироста';
-
     G.saveGame();
-    G.showToast(horse.name + ': ' + type.label + resultText + (countedToday ? ' • серия +' : ''));
+    G.showToast(horse.name + ': ' + type.label + (gain > 0 ? ' +' + gain : ' без прироста') + (countedToday ? ' • серия +' : ''));
     renderTrainingScreen();
   }
 
