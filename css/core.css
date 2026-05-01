@@ -31,29 +31,3 @@
   border:1px solid rgba(216,169,67,.2);
   box-shadow:0 10px 28px rgba(0,0,0,.28),inset 0 0 0 1px rgba(255,255,255,.025);
 }
-
-.class-score-badge{
-  position:absolute;
-  left:-11px;
-  top:6px;
-  z-index:7;
-  min-width:36px;
-  height:36px;
-  padding:4px 7px;
-  box-sizing:border-box;
-  border-radius:13px;
-  background:radial-gradient(circle at 50% 0,rgba(255,236,170,.22),transparent 58%),linear-gradient(180deg,rgba(31,39,45,.98),rgba(9,15,22,.98));
-  border:1px solid rgba(255,218,111,.58);
-  box-shadow:0 8px 18px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.18);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#ffe08a;
-  text-shadow:0 2px 12px rgba(216,169,67,.32);
-}
-.class-score-badge b{
-  font-size:22px;
-  line-height:1;
-  font-weight:950;
-  letter-spacing:-.04em;
-}
