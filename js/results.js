@@ -24,6 +24,14 @@ window.SKACHKI_RESULTS = (function () {
     '</div>';
   }
 
+  function rewardForPlace(raceType, place) {
+    if (!raceType || raceType.isBalanceTest) return 0;
+    if (place === 1) return raceType.prizeMax || 0;
+    if (place === 2) return Math.round(((raceType.prizeMin || 0) + (raceType.prizeMax || 0)) / 2);
+    if (place === 3) return raceType.prizeMin || 0;
+    return 0;
+  }
+
   function showResults() {
     var G = game();
     var results = G.state.raceResults;
@@ -36,19 +44,14 @@ window.SKACHKI_RESULTS = (function () {
       return result.horse && result.horse.isPlayer;
     });
     var place = playerIndex + 1;
-    var reward = 0;
     var raceType = G.state.activeRaceType;
+    var isBalanceTest = !!(raceType && raceType.isBalanceTest);
+    var reward = rewardForPlace(raceType, place);
 
-    if (raceType) {
-      if (place === 1) reward = raceType.prizeMax;
-      else if (place === 2) reward = Math.round((raceType.prizeMin + raceType.prizeMax) / 2);
-      else if (place === 3) reward = raceType.prizeMin;
-    }
-
-    G.state.coins += reward;
+    if (!isBalanceTest) G.state.coins += reward;
 
     var playerResult = results[playerIndex];
-    if (playerResult && playerResult.horse && playerResult.horse.playerHorseId) {
+    if (!isBalanceTest && playerResult && playerResult.horse && playerResult.horse.playerHorseId) {
       var realHorse = G.state.horses.find(function (horse) {
         return String(horse.id) === String(playerResult.horse.playerHorseId);
       });
@@ -62,7 +65,7 @@ window.SKACHKI_RESULTS = (function () {
       }
     }
 
-    G.saveGame();
+    if (!isBalanceTest) G.saveGame();
 
     if (resultsList) {
       resultsList.innerHTML =
@@ -70,9 +73,9 @@ window.SKACHKI_RESULTS = (function () {
           '<div class="winner-banner">' +
             '<div class="winner-crown">🏁</div>' +
             '<div class="winner-main">' +
-              '<div class="winner-place">Ваш результат</div>' +
+              '<div class="winner-place">' + (isBalanceTest ? 'Баланс-тест' : 'Ваш результат') + '</div>' +
               '<div class="winner-name">' + (place || '—') + ' место</div>' +
-              '<div class="winner-time">Награда: +' + reward + ' 🪙</div>' +
+              '<div class="winner-time">' + (isBalanceTest ? 'Без наград, карьеры и статистики' : 'Награда: +' + reward + ' 🪙') + '</div>' +
             '</div>' +
           '</div>' +
         '</div>' +
@@ -90,7 +93,7 @@ window.SKACHKI_RESULTS = (function () {
     }
 
     if (resultsModal) resultsModal.classList.add('active');
-    G.showToast(reward ? 'Выигрыш: 🪙 ' + reward : 'Приз не получен');
+    G.showToast(isBalanceTest ? 'Тест завершён' : (reward ? 'Выигрыш: 🪙 ' + reward : 'Приз не получен'));
     G.state.activeRaceType = null;
 
     setTimeout(bindDynamicResultButtons, 0);
