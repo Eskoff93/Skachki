@@ -1,16 +1,17 @@
 // Phaser race engine.
-// Coordinates the scene and runner movement. Track drawing, audio, minimap and AI live in split modules.
+// Coordinates the scene and runner movement. Track drawing, audio and AI live in split modules.
 
 window.SKACHKI_RACE_ENGINE = (function () {
   function game() { return window.SKACHKI_GAME; }
   function raceTrack() { return window.SKACHKI_RACE_TRACK || {}; }
   function raceAudio() { return window.SKACHKI_RACE_AUDIO || {}; }
-  function raceMinimap() { return window.SKACHKI_RACE_MINIMAP || {}; }
   function raceAi() { return window.SKACHKI_RACE_AI || {}; }
 
   function destroyRaceGame() {
     var audio = raceAudio();
     if (audio.stopHoofSound) audio.stopHoofSound();
+
+    resetTopRaceProgress();
 
     var G = game();
     if (G.state.raceGame) {
@@ -71,11 +72,11 @@ window.SKACHKI_RACE_ENGINE = (function () {
     var track = raceTrack();
     var raceType = G.state.activeRaceType || {};
     var horseCount = G.state.currentRaceHorses.length;
-    var worldWidth = Math.max(width * 2.35, 960);
-    var worldHeight = Math.max(height * 1.55, 720);
-    var trackHeight = Math.min(worldHeight * 0.58, 470);
-    var trackWidth = Math.min(worldWidth * 0.78, Math.max(620, trackHeight * 1.95));
-    var laneSpacing = horseCount > 6 ? 14 : 16;
+    var worldWidth = Math.max(width * 2.6, 1040);
+    var worldHeight = Math.max(height * 1.65, 780);
+    var trackHeight = Math.min(worldHeight * 0.66, 560);
+    var trackWidth = Math.min(worldWidth * 0.88, Math.max(760, trackHeight * 2.05));
+    var laneSpacing = horseCount > 6 ? 18 : 21;
     var startProgress = 0.006;
 
     scene.viewportWidth = width;
@@ -85,14 +86,18 @@ window.SKACHKI_RACE_ENGINE = (function () {
     scene.track = track.makeTrackGeometry(worldWidth, worldHeight, trackWidth, trackHeight, laneSpacing, horseCount);
     scene.runners = [];
     scene.playerRunner = null;
-    scene.totalLaps = 1.28;
+    scene.startProgress = startProgress;
+    scene.raceDistance = 1;
+    scene.finishProgress = startProgress + scene.raceDistance;
+    scene.totalLaps = scene.finishProgress;
     scene.targetRaceTime = raceTargetTime(raceType);
-    scene.basePace = scene.totalLaps / scene.targetRaceTime;
+    scene.basePace = scene.raceDistance / scene.targetRaceTime;
     scene.finishCount = 0;
     scene.finished = false;
     scene.startTime = scene.time.now;
     scene.lastBoard = 0;
 
+    resetTopRaceProgress();
     track.drawTrack(scene, worldWidth, worldHeight);
 
     G.state.currentRaceHorses.forEach(function (horse, index) {
@@ -100,11 +105,11 @@ window.SKACHKI_RACE_ENGINE = (function () {
 
       var lane = index * scene.track.laneSpacing;
       var p = track.pointOnTrack(scene.track, startProgress, lane);
-      var scale = horse.isPlayer ? 0.78 : 0.68;
+      var scale = horse.isPlayer ? 0.96 : 0.84;
       var sprite = scene.add.image(p.x, p.y, 'runner_' + index).setScale(scale).setDepth(30 + index);
       var name = String(horse.name || '').replace(/^Вы:\s*/, '');
       var labelText = horse.isPlayer ? 'Вы' : String(index + 1);
-      var label = scene.add.text(p.x, p.y - 42, labelText, {
+      var label = scene.add.text(p.x, p.y - 52, labelText, {
         fontFamily: 'Arial',
         fontSize: horse.isPlayer ? '16px' : '14px',
         fontStyle: '900',
@@ -122,7 +127,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
       var marker = null;
 
       if (horse.isPlayer) {
-        marker = scene.add.circle(p.x, p.y, 28, 0xffd34d, 0.14).setStrokeStyle(2, 0xffd34d, 0.7).setDepth(25);
+        marker = scene.add.circle(p.x, p.y, 36, 0xffd34d, 0.14).setStrokeStyle(2, 0xffd34d, 0.7).setDepth(25);
       }
 
       var runner = {
@@ -150,14 +155,13 @@ window.SKACHKI_RACE_ENGINE = (function () {
     if (!scene.playerRunner && scene.runners.length) scene.playerRunner = scene.runners[0];
     setupCamera(scene);
     setupHud(scene, width, height);
-    setupMinimap(scene, width, height);
   }
 
   function setupCamera(scene) {
     var camera = scene.cameras.main;
     camera.setBounds(0, 0, scene.worldWidth, scene.worldHeight);
     camera.setRoundPixels(false);
-    camera.setZoom(1.26);
+    camera.setZoom(1);
 
     if (scene.playerRunner) {
       camera.startFollow(scene.playerRunner.sprite, true, 0.08, 0.08);
@@ -222,15 +226,33 @@ window.SKACHKI_RACE_ENGINE = (function () {
     }).setOrigin(0.5).setDepth(320).setShadow(0, 2, '#000', 3).setScrollFactor(0);
   }
 
-  function setupMinimap(scene, width, height) {
-    var minimap = raceMinimap();
-    if (minimap.setup) minimap.setup(scene, width, height);
-  }
-
   function updateSoundButton(scene) {
     var audio = raceAudio();
     if (!scene || !scene.soundToggle) return;
     scene.soundToggle.setText(audio.isMuted && audio.isMuted() ? '🔇 Звук' : '🔊 Звук');
+  }
+
+  function resetTopRaceProgress() {
+    var G = game();
+    var fill = G && G.byId ? G.byId('raceProgressFill') : null;
+    var meta = G && G.byId ? G.byId('raceProgressMeta') : null;
+    if (fill) fill.style.width = '0%';
+    if (meta) meta.textContent = '0%';
+  }
+
+  function racePercent(scene, runner) {
+    if (!scene || !runner) return 0;
+    return Math.max(0, Math.min(100, Math.round((runner.progress - scene.startProgress) / scene.raceDistance * 100)));
+  }
+
+  function updateTopRaceProgress(scene) {
+    var G = game();
+    var runner = scene.playerRunner || scene.runners[0];
+    var percent = racePercent(scene, runner);
+    var fill = G.byId('raceProgressFill');
+    var meta = G.byId('raceProgressMeta');
+    if (fill) fill.style.width = percent + '%';
+    if (meta) meta.textContent = percent + '%';
   }
 
   function raceTargetTime(raceType) {
@@ -250,7 +272,6 @@ window.SKACHKI_RACE_ENGINE = (function () {
   function updateRaceScene(scene, time, delta) {
     var G = game();
     var track = raceTrack();
-    var minimap = raceMinimap();
     var ai = raceAi();
     if (scene.finished) return;
 
@@ -259,7 +280,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
 
       var lineEfficiency = ai.update ? ai.update(scene, runner, time) : 1;
       var wave = 1 + Math.sin(time / 740 + G.horseClass(runner.horse)) * 0.01;
-      var lateRace = Math.max(0, runner.progress / scene.totalLaps - 0.62);
+      var lateRace = Math.max(0, racePercent(scene, runner) / 100 - 0.62);
       var staminaReserve = (Number(runner.horse.stamina) || 60) / 100;
       var fatigue = 1 - lateRace * (0.105 - staminaReserve * 0.052);
       var speed = runner.pace * wave * Math.max(0.9, fatigue) * lineEfficiency;
@@ -281,7 +302,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
       runner.sprite.rotation = p.angle + Math.PI / 2;
       runner.sprite.setDepth(30 + Math.floor(p.y));
       runner.label.x = p.x;
-      runner.label.y = p.y - 44;
+      runner.label.y = p.y - 52;
 
       if (runner.marker) {
         runner.marker.x = p.x;
@@ -289,7 +310,8 @@ window.SKACHKI_RACE_ENGINE = (function () {
         runner.marker.setDepth(Math.max(1, runner.sprite.depth - 2));
       }
 
-      if (runner.progress >= scene.totalLaps && !runner.finished) {
+      if (runner.progress >= scene.finishProgress && !runner.finished) {
+        runner.progress = scene.finishProgress;
         runner.finished = true;
         runner.finishTime = ((time - scene.startTime) / 1000).toFixed(2);
         scene.finishCount++;
@@ -305,16 +327,16 @@ window.SKACHKI_RACE_ENGINE = (function () {
       }
     });
 
-    if (minimap.update) minimap.update(scene);
-
     if (time - scene.lastBoard > 250) {
       updateLeaderboard(scene);
       updatePlayerHud(scene);
+      updateTopRaceProgress(scene);
       scene.lastBoard = time;
     }
 
     if (scene.finishCount >= scene.runners.length) {
       scene.finished = true;
+      updateTopRaceProgress(scene);
       setTimeout(function () {
         if (window.SKACHKI_RESULTS) window.SKACHKI_RESULTS.showResults();
       }, 800);
@@ -322,7 +344,6 @@ window.SKACHKI_RACE_ENGINE = (function () {
   }
 
   function handleRaceEvent(scene, runner, time) {
-    var G = game();
     var temperament = runner.horse.temperament;
     var agility = Number(runner.horse.agility) || 60;
     var roll = Math.random();
@@ -383,7 +404,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
     var G = game();
     var status = G.byId('raceStatus');
     if (status) status.textContent = runner.horse.name + ': ' + text;
-    var eventText = scene.add.text(runner.sprite.x, runner.sprite.y - 58, text, {
+    var eventText = scene.add.text(runner.sprite.x, runner.sprite.y - 64, text, {
       fontFamily: 'Arial',
       fontSize: '16px',
       fontStyle: '900',
@@ -394,7 +415,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
     }).setOrigin(0.5).setDepth(330);
     scene.tweens.add({
       targets: eventText,
-      y: runner.sprite.y - 92,
+      y: runner.sprite.y - 100,
       alpha: 0,
       duration: 950,
       onComplete: function () { eventText.destroy(); }
@@ -408,7 +429,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
   function updateLeaderboard(scene) {
     sortedRunners(scene).forEach(function (runner, index) {
       if (scene.boardLines[index]) {
-        var percent = Math.min(100, Math.round(runner.progress / scene.totalLaps * 100));
+        var percent = racePercent(scene, runner);
         scene.boardLines[index].setText((index + 1) + '. ' + (runner.horse.isPlayer ? 'Вы' : runner.displayName) + ' ' + percent + '%');
       }
     });
@@ -419,7 +440,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
 
     var order = sortedRunners(scene);
     var place = Math.max(1, order.indexOf(scene.playerRunner) + 1);
-    var percent = Math.min(100, Math.round(scene.playerRunner.progress / scene.totalLaps * 100));
+    var percent = racePercent(scene, scene.playerRunner);
     var remaining = Math.max(0, 100 - percent);
     var pace = 'ровный';
 
