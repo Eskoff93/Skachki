@@ -5,6 +5,7 @@ window.SKACHKI_RACE_PHYSICS = (function () {
   var KMH_PER_SPEED_POINT = 0.7;
   var KMH_TO_MPS = 1000 / 3600;
   var FORM_TICK_METERS = 20;
+  var TOP_SPEED_KMH = 70;
 
   var FORM_RANGES = {
     excellent: { min: 0.95, max: 1 },
@@ -80,20 +81,26 @@ window.SKACHKI_RACE_PHYSICS = (function () {
   }
 
   function staminaSpeedFactor(reserve) {
-    if (reserve >= 60) return 1;
-    if (reserve >= 30) return 0.9 + (reserve - 30) / 30 * 0.1;
-    return 0.76 + reserve / 30 * 0.14;
+    var staminaReserve = clamp(Number(reserve) || 0, 0, 100);
+
+    if (staminaReserve >= 70) return 1;
+    if (staminaReserve >= 40) return 0.96 + (staminaReserve - 40) / 30 * 0.04;
+    if (staminaReserve >= 15) return 0.84 + (staminaReserve - 15) / 25 * 0.12;
+    return 0.72 + staminaReserve / 15 * 0.12;
   }
 
   function staminaDrainPerSecond(effectiveStamina, currentSpeedKmh, baseMaxSpeedKmh, lineEfficiency, isBursting) {
     var stamina = clamp(Number(effectiveStamina) || 0, 0, 100);
     var intensity = baseMaxSpeedKmh > 0 ? clamp(currentSpeedKmh / baseMaxSpeedKmh, 0, 1) : 0;
-    var baseDrain = Math.max(0.42, 1.72 - stamina * 0.01);
-    var speedDrain = 0.34 + Math.pow(intensity, 1.65) * 1.42;
-    var trafficDrain = lineEfficiency < 0.97 ? (0.97 - lineEfficiency) * 7.5 : 0;
-    var burstDrain = isBursting ? 0.64 : 0;
+    var speedLoad = clamp(currentSpeedKmh / TOP_SPEED_KMH, 0, 1);
+    var staminaProtection = clamp(1.45 - stamina / 100, 0.45, 1.45);
+    var intensityLoad = 0.18 + Math.pow(intensity, 1.9) * 1.42;
+    var absoluteSpeedLoad = 0.72 + Math.pow(speedLoad, 1.55) * 0.78;
+    var baseDrain = 1.55;
+    var trafficDrain = lineEfficiency < 0.97 ? (0.97 - lineEfficiency) * 8.5 : 0;
+    var burstDrain = isBursting ? 0.82 : 0;
 
-    return baseDrain * speedDrain + trafficDrain + burstDrain;
+    return baseDrain * staminaProtection * intensityLoad * absoluteSpeedLoad + trafficDrain + burstDrain;
   }
 
   function updateRunner(runner, context) {
