@@ -17,6 +17,20 @@ window.SKACHKI_NAVIGATION = (function () {
     '</div>';
   }
 
+  function musicSettingsCard() {
+    return '<section class="summary-card rating-music-card">' +
+      '<div class="summary-title">Музыка</div>' +
+      '<div class="summary-desc">Фоновая музыка играет во всей игре после первого действия игрока.</div>' +
+      '<div class="music-control-row">' +
+        '<div><b>Состояние</b><span id="musicStatusText">Готова к запуску</span></div>' +
+        '<button class="btn btn-dark" id="musicToggleBtn" type="button">Выключить музыку</button>' +
+      '</div>' +
+      '<label class="music-volume-label" for="musicVolumeInput">Громкость <b id="musicVolumeValue">35%</b></label>' +
+      '<input class="music-volume-slider" id="musicVolumeInput" type="range" min="0" max="100" step="1" value="35" />' +
+      '<div class="music-file-note">Файл: <code>assets/audio/background-music.mp3</code></div>' +
+    '</section>';
+  }
+
   function addScreens() {
     if (!byId('raceMenuScreen')) {
       var raceMenu = document.createElement('div');
@@ -30,7 +44,7 @@ window.SKACHKI_NAVIGATION = (function () {
       var rating = document.createElement('div');
       rating.id = 'ratingScreen';
       rating.className = 'screen';
-      rating.innerHTML = '<div class="topbar"><div class="topbar-row"><button class="icon-btn" id="ratingBackBtn">←</button><div class="topbar-title"><h1>РЕЙТИНГ</h1><p>Лидеры сезона</p></div><div style="width:38px;flex:0 0 auto"></div></div></div><div class="content-scroll"><section class="summary-card"><div class="summary-title">Рейтинг</div><div class="summary-desc">Скоро здесь появятся лидеры сезона, друзья и награды.</div></section><section class="summary-card rating-settings-card"><div class="summary-title">Настройки</div><div class="summary-desc">Сброс нужен для тестов и начала новой игры.</div><button class="btn reset-progress-btn" id="resetProgressBtn" type="button">Сбросить прогресс</button></section></div><div class="footer-actions">' + bottomNav('rating') + '</div>';
+      rating.innerHTML = '<div class="topbar"><div class="topbar-row"><button class="icon-btn" id="ratingBackBtn">←</button><div class="topbar-title"><h1>РЕЙТИНГ</h1><p>Лидеры сезона</p></div><div style="width:38px;flex:0 0 auto"></div></div></div><div class="content-scroll"><section class="summary-card"><div class="summary-title">Рейтинг</div><div class="summary-desc">Скоро здесь появятся лидеры сезона, друзья и награды.</div></section>' + musicSettingsCard() + '<section class="summary-card rating-settings-card"><div class="summary-title">Настройки</div><div class="summary-desc">Сброс нужен для тестов и начала новой игры.</div><button class="btn reset-progress-btn" id="resetProgressBtn" type="button">Сбросить прогресс</button></section></div><div class="footer-actions">' + bottomNav('rating') + '</div>';
       document.body.insertBefore(rating, document.body.firstChild);
     }
   }
@@ -80,6 +94,7 @@ window.SKACHKI_NAVIGATION = (function () {
 
     if (G && safeName === 'stable' && window.SKACHKI_STABLE) window.SKACHKI_STABLE.renderStable();
     if (G && safeName === 'raceMenu' && window.SKACHKI_RACE_MENU) window.SKACHKI_RACE_MENU.renderRaceMenu();
+    if (safeName === 'rating' && window.SKACHKI_MUSIC) window.SKACHKI_MUSIC.updateControls();
   }
 
   function bind() {
