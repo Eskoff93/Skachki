@@ -1,9 +1,10 @@
 // Background music.
-// Plays licensed local background music after the first user interaction and stores settings locally.
+// Plays original licensed/local background music only on menu screens after first user interaction.
 
 window.SKACHKI_MUSIC = (function () {
   var STORAGE_KEY = 'skachki_music_settings_v1';
   var MUSIC_SRC = './assets/audio/background-music.mp3';
+  var MENU_SCREENS = ['stable', 'raceMenu', 'breed', 'rating', 'training'];
   var DEFAULT_SETTINGS = {
     enabled: true,
     volume: 0.35
@@ -13,9 +14,14 @@ window.SKACHKI_MUSIC = (function () {
   var settings = loadSettings();
   var userUnlocked = false;
   var isBound = false;
+  var currentScreen = 'stable';
 
   function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
+  }
+
+  function isMenuScreen(name) {
+    return MENU_SCREENS.indexOf(name) >= 0;
   }
 
   function loadSettings() {
@@ -49,9 +55,19 @@ window.SKACHKI_MUSIC = (function () {
     return audio;
   }
 
+  function shouldPlay() {
+    return settings.enabled && userUnlocked && isMenuScreen(currentScreen);
+  }
+
+  function syncPlayback() {
+    if (shouldPlay()) play();
+    else pause();
+    updateControls();
+  }
+
   function play() {
     var track;
-    if (!settings.enabled || !userUnlocked) return;
+    if (!settings.enabled || !userUnlocked || !isMenuScreen(currentScreen)) return;
 
     track = getAudio();
     track.volume = settings.volume;
@@ -66,9 +82,7 @@ window.SKACHKI_MUSIC = (function () {
   function setEnabled(enabled) {
     settings.enabled = !!enabled;
     saveSettings();
-    if (settings.enabled) play();
-    else pause();
-    updateControls();
+    syncPlayback();
   }
 
   function setVolume(volume) {
@@ -76,6 +90,11 @@ window.SKACHKI_MUSIC = (function () {
     if (audio) audio.volume = settings.volume;
     saveSettings();
     updateControls();
+  }
+
+  function setCurrentScreen(name) {
+    currentScreen = name || 'stable';
+    syncPlayback();
   }
 
   function toggle() {
@@ -86,11 +105,12 @@ window.SKACHKI_MUSIC = (function () {
     if (userUnlocked) return;
     userUnlocked = true;
     getAudio();
-    play();
+    syncPlayback();
   }
 
   function statusText() {
     if (!settings.enabled) return 'Выключена';
+    if (!isMenuScreen(currentScreen)) return 'Не играет во время гонки';
     if (!audio) return 'Готова к запуску';
     if (audio.error) return 'Файл не найден';
     if (audio.paused) return userUnlocked ? 'На паузе' : 'Запустится после первого нажатия';
@@ -144,8 +164,9 @@ window.SKACHKI_MUSIC = (function () {
   return {
     bind: bind,
     getSettings: function () { return Object.assign({}, settings); },
-    play: play,
     pause: pause,
+    play: play,
+    setCurrentScreen: setCurrentScreen,
     setEnabled: setEnabled,
     setVolume: setVolume,
     updateControls: updateControls,
