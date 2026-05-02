@@ -17,6 +17,12 @@ window.SKACHKI_RACE_HUD = (function () {
     return 0xff7a45;
   }
 
+  function staminaLabel(stamina) {
+    if (stamina >= 55) return 'ТЕМП СТАБИЛЕН';
+    if (stamina >= 25) return 'УСТАЛОСТЬ';
+    return 'ТЯЖЁЛЫЙ ФИНИШ';
+  }
+
   function racePercent(scene, runner) {
     var physics = physicsApi();
     if (physics.progressPercent && runner && runner.physics) return physics.progressPercent(runner.physics);
@@ -49,7 +55,7 @@ window.SKACHKI_RACE_HUD = (function () {
       boardWidth: Math.min(112, Math.max(96, Math.round(width * 0.26))),
       boardX: width - 8,
       boardY: 42,
-      bottomHeight: Math.min(124, Math.max(104, Math.round(height * 0.16))),
+      bottomHeight: Math.min(112, Math.max(96, Math.round(height * 0.145))),
       margin: 8
     };
 
@@ -116,49 +122,117 @@ window.SKACHKI_RACE_HUD = (function () {
     var w = width - margin * 2;
     var cardX = margin;
     var cardY = y;
+    var leftX = cardX + 14;
+    var rightX = cardX + w - 16;
+    var centerY = cardY + 16;
+    var speedSize = width <= 390 ? '34px' : '39px';
 
-    scene.playerCardBg = scene.add.rectangle(cardX, cardY, w, h, 0x06111f, 0.88)
+    scene.playerCardShadow = scene.add.rectangle(cardX + 1, cardY + 6, w, h, 0x000000, 0.32)
+      .setOrigin(0, 0)
+      .setDepth(298)
+      .setScrollFactor(0);
+
+    scene.playerCardBg = scene.add.rectangle(cardX, cardY, w, h, 0x06111f, 0.86)
       .setOrigin(0, 0)
       .setDepth(300)
       .setScrollFactor(0);
-    scene.playerCardBg.setStrokeStyle(1, 0xd8a943, 0.62);
+    scene.playerCardBg.setStrokeStyle(1, 0xd8a943, 0.54);
 
-    scene.hudPlace = scene.add.text(cardX + 16, cardY + 18, '', {
-      fontFamily: 'Arial', fontSize: '24px', fontStyle: '900', color: '#ffd34d', resolution: 2
-    }).setDepth(306).setScrollFactor(0);
-
-    scene.hudName = scene.add.text(cardX + 78, cardY + 18, '', {
-      fontFamily: 'Arial', fontSize: width <= 390 ? '20px' : '23px', fontStyle: '900', color: '#ffffff', resolution: 2
-    }).setDepth(306).setScrollFactor(0);
-
-    scene.hudGap = scene.add.text(cardX + 80, cardY + 47, '', {
-      fontFamily: 'Arial', fontSize: '11px', fontStyle: '800', color: '#c8d4df', resolution: 2
-    }).setDepth(306).setScrollFactor(0);
-
-    scene.hudSpeed = scene.add.text(cardX + w - 20, cardY + 14, '', {
-      fontFamily: 'Arial', fontSize: width <= 390 ? '30px' : '34px', fontStyle: '900', color: '#ffffff', align: 'right', resolution: 2
-    }).setOrigin(1, 0).setDepth(306).setScrollFactor(0);
-
-    scene.hudSpeedUnit = scene.add.text(cardX + w - 21, cardY + 51, 'км/ч', {
-      fontFamily: 'Arial', fontSize: '11px', fontStyle: '900', color: '#c8d4df', resolution: 2
-    }).setOrigin(1, 0).setDepth(306).setScrollFactor(0);
-
-    scene.hudStaminaLabel = scene.add.text(cardX + 16, cardY + h - 34, 'ВЫНОСЛИВОСТЬ', {
-      fontFamily: 'Arial', fontSize: '10px', fontStyle: '900', color: '#aebfd0', resolution: 2
-    }).setDepth(306).setScrollFactor(0);
-
-    scene.hudStaminaPercent = scene.add.text(cardX + w - 20, cardY + h - 36, '', {
-      fontFamily: 'Arial', fontSize: '14px', fontStyle: '900', color: '#ffffff', resolution: 2
-    }).setOrigin(1, 0).setDepth(306).setScrollFactor(0);
-
-    scene.hudStaminaBarX = cardX + 16;
-    scene.hudStaminaBarY = cardY + h - 15;
-    scene.hudStaminaBarW = w - 32;
-    scene.hudStaminaBarBg = scene.add.rectangle(scene.hudStaminaBarX, scene.hudStaminaBarY, scene.hudStaminaBarW, 8, 0x17202c, 1)
+    scene.playerCardAccent = scene.add.rectangle(cardX + 10, cardY + 8, w - 20, 2, 0xd8a943, 0.72)
       .setOrigin(0, 0)
       .setDepth(306)
       .setScrollFactor(0);
-    scene.hudStaminaFill = scene.add.rectangle(scene.hudStaminaBarX + 1, scene.hudStaminaBarY + 1, scene.hudStaminaBarW - 2, 6, 0x54d66a, 1)
+
+    scene.hudPlaceBadge = scene.add.rectangle(leftX + 25, centerY + 19, 50, 42, 0x123359, 0.96)
+      .setOrigin(0.5)
+      .setDepth(305)
+      .setScrollFactor(0);
+    scene.hudPlaceBadge.setStrokeStyle(1, 0x7bd8ff, 0.72);
+
+    scene.hudPlace = scene.add.text(leftX + 25, centerY + 7, '', {
+      fontFamily: 'Arial',
+      fontSize: '22px',
+      fontStyle: '900',
+      color: '#ffffff',
+      align: 'center',
+      resolution: 2
+    }).setOrigin(0.5, 0).setDepth(306).setScrollFactor(0);
+
+    scene.hudPlaceTotal = scene.add.text(leftX + 25, centerY + 31, '', {
+      fontFamily: 'Arial',
+      fontSize: '10px',
+      fontStyle: '900',
+      color: '#aebfd0',
+      align: 'center',
+      resolution: 2
+    }).setOrigin(0.5, 0).setDepth(306).setScrollFactor(0);
+
+    scene.hudName = scene.add.text(leftX + 62, centerY + 4, '', {
+      fontFamily: 'Arial',
+      fontSize: width <= 390 ? '18px' : '21px',
+      fontStyle: '900',
+      color: '#ffffff',
+      resolution: 2
+    }).setDepth(306).setScrollFactor(0);
+
+    scene.hudGap = scene.add.text(leftX + 64, centerY + 30, '', {
+      fontFamily: 'Arial',
+      fontSize: '11px',
+      fontStyle: '800',
+      color: '#c8d4df',
+      resolution: 2
+    }).setDepth(306).setScrollFactor(0);
+
+    scene.hudSpeed = scene.add.text(rightX, centerY + 0, '', {
+      fontFamily: 'Arial',
+      fontSize: speedSize,
+      fontStyle: '900',
+      color: '#ffffff',
+      align: 'right',
+      resolution: 2
+    }).setOrigin(1, 0).setDepth(306).setScrollFactor(0);
+
+    scene.hudSpeedUnit = scene.add.text(rightX - 2, centerY + 42, 'км/ч', {
+      fontFamily: 'Arial',
+      fontSize: '11px',
+      fontStyle: '900',
+      color: '#ffe6a2',
+      resolution: 2
+    }).setOrigin(1, 0).setDepth(306).setScrollFactor(0);
+
+    scene.hudStaminaLabel = scene.add.text(leftX, cardY + h - 30, 'ВЫНОСЛИВОСТЬ', {
+      fontFamily: 'Arial',
+      fontSize: '10px',
+      fontStyle: '900',
+      color: '#aebfd0',
+      resolution: 2
+    }).setDepth(306).setScrollFactor(0);
+
+    scene.hudStaminaState = scene.add.text(leftX + 96, cardY + h - 30, '', {
+      fontFamily: 'Arial',
+      fontSize: '10px',
+      fontStyle: '900',
+      color: '#54d66a',
+      resolution: 2
+    }).setDepth(306).setScrollFactor(0);
+
+    scene.hudStaminaPercent = scene.add.text(rightX, cardY + h - 32, '', {
+      fontFamily: 'Arial',
+      fontSize: '14px',
+      fontStyle: '900',
+      color: '#ffffff',
+      resolution: 2
+    }).setOrigin(1, 0).setDepth(306).setScrollFactor(0);
+
+    scene.hudStaminaBarX = leftX;
+    scene.hudStaminaBarY = cardY + h - 13;
+    scene.hudStaminaBarW = w - 28;
+    scene.hudStaminaBarBg = scene.add.rectangle(scene.hudStaminaBarX, scene.hudStaminaBarY, scene.hudStaminaBarW, 7, 0x17202c, 1)
+      .setOrigin(0, 0)
+      .setDepth(306)
+      .setScrollFactor(0);
+    scene.hudStaminaBarBg.setStrokeStyle(1, 0xffffff, 0.08);
+    scene.hudStaminaFill = scene.add.rectangle(scene.hudStaminaBarX + 1, scene.hudStaminaBarY + 1, scene.hudStaminaBarW - 2, 5, 0x54d66a, 1)
       .setOrigin(0, 0)
       .setDepth(307)
       .setScrollFactor(0);
@@ -220,17 +294,24 @@ window.SKACHKI_RACE_HUD = (function () {
     var shortName = runnerView().shortName || function (name) { return String(name || '').slice(0, 7).toUpperCase(); };
     var order = sortedRunners(scene);
     var place = Math.max(1, order.indexOf(scene.playerRunner) + 1);
+    var total = Math.max(1, scene.runners.length);
     var speed = scene.playerRunner.physics ? scene.playerRunner.physics.currentSpeedKmh : 0;
     var stamina = scene.playerRunner.physics ? Math.round(scene.playerRunner.physics.staminaReserve) : 0;
     var fillWidth = Math.max(0, (scene.hudStaminaBarW - 2) * stamina / 100);
+    var staminaTone = staminaColor(stamina);
+    var state = staminaLabel(stamina);
 
     scene.hudName.setText(shortName(scene.playerRunner.displayName || scene.playerRunner.horse.name));
-    scene.hudPlace.setText(place + ' МЕСТО');
+    scene.hudPlace.setText(String(place));
+    scene.hudPlaceTotal.setText('/ ' + total);
     scene.hudGap.setText(leaderGapText(scene, order));
     scene.hudSpeed.setText((Math.round(speed * 10) / 10).toFixed(1));
     scene.hudStaminaPercent.setText(stamina + '%');
+    scene.hudStaminaState.setText(state);
+    scene.hudStaminaState.setColor(stamina >= 55 ? '#54d66a' : stamina >= 25 ? '#f2c94c' : '#ff7a45');
     scene.hudStaminaFill.width = fillWidth;
-    scene.hudStaminaFill.setFillStyle(staminaColor(stamina), 1);
+    scene.hudStaminaFill.setFillStyle(staminaTone, 1);
+    scene.hudPlaceBadge.setStrokeStyle(1, place === 1 ? 0xd8a943 : 0x7bd8ff, place === 1 ? 0.86 : 0.72);
   }
 
   return {
