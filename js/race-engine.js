@@ -1,11 +1,12 @@
 // Phaser race engine.
-// Coordinates the scene and runner movement. Track drawing, audio and AI live in split modules.
+// Coordinates the scene and runner movement. Track drawing, audio, AI and physics live in split modules.
 
 window.SKACHKI_RACE_ENGINE = (function () {
   function game() { return window.SKACHKI_GAME; }
   function raceTrack() { return window.SKACHKI_RACE_TRACK || {}; }
   function raceAudio() { return window.SKACHKI_RACE_AUDIO || {}; }
   function raceAi() { return window.SKACHKI_RACE_AI || {}; }
+  function racePhysics() { return window.SKACHKI_RACE_PHYSICS || {}; }
 
   function destroyRaceGame() {
     var audio = raceAudio();
@@ -67,9 +68,17 @@ window.SKACHKI_RACE_ENGINE = (function () {
     });
   }
 
+  function updateRaceTitle(raceType) {
+    var G = game();
+    var title = G.byId('raceScreen');
+    var subtitle = title ? title.querySelector('.topbar-title p') : null;
+    if (subtitle && raceType) subtitle.textContent = 'Тактический вид сверху • ' + raceType.distance + ' м';
+  }
+
   function setupRaceScene(scene, width, height) {
     var G = game();
     var track = raceTrack();
+    var physics = racePhysics();
     var raceType = G.state.activeRaceType || {};
     var horseCount = G.state.currentRaceHorses.length;
     var worldWidth = Math.max(width * 2.6, 1040);
@@ -78,6 +87,9 @@ window.SKACHKI_RACE_ENGINE = (function () {
     var trackWidth = Math.min(worldWidth * 0.88, Math.max(760, trackHeight * 2.05));
     var laneSpacing = horseCount > 6 ? 18 : 21;
     var startProgress = 0.006;
+    var raceDistanceMeters = Math.max(80, Number(raceType.distance) || 220);
+
+    updateRaceTitle(raceType);
 
     scene.viewportWidth = width;
     scene.viewportHeight = height;
@@ -88,10 +100,9 @@ window.SKACHKI_RACE_ENGINE = (function () {
     scene.playerRunner = null;
     scene.startProgress = startProgress;
     scene.raceDistance = 1;
+    scene.raceDistanceMeters = raceDistanceMeters;
     scene.finishProgress = startProgress + scene.raceDistance;
     scene.totalLaps = scene.finishProgress;
-    scene.targetRaceTime = raceTargetTime(raceType);
-    scene.basePace = scene.raceDistance / scene.targetRaceTime;
     scene.finishCount = 0;
     scene.finished = false;
     scene.startTime = scene.time.now;
@@ -119,10 +130,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
         resolution: 2
       }).setOrigin(0.5).setDepth(200);
 
-      var cls = G.horseClass(horse);
       var form = formRaceMultiplier(horse.form);
-      var classFactor = 0.88 + cls / 500;
-      var staminaFactor = 0.94 + (Number(horse.stamina) || 60) / 1000;
       var randomFactor = 0.965 + Math.random() * 0.07;
       var marker = null;
 
@@ -139,7 +147,10 @@ window.SKACHKI_RACE_ENGINE = (function () {
         progress: startProgress,
         lane: lane,
         laneTarget: lane,
-        pace: scene.basePace * classFactor * staminaFactor * form * randomFactor,
+        pace: physics.speedToKmh ? physics.speedToKmh(horse.speed) : Number(horse.speed) || 30,
+        formMultiplier: form,
+        randomFactor: randomFactor,
+        physics: physics.initialRunnerPhysics ? physics.initialRunnerPhysics(horse, raceDistanceMeters) : null,
         burstUntil: 0,
         penaltyUntil: 0,
         finished: false,
@@ -241,6 +252,8 @@ window.SKACHKI_RACE_ENGINE = (function () {
   }
 
   function racePercent(scene, runner) {
+    var physics = racePhysics();
+    if (physics.progressPercent && runner && runner.physics) return physics.progressPercent(runner.physics);
     if (!scene || !runner) return 0;
     return Math.max(0, Math.min(100, Math.round((runner.progress - scene.startProgress) / scene.raceDistance * 100)));
   }
@@ -255,12 +268,6 @@ window.SKACHKI_RACE_ENGINE = (function () {
     if (meta) meta.textContent = percent + '%';
   }
 
-  function raceTargetTime(raceType) {
-    var distance = Number(raceType.distance) || 1600;
-    var distanceFactor = Math.max(-900, Math.min(1100, (distance - 1600) * 0.55));
-    return 20000 + distanceFactor;
-  }
-
   function formRaceMultiplier(form) {
     var G = game();
     var raw = G.formMultiplier ? G.formMultiplier(form) : 0.8;
@@ -273,20 +280,25 @@ window.SKACHKI_RACE_ENGINE = (function () {
     var G = game();
     var track = raceTrack();
     var ai = raceAi();
+    var physics = racePhysics();
+    var deltaSeconds = delta / 1000;
     if (scene.finished) return;
 
     scene.runners.forEach(function (runner) {
       if (runner.finished) return;
 
       var lineEfficiency = ai.update ? ai.update(scene, runner, time) : 1;
-      var wave = 1 + Math.sin(time / 740 + G.horseClass(runner.horse)) * 0.01;
-      var lateRace = Math.max(0, racePercent(scene, runner) / 100 - 0.62);
-      var staminaReserve = (Number(runner.horse.stamina) || 60) / 100;
-      var fatigue = 1 - lateRace * (0.105 - staminaReserve * 0.052);
-      var speed = runner.pace * wave * Math.max(0.9, fatigue) * lineEfficiency;
-
-      if (time < runner.burstUntil) speed *= 1.17;
-      if (time < runner.penaltyUntil) speed *= 0.76;
+      var isBursting = time < runner.burstUntil;
+      var isPenalized = time < runner.penaltyUntil;
+      var runnerPhysics = physics.updateRunner ? physics.updateRunner(runner, {
+        deltaSeconds: deltaSeconds,
+        raceDistanceMeters: scene.raceDistanceMeters,
+        lineEfficiency: lineEfficiency,
+        formMultiplier: runner.formMultiplier,
+        randomFactor: runner.randomFactor,
+        isBursting: isBursting,
+        isPenalized: isPenalized
+      }) : null;
 
       if (time > runner.nextEvent) {
         handleRaceEvent(scene, runner, time);
@@ -294,7 +306,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
       }
 
       runner.lane += (runner.laneTarget - runner.lane) * Math.min(1, delta / 440);
-      runner.progress += speed * delta;
+      if (runnerPhysics) runner.progress = scene.startProgress + runnerPhysics.distanceMeters / scene.raceDistanceMeters * scene.raceDistance;
 
       var p = track.pointOnTrack(scene.track, ((runner.progress % 1) + 1) % 1, runner.lane);
       runner.sprite.x = p.x;
@@ -310,12 +322,17 @@ window.SKACHKI_RACE_ENGINE = (function () {
         runner.marker.setDepth(Math.max(1, runner.sprite.depth - 2));
       }
 
-      if (runner.progress >= scene.finishProgress && !runner.finished) {
+      if (runnerPhysics && runnerPhysics.distanceMeters >= scene.raceDistanceMeters && !runner.finished) {
         runner.progress = scene.finishProgress;
         runner.finished = true;
-        runner.finishTime = ((time - scene.startTime) / 1000).toFixed(2);
+        runner.finishTime = runnerPhysics.elapsedSeconds.toFixed(2);
         scene.finishCount++;
-        G.state.raceResults.push({ name: runner.horse.name, time: runner.finishTime, horse: runner.horse });
+        G.state.raceResults.push({
+          name: runner.horse.name,
+          time: runner.finishTime,
+          horse: runner.horse,
+          stats: physics.resultStats ? physics.resultStats(runnerPhysics) : null
+        });
         if (scene.finishCount === 1) {
           scene.statusText.setText('Победитель: ' + runner.horse.name);
           var status = G.byId('raceStatus');
@@ -441,14 +458,16 @@ window.SKACHKI_RACE_ENGINE = (function () {
     var order = sortedRunners(scene);
     var place = Math.max(1, order.indexOf(scene.playerRunner) + 1);
     var percent = racePercent(scene, scene.playerRunner);
-    var remaining = Math.max(0, 100 - percent);
+    var speed = scene.playerRunner.physics ? Math.round(scene.playerRunner.physics.currentSpeedKmh) : 0;
+    var stamina = scene.playerRunner.physics ? Math.round(scene.playerRunner.physics.staminaReserve) : 0;
     var pace = 'ровный';
 
     if (scene.time.now < scene.playerRunner.burstUntil) pace = 'рывок';
     else if (scene.time.now < scene.playerRunner.penaltyUntil) pace = 'сбой';
+    else if (stamina < 30) pace = 'усталость';
     else if (percent > 72) pace = 'финиш';
 
-    scene.playerHud.setText(place + '/' + scene.runners.length + ' место\n' + percent + '% дистанции\nТемп: ' + pace + '\nДо финиша: ' + remaining + '%');
+    scene.playerHud.setText(place + '/' + scene.runners.length + ' место\nСкорость: ' + speed + ' км/ч\nВыносл.: ' + stamina + '%\nТемп: ' + pace);
   }
 
   function bind() {
