@@ -40,17 +40,16 @@ window.SKACHKI_RACE_TRACK = (function () {
     var infieldR = Math.max(20, track.r - inner);
     var finishX = track.rightCx;
     var topY = track.cy - track.r - 4;
-    var i;
     var s;
 
     drawGround(g, width, height);
     drawTrackBase(g, track, outer, outerX, outerY, outerW, outerH, outerR);
-    drawDirtTexture(g, track, outerX, outerY, outerW, outerH, outerR);
+    drawDirtTexture(g, track);
     drawInfield(g, track, infieldX, infieldY, infieldW, infieldH, infieldR);
     drawLaneLines(g, track);
     drawRails(g, track);
     drawRailPosts(g, track);
-    drawFinish(scene, g, track, finishX, topY);
+    drawFinish(g, track, finishX, topY);
 
     for (s = 0; s < 12; s++) {
       g.lineStyle(1, 0xffffff, 0.018);
@@ -86,7 +85,7 @@ window.SKACHKI_RACE_TRACK = (function () {
     g.fillStyle(0xa9653a, 0.5).fillRoundedRect(outerX + 18, outerY + 18, outerW - 36, outerH - 36, Math.max(16, outerR - 18));
   }
 
-  function drawDirtTexture(g, track, outerX, outerY, outerW, outerH, outerR) {
+  function drawDirtTexture(g, track) {
     var i;
     var lane;
     var p;
@@ -99,9 +98,9 @@ window.SKACHKI_RACE_TRACK = (function () {
     }
 
     g.lineStyle(1, 0xf5c47b, 0.08);
-    g.strokeRoundedRect(outerX + 12, outerY + 12, outerW - 24, outerH - 24, Math.max(16, outerR - 12));
+    strokeTrackLine(g, track, Math.max(0, track.laneOuter - 6));
     g.lineStyle(1, 0x492717, 0.12);
-    g.strokeRoundedRect(outerX + 28, outerY + 28, outerW - 56, outerH - 56, Math.max(16, outerR - 28));
+    strokeTrackLine(g, track, Math.max(0, track.laneOuter - 22));
   }
 
   function drawInfield(g, track, x, y, w, h, r) {
@@ -125,13 +124,7 @@ window.SKACHKI_RACE_TRACK = (function () {
     for (i = 0; i < track.laneCount; i++) {
       lane = i * track.laneSpacing;
       g.lineStyle(i === 0 ? 2 : 1, 0xf6ddb6, i === 0 ? 0.56 : 0.36);
-      g.strokeRoundedRect(
-        track.cx - (track.w + lane * 2) / 2,
-        track.cy - (track.h + lane * 2) / 2,
-        track.w + lane * 2,
-        track.h + lane * 2,
-        track.r + lane
-      );
+      strokeTrackLine(g, track, lane);
     }
   }
 
@@ -171,28 +164,24 @@ window.SKACHKI_RACE_TRACK = (function () {
     }
   }
 
-  function drawFinish(scene, g, track, finishX, topY) {
-    var y;
+  function drawFinish(g, track, finishX) {
+    var innerY = track.cy - track.r + track.laneInner;
+    var outerY = track.cy - track.r - track.laneOuter;
+    var finishTop = Math.min(innerY, outerY);
+    var finishHeight = Math.abs(innerY - outerY);
+    var cell = Math.max(5, Math.min(9, finishHeight / 8));
     var row;
-    var cell = 8;
-    var finishHeight = track.laneOuter + 28;
+    var y;
 
-    g.fillStyle(0xffffff, 0.88).fillRect(finishX - 5, topY - 22, 10, finishHeight);
     for (row = 0; row < Math.ceil(finishHeight / cell); row++) {
-      y = topY - 22 + row * cell;
-      g.fillStyle(row % 2 ? 0xffffff : 0x111111, 0.88).fillRect(finishX - 5, y, 5, cell);
-      g.fillStyle(row % 2 ? 0x111111 : 0xffffff, 0.88).fillRect(finishX, y, 5, cell);
+      y = finishTop + row * cell;
+      g.fillStyle(row % 2 ? 0xffffff : 0x111111, 0.9).fillRect(finishX - 5, y, 5, cell);
+      g.fillStyle(row % 2 ? 0x111111 : 0xffffff, 0.9).fillRect(finishX, y, 5, cell);
     }
 
-    g.lineStyle(2, 0xffd34d, 0.9);
-    g.lineBetween(finishX - 10, topY - 24, finishX - 10, topY + finishHeight - 22);
-
-    scene.add.text(finishX + 12, topY - 13, 'ФИНИШ', {
-      fontFamily: 'Arial',
-      fontSize: '11px',
-      fontStyle: '900',
-      color: '#ffffff'
-    }).setShadow(0, 2, '#000', 3).setDepth(40);
+    g.lineStyle(1, 0xffd34d, 0.72);
+    g.lineBetween(finishX - 7, finishTop, finishX - 7, finishTop + finishHeight);
+    g.lineBetween(finishX + 7, finishTop, finishX + 7, finishTop + finishHeight);
   }
 
   function pointOnTrack(track, progress, lane) {
