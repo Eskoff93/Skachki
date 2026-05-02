@@ -4,7 +4,17 @@
 window.SKACHKI_MUSIC = (function () {
   var STORAGE_KEY = 'skachki_music_settings_v1';
   var MUSIC_SRC = './assets/audio/background-music.mp3';
-  var MENU_SCREENS = ['stable', 'raceMenu', 'breed', 'rating', 'training'];
+  var MENU_SCREENS = ['stable', 'raceMenu', 'breed', 'rating', 'training', 'selection', 'breedResult'];
+  var SCREEN_IDS = {
+    stableScreen: 'stable',
+    raceMenuScreen: 'raceMenu',
+    breedScreen: 'breed',
+    ratingScreen: 'rating',
+    trainingScreen: 'training',
+    selectionScreen: 'selection',
+    breedResultScreen: 'breedResult',
+    raceScreen: 'race'
+  };
   var DEFAULT_SETTINGS = {
     enabled: true,
     volume: 0.35
@@ -15,6 +25,7 @@ window.SKACHKI_MUSIC = (function () {
   var userUnlocked = false;
   var isBound = false;
   var currentScreen = 'stable';
+  var observer = null;
 
   function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
@@ -22,6 +33,18 @@ window.SKACHKI_MUSIC = (function () {
 
   function isMenuScreen(name) {
     return MENU_SCREENS.indexOf(name) >= 0;
+  }
+
+  function activeScreenName() {
+    var active = document.querySelector('.screen.active');
+    return active && SCREEN_IDS[active.id] ? SCREEN_IDS[active.id] : currentScreen;
+  }
+
+  function refreshActiveScreen() {
+    var nextScreen = activeScreenName();
+    if (nextScreen === currentScreen) return;
+    currentScreen = nextScreen;
+    syncPlayback();
   }
 
   function loadSettings() {
@@ -93,7 +116,7 @@ window.SKACHKI_MUSIC = (function () {
   }
 
   function setCurrentScreen(name) {
-    currentScreen = name || 'stable';
+    currentScreen = name || activeScreenName() || 'stable';
     syncPlayback();
   }
 
@@ -105,6 +128,7 @@ window.SKACHKI_MUSIC = (function () {
     if (userUnlocked) return;
     userUnlocked = true;
     getAudio();
+    currentScreen = activeScreenName();
     syncPlayback();
   }
 
@@ -150,11 +174,19 @@ window.SKACHKI_MUSIC = (function () {
     document.addEventListener('keydown', unlockOnce, { once: true });
   }
 
+  function bindScreenObserver() {
+    if (observer) return;
+    observer = new MutationObserver(refreshActiveScreen);
+    observer.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['class'] });
+    refreshActiveScreen();
+  }
+
   function bind() {
     if (isBound) return;
     isBound = true;
     bindControls();
     bindUnlock();
+    bindScreenObserver();
     updateControls();
   }
 
