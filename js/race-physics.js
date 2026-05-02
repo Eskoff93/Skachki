@@ -4,6 +4,13 @@
 window.SKACHKI_RACE_PHYSICS = (function () {
   var KMH_PER_SPEED_POINT = 0.7;
   var KMH_TO_MPS = 1000 / 3600;
+  var FORM_TICK_METERS = 20;
+
+  var FORM_RANGES = {
+    excellent: { min: 0.95, max: 1 },
+    normal: { min: 0.8, max: 1 },
+    bad: { min: 0.7, max: 0.9 }
+  };
 
   function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
@@ -17,9 +24,27 @@ window.SKACHKI_RACE_PHYSICS = (function () {
     return 3.2 + clamp(Number(acceleration) || 0, 0, 100) * 0.12;
   }
 
+  function formRange(form) {
+    return FORM_RANGES[form] || FORM_RANGES.normal;
+  }
+
+  function rollFormFactor(form) {
+    var range = formRange(form);
+    return range.min + Math.random() * (range.max - range.min);
+  }
+
+  function effectiveStat(value, factor) {
+    return clamp((Number(value) || 0) * factor, 0, 100);
+  }
+
   function initialRunnerPhysics(horse, raceDistanceMeters) {
+    var formFactor = rollFormFactor(horse.form);
+    var effectiveSpeed = effectiveStat(horse.speed, formFactor);
+    var effectiveAcceleration = effectiveStat(horse.acceleration, formFactor);
+    var effectiveStamina = effectiveStat(horse.stamina, formFactor);
+
     return {
-      raceDistanceMeters: Math.max(1, Number(raceDistanceMeters) || 160),
+      raceDistanceMeters: Math.max(1, Number(raceDistanceMeters) || 150),
       distanceMeters: 0,
       elapsedSeconds: 0,
       currentSpeedKmh: 0,
@@ -27,8 +52,31 @@ window.SKACHKI_RACE_PHYSICS = (function () {
       averageSpeedKmh: 0,
       staminaReserve: 100,
       baseMaxSpeedKmh: speedToKmh(horse.speed),
-      accelerationKmhPerSecond: accelerationToKmhPerSecond(horse.acceleration)
+      formTickMeters: FORM_TICK_METERS,
+      nextFormTickMeters: FORM_TICK_METERS,
+      formFactor: formFactor,
+      effectiveSpeed: effectiveSpeed,
+      effectiveAcceleration: effectiveAcceleration,
+      effectiveStamina: effectiveStamina,
+      effectiveMaxSpeedKmh: speedToKmh(effectiveSpeed),
+      accelerationKmhPerSecond: accelerationToKmhPerSecond(effectiveAcceleration)
     };
+  }
+
+  function updateEffectiveStats(physics, horse) {
+    physics.formFactor = rollFormFactor(horse.form);
+    physics.effectiveSpeed = effectiveStat(horse.speed, physics.formFactor);
+    physics.effectiveAcceleration = effectiveStat(horse.acceleration, physics.formFactor);
+    physics.effectiveStamina = effectiveStat(horse.stamina, physics.formFactor);
+    physics.effectiveMaxSpeedKmh = speedToKmh(physics.effectiveSpeed);
+    physics.accelerationKmhPerSecond = accelerationToKmhPerSecond(physics.effectiveAcceleration);
+  }
+
+  function applyFormTicks(physics, horse) {
+    while (physics.distanceMeters >= physics.nextFormTickMeters && physics.distanceMeters < physics.raceDistanceMeters) {
+      updateEffectiveStats(physics, horse);
+      physics.nextFormTickMeters += physics.formTickMeters;
+    }
   }
 
   function staminaSpeedFactor(reserve) {
@@ -37,13 +85,15 @@ window.SKACHKI_RACE_PHYSICS = (function () {
     return 0.76 + reserve / 30 * 0.14;
   }
 
-  function staminaDrainPerSecond(horse, currentSpeedKmh, baseMaxSpeedKmh, lineEfficiency, isBursting) {
-    var stamina = clamp(Number(horse.stamina) || 0, 0, 100);
-    var intensity = baseMaxSpeedKmh > 0 ? currentSpeedKmh / baseMaxSpeedKmh : 0;
-    var baseDrain = 2.15 - stamina * 0.0125;
-    var trafficDrain = lineEfficiency < 0.97 ? (0.97 - lineEfficiency) * 8 : 0;
-    var burstDrain = isBursting ? 0.72 : 0;
-    return Math.max(0.35, baseDrain) * (0.72 + intensity * 0.56) + trafficDrain + burstDrain;
+  function staminaDrainPerSecond(effectiveStamina, currentSpeedKmh, baseMaxSpeedKmh, lineEfficiency, isBursting) {
+    var stamina = clamp(Number(effectiveStamina) || 0, 0, 100);
+    var intensity = baseMaxSpeedKmh > 0 ? clamp(currentSpeedKmh / baseMaxSpeedKmh, 0, 1) : 0;
+    var baseDrain = Math.max(0.42, 1.72 - stamina * 0.01);
+    var speedDrain = 0.34 + Math.pow(intensity, 1.65) * 1.42;
+    var trafficDrain = lineEfficiency < 0.97 ? (0.97 - lineEfficiency) * 7.5 : 0;
+    var burstDrain = isBursting ? 0.64 : 0;
+
+    return baseDrain * speedDrain + trafficDrain + burstDrain;
   }
 
   function updateRunner(runner, context) {
@@ -51,8 +101,7 @@ window.SKACHKI_RACE_PHYSICS = (function () {
     var horse = runner.horse || {};
     var physics = runner.physics || initialRunnerPhysics(horse, context.raceDistanceMeters);
     var lineEfficiency = Number(context.lineEfficiency) || 1;
-    var formMultiplier = Number(context.formMultiplier) || 1;
-    var randomFactor = Number(context.randomFactor) || 1;
+    var randomFactor = clamp(Number(context.randomFactor) || 1, 0.94, 1);
     var isBursting = !!context.isBursting;
     var isPenalized = !!context.isPenalized;
     var targetSpeedKmh;
@@ -61,20 +110,26 @@ window.SKACHKI_RACE_PHYSICS = (function () {
     var drain;
 
     physics.elapsedSeconds += dt;
+    applyFormTicks(physics, horse);
 
-    targetSpeedKmh = physics.baseMaxSpeedKmh * formMultiplier * randomFactor * lineEfficiency * staminaSpeedFactor(physics.staminaReserve);
-    if (isBursting) targetSpeedKmh *= 1.14;
+    targetSpeedKmh = physics.effectiveMaxSpeedKmh * randomFactor * lineEfficiency * staminaSpeedFactor(physics.staminaReserve);
     if (isPenalized) targetSpeedKmh *= 0.72;
-    targetSpeedKmh = Math.max(0, targetSpeedKmh);
+    targetSpeedKmh = clamp(targetSpeedKmh, 0, physics.baseMaxSpeedKmh);
 
-    speedDelta = physics.accelerationKmhPerSecond * dt;
+    speedDelta = physics.accelerationKmhPerSecond * (isBursting ? 1.28 : 1) * dt;
     if (physics.currentSpeedKmh < targetSpeedKmh) {
       physics.currentSpeedKmh = Math.min(targetSpeedKmh, physics.currentSpeedKmh + speedDelta);
     } else {
       physics.currentSpeedKmh = Math.max(targetSpeedKmh, physics.currentSpeedKmh - speedDelta * 1.55);
     }
 
-    drain = staminaDrainPerSecond(horse, physics.currentSpeedKmh, physics.baseMaxSpeedKmh, lineEfficiency, isBursting);
+    drain = staminaDrainPerSecond(
+      physics.effectiveStamina,
+      physics.currentSpeedKmh,
+      physics.baseMaxSpeedKmh,
+      lineEfficiency,
+      isBursting
+    );
     physics.staminaReserve = clamp(physics.staminaReserve - drain * dt, 0, 100);
 
     mps = physics.currentSpeedKmh * KMH_TO_MPS;
@@ -112,6 +167,7 @@ window.SKACHKI_RACE_PHYSICS = (function () {
   }
 
   return {
+    FORM_TICK_METERS: FORM_TICK_METERS,
     KMH_PER_SPEED_POINT: KMH_PER_SPEED_POINT,
     accelerationToKmhPerSecond: accelerationToKmhPerSecond,
     initialRunnerPhysics: initialRunnerPhysics,
