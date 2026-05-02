@@ -3,3 +3,14 @@
 #ratingScreen .summary-card{border-radius:22px;padding:16px}
 #ratingScreen .summary-title{font-size:22px;font-weight:950;color:#fff;margin-bottom:8px}
 #ratingScreen .summary-desc{font-size:14px;color:var(--lux-muted);line-height:1.4}
+.rating-music-card{border-color:rgba(216,169,67,.28)!important;background:radial-gradient(circle at 15% 0,rgba(216,169,67,.14),transparent 34%),linear-gradient(180deg,rgba(20,44,68,.98),rgba(7,20,34,.98))!important}
+.music-control-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;margin-top:14px;padding:12px;border-radius:16px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07)}
+.music-control-row b{display:block;font-size:13px;color:#fff;margin-bottom:3px}
+.music-control-row span{display:block;font-size:12px;color:var(--lux-muted)}
+.music-control-row .btn{min-height:38px;padding:0 12px;white-space:nowrap}
+.music-volume-label{display:flex;align-items:center;justify-content:space-between;margin:14px 2px 8px;font-size:12px;font-weight:950;color:#ffe6a2;text-transform:uppercase;letter-spacing:.04em}
+.music-volume-label b{color:#fff;font-size:13px}
+.music-volume-slider{width:100%;accent-color:#d8a943}
+.music-file-note{margin-top:10px;font-size:11px;color:var(--lux-muted);line-height:1.35}
+.music-file-note code{color:#ffe6a2;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:2px 5px}
+@media(max-width:420px){.music-control-row{grid-template-columns:1fr}.music-control-row .btn{width:100%}}
