@@ -12,6 +12,7 @@ window.SKACHKI_MUSIC = (function () {
   var audio = null;
   var settings = loadSettings();
   var userUnlocked = false;
+  var isBound = false;
 
   function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
@@ -43,15 +44,9 @@ window.SKACHKI_MUSIC = (function () {
     audio.loop = true;
     audio.preload = 'auto';
     audio.volume = settings.volume;
-    audio.addEventListener('error', function () {
-      updateControls();
-    });
+    audio.addEventListener('error', updateControls);
 
     return audio;
-  }
-
-  function canPlay() {
-    return !!(audio && audio.readyState >= 2);
   }
 
   function play() {
@@ -60,10 +55,7 @@ window.SKACHKI_MUSIC = (function () {
 
     track = getAudio();
     track.volume = settings.volume;
-
-    track.play().then(updateControls).catch(function () {
-      updateControls();
-    });
+    track.play().then(updateControls).catch(updateControls);
   }
 
   function pause() {
@@ -139,10 +131,15 @@ window.SKACHKI_MUSIC = (function () {
   }
 
   function bind() {
+    if (isBound) return;
+    isBound = true;
     bindControls();
     bindUnlock();
     updateControls();
   }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
 
   return {
     bind: bind,
