@@ -28,53 +28,103 @@ window.SKACHKI_RACE_TRACK = (function () {
     var g = scene.add.graphics();
     var outer = track.laneOuter;
     var inner = track.laneInner;
-    var finishX;
-    var topY;
+    var outerX = track.cx - (track.w + outer * 2) / 2;
+    var outerY = track.cy - (track.h + outer * 2) / 2;
+    var outerW = track.w + outer * 2;
+    var outerH = track.h + outer * 2;
+    var outerR = track.r + outer;
+    var infieldX = track.cx - (track.w - inner * 2) / 2;
+    var infieldY = track.cy - (track.h - inner * 2) / 2;
+    var infieldW = track.w - inner * 2;
+    var infieldH = track.h - inner * 2;
+    var infieldR = Math.max(20, track.r - inner);
+    var finishX = track.rightCx;
+    var topY = track.cy - track.r - 4;
     var i;
     var s;
 
-    g.fillStyle(0x0f4c35, 1).fillRoundedRect(0, 0, width, height, 18);
+    drawGround(g, width, height);
+    drawTrackBase(g, track, outer, outerX, outerY, outerW, outerH, outerR);
+    drawDirtTexture(g, track, outerX, outerY, outerW, outerH, outerR);
+    drawInfield(g, track, infieldX, infieldY, infieldW, infieldH, infieldR);
+    drawLaneLines(g, track);
+    drawRails(g, track);
+    drawRailPosts(g, track);
+    drawFinish(scene, g, track, finishX, topY);
 
-    for (s = 0; s < 18; s++) {
-      g.lineStyle(1, 0xffffff, 0.025);
-      g.lineBetween(0, s * 36, width, s * 36 + 18);
+    for (s = 0; s < 12; s++) {
+      g.lineStyle(1, 0xffffff, 0.018);
+      g.lineBetween(0, s * 54, width, s * 54 + 20);
+    }
+  }
+
+  function drawGround(g, width, height) {
+    g.fillStyle(0x07131f, 1).fillRect(0, 0, width, height);
+    g.fillStyle(0x0e3729, 1).fillRoundedRect(0, 0, width, height, 18);
+
+    for (var i = 0; i < 34; i++) {
+      var x = (i * 89) % width;
+      var y = (i * 137) % height;
+      g.fillStyle(i % 2 ? 0x14503a : 0x0f442f, 0.18).fillCircle(x, y, 90 + (i % 5) * 14);
+    }
+  }
+
+  function drawTrackBase(g, track, outer, outerX, outerY, outerW, outerH, outerR) {
+    g.fillStyle(0x07111d, 0.42).fillRoundedRect(outerX + 10, outerY + 14, outerW, outerH, outerR);
+
+    g.fillStyle(0x163b2c, 1).fillRoundedRect(
+      track.cx - (track.w + outer * 2 + 50) / 2,
+      track.cy - (track.h + outer * 2 + 50) / 2,
+      track.w + outer * 2 + 50,
+      track.h + outer * 2 + 50,
+      track.r + outer + 25
+    );
+
+    g.fillStyle(0x4f2d1d, 1).fillRoundedRect(outerX - 8, outerY - 8, outerW + 16, outerH + 16, outerR + 8);
+    g.fillStyle(0x8c5737, 1).fillRoundedRect(outerX, outerY, outerW, outerH, outerR);
+    g.fillStyle(0xc47a3f, 1).fillRoundedRect(outerX + 7, outerY + 7, outerW - 14, outerH - 14, Math.max(16, outerR - 7));
+    g.fillStyle(0xa9653a, 0.5).fillRoundedRect(outerX + 18, outerY + 18, outerW - 36, outerH - 36, Math.max(16, outerR - 18));
+  }
+
+  function drawDirtTexture(g, track, outerX, outerY, outerW, outerH, outerR) {
+    var i;
+    var lane;
+    var p;
+
+    for (i = 0; i < 68; i++) {
+      lane = Math.random() * Math.max(1, track.laneOuter - 6) + 3;
+      p = pointOnTrack(track, Math.random(), lane);
+      g.fillStyle(i % 2 ? 0xe0a05f : 0x6f4028, i % 2 ? 0.09 : 0.07)
+        .fillEllipse(p.x, p.y, 8 + Math.random() * 16, 3 + Math.random() * 5);
     }
 
-    g.fillStyle(0x215f3d, 1).fillRoundedRect(
-      track.cx - (track.w + outer * 2 + 34) / 2,
-      track.cy - (track.h + outer * 2 + 34) / 2,
-      track.w + outer * 2 + 34,
-      track.h + outer * 2 + 34,
-      track.r + outer + 17
-    );
+    g.lineStyle(1, 0xf5c47b, 0.08);
+    g.strokeRoundedRect(outerX + 12, outerY + 12, outerW - 24, outerH - 24, Math.max(16, outerR - 12));
+    g.lineStyle(1, 0x492717, 0.12);
+    g.strokeRoundedRect(outerX + 28, outerY + 28, outerW - 56, outerH - 56, Math.max(16, outerR - 28));
+  }
 
-    g.fillStyle(0x9a5a35, 1).fillRoundedRect(
-      track.cx - (track.w + outer * 2) / 2,
-      track.cy - (track.h + outer * 2) / 2,
-      track.w + outer * 2,
-      track.h + outer * 2,
-      track.r + outer
-    );
+  function drawInfield(g, track, x, y, w, h, r) {
+    g.fillStyle(0x061a13, 0.45).fillRoundedRect(x + 4, y + 8, w, h, r);
+    g.fillStyle(0x12613f, 1).fillRoundedRect(x, y, w, h, r);
+    g.fillStyle(0x1d7a4d, 0.75).fillRoundedRect(x + 12, y + 12, w - 24, h - 24, Math.max(18, r - 12));
 
-    g.fillStyle(0xd28a48, 1).fillRoundedRect(
-      track.cx - (track.w + outer * 2 - 12) / 2,
-      track.cy - (track.h + outer * 2 - 12) / 2,
-      track.w + outer * 2 - 12,
-      track.h + outer * 2 - 12,
-      track.r + outer - 6
-    );
+    g.lineStyle(1, 0xffffff, 0.05);
+    for (var i = 0; i < 7; i++) {
+      g.lineBetween(x + 36 + i * 38, y + 14, x + 10 + i * 40, y + h - 18);
+    }
 
-    g.fillStyle(0x17623f, 1).fillRoundedRect(
-      track.cx - (track.w - inner * 2) / 2,
-      track.cy - (track.h - inner * 2) / 2,
-      track.w - inner * 2,
-      track.h - inner * 2,
-      Math.max(20, track.r - inner)
-    );
+    g.fillStyle(0x0c4b68, 0.34).fillEllipse(track.cx, track.cy, Math.max(80, w * 0.22), Math.max(34, h * 0.18));
+    g.lineStyle(1, 0x83d6ff, 0.22).strokeEllipse(track.cx, track.cy, Math.max(80, w * 0.22), Math.max(34, h * 0.18));
+  }
 
-    g.lineStyle(2, 0xf3d8aa, 0.54);
+  function drawLaneLines(g, track) {
+    var i;
+    var lane;
+
     for (i = 0; i < track.laneCount; i++) {
-      var lane = i * track.laneSpacing;
+      lane = i * track.laneSpacing;
+      g.lineStyle(i === 0 ? 2 : 1, 0xf6ddb6, i === 0 ? 0.56 : 0.36);
       g.strokeRoundedRect(
         track.cx - (track.w + lane * 2) / 2,
         track.cy - (track.h + lane * 2) / 2,
@@ -83,17 +133,63 @@ window.SKACHKI_RACE_TRACK = (function () {
         track.r + lane
       );
     }
+  }
 
-    g.lineStyle(4, 0xffffff, 0.94);
-    finishX = track.rightCx;
-    topY = track.cy - track.r - 4;
-    g.lineBetween(finishX, topY - 18, finishX, topY + track.laneOuter + 4);
-    g.lineStyle(2, 0x111111, 0.42);
-    g.lineBetween(finishX + 6, topY - 18, finishX + 6, topY + track.laneOuter + 4);
+  function drawRails(g, track) {
+    var outerRail = track.laneOuter + 9;
+    var innerRail = -track.laneInner + 6;
 
-    scene.add.text(finishX + 10, topY + 8, 'ФИНИШ', {
+    g.lineStyle(4, 0xf3e1bd, 0.8);
+    strokeTrackLine(g, track, outerRail);
+    g.lineStyle(2, 0x26170f, 0.3);
+    strokeTrackLine(g, track, outerRail + 5);
+
+    g.lineStyle(3, 0xf3e1bd, 0.7);
+    strokeTrackLine(g, track, innerRail);
+    g.lineStyle(1, 0x26170f, 0.26);
+    strokeTrackLine(g, track, innerRail - 4);
+  }
+
+  function strokeTrackLine(g, track, lane) {
+    g.strokeRoundedRect(
+      track.cx - (track.w + lane * 2) / 2,
+      track.cy - (track.h + lane * 2) / 2,
+      track.w + lane * 2,
+      track.h + lane * 2,
+      Math.max(10, track.r + lane)
+    );
+  }
+
+  function drawRailPosts(g, track) {
+    var i;
+    var p;
+
+    for (i = 0; i < 34; i++) {
+      p = pointOnTrack(track, i / 34, track.laneOuter + 12);
+      g.fillStyle(0xf7e5bd, 0.65).fillCircle(p.x, p.y, 2.2);
+      g.fillStyle(0x1b120b, 0.22).fillCircle(p.x + 1, p.y + 1, 2.4);
+    }
+  }
+
+  function drawFinish(scene, g, track, finishX, topY) {
+    var y;
+    var row;
+    var cell = 8;
+    var finishHeight = track.laneOuter + 28;
+
+    g.fillStyle(0xffffff, 0.88).fillRect(finishX - 5, topY - 22, 10, finishHeight);
+    for (row = 0; row < Math.ceil(finishHeight / cell); row++) {
+      y = topY - 22 + row * cell;
+      g.fillStyle(row % 2 ? 0xffffff : 0x111111, 0.88).fillRect(finishX - 5, y, 5, cell);
+      g.fillStyle(row % 2 ? 0x111111 : 0xffffff, 0.88).fillRect(finishX, y, 5, cell);
+    }
+
+    g.lineStyle(2, 0xffd34d, 0.9);
+    g.lineBetween(finishX - 10, topY - 24, finishX - 10, topY + finishHeight - 22);
+
+    scene.add.text(finishX + 12, topY - 13, 'ФИНИШ', {
       fontFamily: 'Arial',
-      fontSize: '13px',
+      fontSize: '11px',
       fontStyle: '900',
       color: '#ffffff'
     }).setShadow(0, 2, '#000', 3).setDepth(40);
