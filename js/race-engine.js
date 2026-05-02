@@ -2,6 +2,9 @@
 // Coordinates scene lifecycle and delegates camera, runner visuals, effects, HUD, AI and physics to split modules.
 
 window.SKACHKI_RACE_ENGINE = (function () {
+  var TRACK_PIXELS_PER_METER = 7;
+  var TRACK_ASPECT_RATIO = 2.05;
+
   function game() { return window.SKACHKI_GAME; }
   function raceTrack() { return window.SKACHKI_RACE_TRACK || {}; }
   function raceAudio() { return window.SKACHKI_RACE_AUDIO || {}; }
@@ -79,6 +82,16 @@ window.SKACHKI_RACE_ENGINE = (function () {
     var subtitle = screen ? screen.querySelector('.topbar-title p') : null;
     if (subtitle && raceType) subtitle.textContent = 'Вид сверху • фокус на вашей лошади • ' + raceType.distance + ' м';
   }
+  function trackSizeForDistance(distanceMeters) {
+    var perimeter = Math.max(80, Number(distanceMeters) || 150) * TRACK_PIXELS_PER_METER;
+    var radius = perimeter / (4 * TRACK_ASPECT_RATIO - 4 + Math.PI * 2);
+    var trackHeight = radius * 2;
+
+    return {
+      width: trackHeight * TRACK_ASPECT_RATIO,
+      height: trackHeight
+    };
+  }
   function setupRaceScene(scene, width, height) {
     var G = game();
     var track = raceTrack();
@@ -88,13 +101,14 @@ window.SKACHKI_RACE_ENGINE = (function () {
     var camera = raceCamera();
     var raceType = G.state.activeRaceType || {};
     var horseCount = G.state.currentRaceHorses.length;
-    var worldWidth = Math.max(width * 2.35, 980);
-    var worldHeight = Math.max(height * 1.55, 760);
-    var trackHeight = Math.min(worldHeight * 0.68, 560);
-    var trackWidth = Math.min(worldWidth * 0.9, Math.max(780, trackHeight * 2.05));
     var laneSpacing = horseCount > 6 ? 19 : 22;
     var startProgress = 0.006;
     var raceDistanceMeters = Math.max(80, Number(raceType.distance) || 220);
+    var trackSize = trackSizeForDistance(raceDistanceMeters);
+    var trackPaddingX = laneSpacing * horseCount * 2 + 180;
+    var trackPaddingY = laneSpacing * horseCount * 2 + 210;
+    var worldWidth = Math.max(width * 1.4, trackSize.width + trackPaddingX);
+    var worldHeight = Math.max(height * 1.25, trackSize.height + trackPaddingY);
 
     updateRaceTitle(raceType);
 
@@ -102,7 +116,8 @@ window.SKACHKI_RACE_ENGINE = (function () {
     scene.viewportHeight = height;
     scene.worldWidth = worldWidth;
     scene.worldHeight = worldHeight;
-    scene.track = track.makeTrackGeometry(worldWidth, worldHeight, trackWidth, trackHeight, laneSpacing, horseCount);
+    scene.trackPixelsPerMeter = TRACK_PIXELS_PER_METER;
+    scene.track = track.makeTrackGeometry(worldWidth, worldHeight, trackSize.width, trackSize.height, laneSpacing, horseCount);
     scene.runners = [];
     scene.playerRunner = null;
     scene.startProgress = startProgress;
