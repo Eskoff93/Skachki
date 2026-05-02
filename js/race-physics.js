@@ -84,9 +84,9 @@ window.SKACHKI_RACE_PHYSICS = (function () {
     var staminaReserve = clamp(Number(reserve) || 0, 0, 100);
 
     if (staminaReserve >= 70) return 1;
-    if (staminaReserve >= 40) return 0.96 + (staminaReserve - 40) / 30 * 0.04;
-    if (staminaReserve >= 15) return 0.84 + (staminaReserve - 15) / 25 * 0.12;
-    return 0.72 + staminaReserve / 15 * 0.12;
+    if (staminaReserve >= 40) return 0.85 + (staminaReserve - 40) / 30 * 0.15;
+    if (staminaReserve >= 15) return 0.7 + (staminaReserve - 15) / 25 * 0.15;
+    return 0.5 + staminaReserve / 15 * 0.2;
   }
 
   function staminaDrainPerSecond(effectiveStamina, currentSpeedKmh, baseMaxSpeedKmh, lineEfficiency, isBursting) {
