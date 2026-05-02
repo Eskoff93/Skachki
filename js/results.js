@@ -3,6 +3,27 @@
 window.SKACHKI_RESULTS = (function () {
   function game() { return window.SKACHKI_GAME; }
 
+  function statLine(stats) {
+    if (!stats) return '';
+    return '<div style="font-size:12px;color:var(--muted);margin-top:4px">' +
+      'Макс: ' + stats.maxSpeedKmh + ' км/ч • Средняя: ' + stats.averageSpeedKmh + ' км/ч • Выносл.: ' + stats.staminaReserve + '%' +
+    '</div>';
+  }
+
+  function playerStatsBlock(playerResult) {
+    var stats = playerResult && playerResult.stats;
+    if (!stats) return '';
+
+    return '<div class="result-item" style="margin-top:10px;border-color:rgba(216,169,67,.36)">' +
+      '<div style="font-size:12px;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.04em">Показатели вашей лошади</div>' +
+      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px">' +
+        '<div style="padding:10px;border-radius:14px;background:rgba(255,255,255,.045);text-align:center"><b style="font-size:18px;color:#ffe6a2">' + stats.maxSpeedKmh + '</b><span style="display:block;font-size:10px;color:var(--muted);margin-top:3px">макс км/ч</span></div>' +
+        '<div style="padding:10px;border-radius:14px;background:rgba(255,255,255,.045);text-align:center"><b style="font-size:18px;color:#ffe6a2">' + stats.averageSpeedKmh + '</b><span style="display:block;font-size:10px;color:var(--muted);margin-top:3px">средняя</span></div>' +
+        '<div style="padding:10px;border-radius:14px;background:rgba(255,255,255,.045);text-align:center"><b style="font-size:18px;color:#ffe6a2">' + stats.staminaReserve + '%</b><span style="display:block;font-size:10px;color:var(--muted);margin-top:3px">остаток</span></div>' +
+      '</div>' +
+    '</div>';
+  }
+
   function showResults() {
     var G = game();
     var results = G.state.raceResults;
@@ -55,11 +76,13 @@ window.SKACHKI_RESULTS = (function () {
             '</div>' +
           '</div>' +
         '</div>' +
+        playerStatsBlock(playerResult) +
         results.map(function (result, index) {
           var isPlayer = result.horse && result.horse.isPlayer;
           return '<div class="result-item"><div class="result-head"><div>' +
             '<div style="font-size:16px;font-weight:900">' + (index + 1) + '. ' + result.name + (isPlayer ? ' <span class="player-badge">Вы</span>' : '') + '</div>' +
             '<div style="font-size:12px;color:var(--muted);margin-top:4px">Время: ' + result.time + ' сек</div>' +
+            statLine(result.stats) +
           '</div></div></div>';
         }).join('') +
         '<button class="btn btn-gold" id="resultRaceMenuBtn" style="width:100%;margin-top:12px">Выбрать новый заезд</button>' +
