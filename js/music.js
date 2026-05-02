@@ -21,6 +21,9 @@ window.SKACHKI_MUSIC = (function () {
   };
 
   var audio = null;
+  var audioCtx = null;
+  var sourceNode = null;
+  var gainNode = null;
   var settings = loadSettings();
   var userUnlocked = false;
   var isBound = false;
@@ -72,10 +75,53 @@ window.SKACHKI_MUSIC = (function () {
     audio = new Audio(MUSIC_SRC);
     audio.loop = true;
     audio.preload = 'auto';
-    audio.volume = settings.volume;
+    audio.volume = 1;
     audio.addEventListener('error', updateControls);
 
     return audio;
+  }
+
+  function ensureAudioGraph() {
+    var AudioContextClass;
+    var track = getAudio();
+
+    if (gainNode) {
+      applyVolume();
+      return true;
+    }
+
+    AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) {
+      track.volume = settings.volume;
+      return false;
+    }
+
+    try {
+      audioCtx = audioCtx || new AudioContextClass();
+      sourceNode = sourceNode || audioCtx.createMediaElementSource(track);
+      gainNode = audioCtx.createGain();
+      sourceNode.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      applyVolume();
+      return true;
+    } catch (error) {
+      gainNode = null;
+      track.volume = settings.volume;
+      return false;
+    }
+  }
+
+  function resumeAudioContext() {
+    if (audioCtx && audioCtx.state === 'suspended') {
+      return audioCtx.resume().catch(function () {});
+    }
+    return Promise.resolve();
+  }
+
+  function applyVolume() {
+    var value = clamp(settings.volume, 0, 1);
+    if (gainNode) gainNode.gain.setTargetAtTime(value, audioCtx.currentTime, 0.03);
+    if (audio) audio.volume = gainNode ? 1 : value;
   }
 
   function shouldPlay() {
@@ -93,8 +139,12 @@ window.SKACHKI_MUSIC = (function () {
     if (!settings.enabled || !userUnlocked || !isMenuScreen(currentScreen)) return;
 
     track = getAudio();
-    track.volume = settings.volume;
-    track.play().then(updateControls).catch(updateControls);
+    ensureAudioGraph();
+    applyVolume();
+
+    resumeAudioContext().then(function () {
+      return track.play();
+    }).then(updateControls).catch(updateControls);
   }
 
   function pause() {
@@ -110,7 +160,7 @@ window.SKACHKI_MUSIC = (function () {
 
   function setVolume(volume) {
     settings.volume = clamp(Number(volume) || 0, 0, 1);
-    if (audio) audio.volume = settings.volume;
+    applyVolume();
     saveSettings();
     updateControls();
   }
@@ -127,8 +177,8 @@ window.SKACHKI_MUSIC = (function () {
   function unlock() {
     if (userUnlocked) return;
     userUnlocked = true;
-    getAudio();
     currentScreen = activeScreenName();
+    ensureAudioGraph();
     syncPlayback();
   }
 
@@ -163,6 +213,11 @@ window.SKACHKI_MUSIC = (function () {
     });
 
     document.addEventListener('input', function (event) {
+      if (!event.target || event.target.id !== 'musicVolumeInput') return;
+      setVolume(Number(event.target.value) / 100);
+    });
+
+    document.addEventListener('change', function (event) {
       if (!event.target || event.target.id !== 'musicVolumeInput') return;
       setVolume(Number(event.target.value) / 100);
     });
