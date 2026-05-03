@@ -7,6 +7,28 @@ window.SKACHKI_RACE_HUD = (function () {
   function physicsApi() { return window.SKACHKI_RACE_PHYSICS || {}; }
   function runnerView() { return window.SKACHKI_RACE_RUNNER_VIEW || {}; }
 
+  function cssPx(name) {
+    var styles = window.getComputedStyle ? getComputedStyle(document.documentElement) : null;
+    var value = styles ? styles.getPropertyValue(name) : '';
+    var parsed = parseFloat(String(value || '').replace('px', '').trim());
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  function hudSafeTop() {
+    var tg = window.Telegram && window.Telegram.WebApp;
+    var tgTop = 0;
+
+    if (tg && tg.contentSafeAreaInset && tg.contentSafeAreaInset.top) tgTop = tg.contentSafeAreaInset.top;
+    else if (tg && tg.safeAreaInset && tg.safeAreaInset.top) tgTop = tg.safeAreaInset.top;
+
+    return Math.min(72, Math.max(
+      0,
+      tgTop,
+      cssPx('--tg-top-offset'),
+      cssPx('--safe-top')
+    ));
+  }
+
   function sortedRunners(scene) {
     return scene.runners.slice().sort(function (a, b) { return b.progress - a.progress; });
   }
@@ -51,10 +73,13 @@ window.SKACHKI_RACE_HUD = (function () {
   }
 
   function setup(scene, width, height) {
+    var safeTop = hudSafeTop();
+
     scene.hud = {
       boardWidth: Math.min(112, Math.max(96, Math.round(width * 0.26))),
       boardX: width - 8,
-      boardY: 42,
+      boardY: 42 + safeTop,
+      soundY: 8 + safeTop,
       bottomHeight: Math.min(112, Math.max(96, Math.round(height * 0.145))),
       margin: 8
     };
@@ -143,31 +168,22 @@ window.SKACHKI_RACE_HUD = (function () {
       .setDepth(306)
       .setScrollFactor(0);
 
-    scene.hudPlaceBadge = scene.add.rectangle(leftX + 25, centerY + 19, 50, 42, 0x123359, 0.96)
+    scene.hudPlaceBadge = scene.add.rectangle(leftX + 32, centerY + 19, 64, 38, 0x123359, 0.96)
       .setOrigin(0.5)
       .setDepth(305)
       .setScrollFactor(0);
     scene.hudPlaceBadge.setStrokeStyle(1, 0x7bd8ff, 0.72);
 
-    scene.hudPlace = scene.add.text(leftX + 25, centerY + 7, '', {
+    scene.hudPlace = scene.add.text(leftX + 32, centerY + 19, '', {
       fontFamily: 'Arial',
-      fontSize: '22px',
+      fontSize: width <= 390 ? '18px' : '20px',
       fontStyle: '900',
       color: '#ffffff',
       align: 'center',
       resolution: 2
-    }).setOrigin(0.5, 0).setDepth(306).setScrollFactor(0);
+    }).setOrigin(0.5).setDepth(306).setScrollFactor(0);
 
-    scene.hudPlaceTotal = scene.add.text(leftX + 25, centerY + 31, '', {
-      fontFamily: 'Arial',
-      fontSize: '10px',
-      fontStyle: '900',
-      color: '#aebfd0',
-      align: 'center',
-      resolution: 2
-    }).setOrigin(0.5, 0).setDepth(306).setScrollFactor(0);
-
-    scene.hudName = scene.add.text(leftX + 62, centerY + 4, '', {
+    scene.hudName = scene.add.text(leftX + 76, centerY + 4, '', {
       fontFamily: 'Arial',
       fontSize: width <= 390 ? '18px' : '21px',
       fontStyle: '900',
@@ -175,7 +191,7 @@ window.SKACHKI_RACE_HUD = (function () {
       resolution: 2
     }).setDepth(306).setScrollFactor(0);
 
-    scene.hudGap = scene.add.text(leftX + 64, centerY + 30, '', {
+    scene.hudGap = scene.add.text(leftX + 78, centerY + 30, '', {
       fontFamily: 'Arial',
       fontSize: '11px',
       fontStyle: '800',
@@ -239,7 +255,7 @@ window.SKACHKI_RACE_HUD = (function () {
   }
 
   function setupSoundButton(scene, width) {
-    scene.soundToggle = scene.add.text(width - 8, 8, '', {
+    scene.soundToggle = scene.add.text(width - 8, scene.hud.soundY, '', {
       fontFamily: 'Arial', fontSize: '14px', fontStyle: '900', color: '#ffffff',
       backgroundColor: 'rgba(7,24,39,.62)', padding: { left: 8, right: 8, top: 6, bottom: 6 }, resolution: 2
     }).setOrigin(1, 0).setDepth(340).setScrollFactor(0).setInteractive({ useHandCursor: true });
@@ -302,8 +318,7 @@ window.SKACHKI_RACE_HUD = (function () {
     var state = staminaLabel(stamina);
 
     scene.hudName.setText(shortName(scene.playerRunner.displayName || scene.playerRunner.horse.name));
-    scene.hudPlace.setText(String(place));
-    scene.hudPlaceTotal.setText('/ ' + total);
+    scene.hudPlace.setText(place + '/' + total);
     scene.hudGap.setText(leaderGapText(scene, order));
     scene.hudSpeed.setText((Math.round(speed * 10) / 10).toFixed(1));
     scene.hudStaminaPercent.setText(stamina + '%');
