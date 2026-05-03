@@ -25,9 +25,8 @@ window.SKACHKI_RACE_TRACK = (function () {
     };
   }
 
-  function trackPerimeter(track, lane) {
-    var r = track.r + (Number(lane) || 0);
-    return track.straight * 2 + Math.PI * r * 2;
+  function trackPerimeter(track) {
+    return track.straight * 2 + Math.PI * track.r * 2;
   }
 
   function startFinishX(track) {
@@ -35,7 +34,7 @@ window.SKACHKI_RACE_TRACK = (function () {
   }
 
   function startProgress(track) {
-    return (track.straight * START_FINISH_STRAIGHT_RATIO) / trackPerimeter(track, 0);
+    return (track.straight * START_FINISH_STRAIGHT_RATIO) / trackPerimeter(track);
   }
 
   function drawTrack(scene, width, height) {
@@ -199,12 +198,13 @@ window.SKACHKI_RACE_TRACK = (function () {
   }
 
   function pointOnTrack(track, progress, lane) {
-    var r = track.r + lane;
+    var laneOffset = Number(lane) || 0;
+    var r = track.r + laneOffset;
     var topY = track.cy - r;
     var bottomY = track.cy + r;
     var straight = track.straight;
-    var arc = Math.PI * r;
-    var perimeter = straight * 2 + arc * 2;
+    var centerArc = Math.PI * track.r;
+    var perimeter = trackPerimeter(track);
     var d = ((progress % 1) + 1) % 1 * perimeter;
     var x;
     var y;
@@ -214,19 +214,19 @@ window.SKACHKI_RACE_TRACK = (function () {
       x = track.leftCx + d;
       y = topY;
       angle = 0;
-    } else if (d < straight + arc) {
-      var rightArc = (d - straight) / arc;
+    } else if (d < straight + centerArc) {
+      var rightArc = (d - straight) / centerArc;
       var a1 = -Math.PI / 2 + rightArc * Math.PI;
       x = track.rightCx + Math.cos(a1) * r;
       y = track.cy + Math.sin(a1) * r;
       angle = a1 + Math.PI / 2;
-    } else if (d < straight * 2 + arc) {
-      var bottomD = d - straight - arc;
+    } else if (d < straight * 2 + centerArc) {
+      var bottomD = d - straight - centerArc;
       x = track.rightCx - bottomD;
       y = bottomY;
       angle = Math.PI;
     } else {
-      var leftArc = (d - straight * 2 - arc) / arc;
+      var leftArc = (d - straight * 2 - centerArc) / centerArc;
       var a2 = Math.PI / 2 + leftArc * Math.PI;
       x = track.leftCx + Math.cos(a2) * r;
       y = track.cy + Math.sin(a2) * r;
