@@ -5,9 +5,7 @@ window.SKACHKI_HORSE = (function () {
   var HORSE_BREEDS = ['Английская', 'Арабская', 'Ахалтекинская', 'Квотерхорс', 'Стандартбредная'];
   var HORSE_COATS = ['Гнедая', 'Вороная', 'Рыжая', 'Серая', 'Буланая', 'Соловая'];
 
-  function todayKey() {
-    return new Date().toISOString().slice(0, 10);
-  }
+  function todayKey() { return new Date().toISOString().slice(0, 10); }
 
   function daysBetween(dateA, dateB) {
     if (!dateA || !dateB) return 0;
@@ -17,17 +15,10 @@ window.SKACHKI_HORSE = (function () {
     return Math.floor((b.getTime() - a.getTime()) / 86400000);
   }
 
-  function pick(list, rand) {
-    return list[rand(0, list.length - 1)];
-  }
-
-  function genderLabel(gender) {
-    return gender === 'mare' ? 'Кобыла' : 'Жеребец';
-  }
-
-  function randomGender(rand) {
-    return rand(0, 1) === 0 ? 'stallion' : 'mare';
-  }
+  function pick(list, rand) { return list[rand(0, list.length - 1)]; }
+  function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
+  function randomGender(rand) { return rand(0, 1) === 0 ? 'stallion' : 'mare'; }
+  function genderLabel(gender) { return gender === 'mare' ? 'Кобыла' : 'Жеребец'; }
 
   function horseRankFromRating(rating) {
     var score = Number.isFinite(rating) ? rating : 0;
@@ -63,12 +54,11 @@ window.SKACHKI_HORSE = (function () {
 
   function rankScoreFromStat(stat) {
     var value = Number.isFinite(stat) ? stat : 60;
-    return Math.max(1, Math.min(20, Math.round((value - 40) / 3)));
+    return clamp(Math.round((value - 40) / 3), 1, 20);
   }
 
   function randomHiddenQuality(rand, baseStat) {
-    var base = rankScoreFromStat(baseStat);
-    return Math.max(1, Math.min(20, base + rand(-2, 2)));
+    return clamp(rankScoreFromStat(baseStat) + rand(-2, 2), 1, 20);
   }
 
   function hiddenQualityLabel(key) {
@@ -79,7 +69,7 @@ window.SKACHKI_HORSE = (function () {
   }
 
   function hiddenQualityDescription(key, rank) {
-    var text = {
+    var descriptions = {
       strength: {
         bronze: 'Тяжело держит плотную борьбу.',
         silver: 'Нормально держится под давлением.',
@@ -99,13 +89,11 @@ window.SKACHKI_HORSE = (function () {
         diamond: 'Чувствует идеальный момент для рывка.'
       }
     };
-    return ((text[key] || {})[rank]) || 'Качество проявится в гонках.';
+    return ((descriptions[key] || {})[rank]) || 'Качество проявится в гонках.';
   }
 
   function createHorse(name, randIntFn) {
-    var rand = randIntFn || function (min, max) {
-      return Math.floor(Math.random() * (max - min + 1)) + min;
-    };
+    var rand = randIntFn || function (min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; };
     var data = window.SKACHKI_DATA || {};
     var temperaments = data.temperaments || ['Смелая', 'Пугливая', 'Упрямая', 'Резкая', 'Быстрая'];
     var agility = rand(48, 74);
@@ -151,9 +139,7 @@ window.SKACHKI_HORSE = (function () {
   }
 
   function normalizeHorse(horse, randIntFn) {
-    var rand = randIntFn || function (min, max) {
-      return Math.floor(Math.random() * (max - min + 1)) + min;
-    };
+    var rand = randIntFn || function (min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; };
 
     if (!horse.gender) horse.gender = randomGender(rand);
     if (!horse.breed) horse.breed = pick(HORSE_BREEDS, rand);
@@ -167,13 +153,11 @@ window.SKACHKI_HORSE = (function () {
     if (!horse.form) horse.form = 'normal';
     if (!Number.isFinite(horse.trainingStreakDays)) horse.trainingStreakDays = 0;
     if (typeof horse.lastTrainingDate === 'undefined') horse.lastTrainingDate = null;
-
     if (!Number.isFinite(horse.careerLimit)) horse.careerLimit = rand(15, 35);
     if (!Number.isFinite(horse.racesRun)) horse.racesRun = 0;
     if (!Number.isFinite(horse.wins)) horse.wins = 0;
     if (!Number.isFinite(horse.podiums)) horse.podiums = 0;
     if (!Number.isFinite(horse.earnings)) horse.earnings = 0;
-
     if (!Number.isFinite(horse.offspringLimit)) horse.offspringLimit = rand(1, 5);
     if (!Number.isFinite(horse.offspringCount)) horse.offspringCount = 0;
     if (!horse.status) horse.status = 'active';
@@ -182,27 +166,22 @@ window.SKACHKI_HORSE = (function () {
     if (!Number.isFinite(horse.hiddenQualities.strength)) horse.hiddenQualities.strength = randomHiddenQuality(rand, horse.power);
     if (!Number.isFinite(horse.hiddenQualities.agility)) horse.hiddenQualities.agility = randomHiddenQuality(rand, horse.agility);
     if (!Number.isFinite(horse.hiddenQualities.instinct)) horse.hiddenQualities.instinct = randomHiddenQuality(rand, horse.intelligence);
-
     if (typeof horse.energy !== 'undefined') delete horse.energy;
 
     horse.currentRank = horseRankFromRating(horse.rating);
     applyFormDecay(horse);
-
     return horse;
   }
 
   function normalizeHorses(horses, randIntFn) {
     if (!Array.isArray(horses)) return [];
-    return horses.map(function (horse) {
-      return normalizeHorse(horse, randIntFn);
-    });
+    return horses.map(function (horse) { return normalizeHorse(horse, randIntFn); });
   }
 
   function applyFormDecay(horse, currentDate) {
     var today = currentDate || todayKey();
     var missedDays = daysBetween(horse.lastTrainingDate, today) - 1;
     if (!horse.lastTrainingDate || missedDays <= 0) return horse;
-
     if (missedDays >= 3) {
       horse.form = 'bad';
       horse.trainingStreakDays = 0;
@@ -210,7 +189,6 @@ window.SKACHKI_HORSE = (function () {
       if (horse.form === 'excellent') horse.form = 'normal';
       horse.trainingStreakDays = 0;
     }
-
     return horse;
   }
 
@@ -220,28 +198,21 @@ window.SKACHKI_HORSE = (function () {
     var streak = Number.isFinite(horse.trainingStreakDays) ? horse.trainingStreakDays : 0;
     var form = horse.form || 'normal';
 
-    if (form === 'excellent') {
-      return trainedToday ? 'Сегодня уже тренировалась. Форма отличная.' : 'Поддержите серию сегодня, чтобы сохранить отличную форму.';
-    }
-
+    if (form === 'excellent') return trainedToday ? 'Сегодня уже тренировалась. Форма отличная.' : 'Поддержите серию сегодня, чтобы сохранить отличную форму.';
     if (form === 'bad') {
       var toNormal = Math.max(1, 3 - streak);
       return trainedToday ? 'Сегодня уже тренировалась. До нормальной формы: ' + toNormal + ' дн.' : 'До нормальной формы: ' + toNormal + ' дн.';
     }
-
     var toExcellent = Math.max(1, 7 - streak);
     return trainedToday ? 'Сегодня уже тренировалась. До отличной формы: ' + toExcellent + ' дн.' : 'До отличной формы: ' + toExcellent + ' дн.';
   }
 
   function horseClass(horse) {
-    return Math.round((
-      horse.speed +
-      horse.stamina +
-      horse.acceleration +
-      horse.agility +
-      horse.power +
-      horse.intelligence
-    ) / 6);
+    return Math.round(
+      (Number(horse.speed) || 0) * 0.4 +
+      (Number(horse.stamina) || 0) * 0.35 +
+      (Number(horse.acceleration) || 0) * 0.25
+    );
   }
 
   function formLabel(form) {
