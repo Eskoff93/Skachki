@@ -38,7 +38,7 @@ window.SKACHKI_RACE_TRACK = (function () {
     var infieldW = track.w - inner * 2;
     var infieldH = track.h - inner * 2;
     var infieldR = Math.max(20, track.r - inner);
-    var finishX = track.rightCx;
+    var finishX = track.leftCx;
     var topY = track.cy - track.r - 4;
     var s;
 
@@ -197,26 +197,26 @@ window.SKACHKI_RACE_TRACK = (function () {
     var angle;
 
     if (d < straight) {
-      x = track.rightCx - d;
+      x = track.leftCx + d;
       y = topY;
-      angle = Math.PI;
+      angle = 0;
     } else if (d < straight + arc) {
-      var leftArc = (d - straight) / arc;
-      var a1 = -Math.PI / 2 - leftArc * Math.PI;
-      x = track.leftCx + Math.cos(a1) * r;
+      var rightArc = (d - straight) / arc;
+      var a1 = -Math.PI / 2 + rightArc * Math.PI;
+      x = track.rightCx + Math.cos(a1) * r;
       y = track.cy + Math.sin(a1) * r;
-      angle = a1 - Math.PI / 2;
+      angle = a1 + Math.PI / 2;
     } else if (d < straight * 2 + arc) {
       var bottomD = d - straight - arc;
-      x = track.leftCx + bottomD;
+      x = track.rightCx - bottomD;
       y = bottomY;
-      angle = 0;
+      angle = Math.PI;
     } else {
-      var rightArc = (d - straight * 2 - arc) / arc;
-      var a2 = Math.PI / 2 - rightArc * Math.PI;
-      x = track.rightCx + Math.cos(a2) * r;
+      var leftArc = (d - straight * 2 - arc) / arc;
+      var a2 = Math.PI / 2 + leftArc * Math.PI;
+      x = track.leftCx + Math.cos(a2) * r;
       y = track.cy + Math.sin(a2) * r;
-      angle = a2 - Math.PI / 2;
+      angle = a2 + Math.PI / 2;
     }
 
     return { x: x, y: y, angle: angle };
