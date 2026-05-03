@@ -25,7 +25,7 @@ window.SKACHKI_DATA = {
       prizeMax: 60,
       distance: 150,
       opponents: 3,
-      classOffset: -12,
+      classOffset: -3,
       desc: 'Бесплатный короткий старт, чтобы восстановить баланс и продолжить игру.'
     },
     {
