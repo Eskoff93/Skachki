@@ -136,8 +136,11 @@ window.SKACHKI_GAME = (function () {
   }
 
   function horseClass(horse) {
-    if (HORSE.horseClass) return HORSE.horseClass(horse);
-    return Math.round((horse.speed + horse.stamina + horse.acceleration + horse.agility + horse.power + horse.intelligence) / 6);
+    return Math.round(
+      (Number(horse.speed) || 0) * 0.4 +
+      (Number(horse.stamina) || 0) * 0.35 +
+      (Number(horse.acceleration) || 0) * 0.25
+    );
   }
 
   function formLabel(form) {
