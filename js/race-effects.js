@@ -20,26 +20,39 @@ window.SKACHKI_RACE_EFFECTS = (function () {
     });
   }
 
-  function addBurst(scene, runner) {
+  function addTrail(scene, runner, color, alpha, length, width, duration) {
+    var angle;
+    var graphics;
+    var backX;
+    var backY;
+
     if (!runner || !runner.sprite) return;
 
-    var angle = runner.sprite.rotation - Math.PI / 2;
-    var graphics = scene.add.graphics().setDepth(runner.sprite.depth + 2);
-    var backX = runner.sprite.x - Math.cos(angle) * 24;
-    var backY = runner.sprite.y - Math.sin(angle) * 24;
+    angle = runner.sprite.rotation - Math.PI / 2;
+    graphics = scene.add.graphics().setDepth(runner.sprite.depth + 2);
+    backX = runner.sprite.x - Math.cos(angle) * 24;
+    backY = runner.sprite.y - Math.sin(angle) * 24;
 
-    graphics.lineStyle(3, 0x7bd8ff, 0.82);
-    graphics.lineBetween(backX, backY, backX - Math.cos(angle) * 28, backY - Math.sin(angle) * 28);
-    graphics.lineStyle(2, 0xffffff, 0.55);
-    graphics.lineBetween(backX + 8, backY + 6, backX - Math.cos(angle) * 20 + 8, backY - Math.sin(angle) * 20 + 6);
-    graphics.lineBetween(backX - 8, backY - 6, backX - Math.cos(angle) * 20 - 8, backY - Math.sin(angle) * 20 - 6);
+    graphics.lineStyle(width, color, alpha);
+    graphics.lineBetween(backX, backY, backX - Math.cos(angle) * length, backY - Math.sin(angle) * length);
+    graphics.lineStyle(Math.max(1, width - 1), 0xffffff, alpha * 0.42);
+    graphics.lineBetween(backX + 7, backY + 5, backX - Math.cos(angle) * length * 0.75 + 7, backY - Math.sin(angle) * length * 0.75 + 5);
+    graphics.lineBetween(backX - 7, backY - 5, backX - Math.cos(angle) * length * 0.75 - 7, backY - Math.sin(angle) * length * 0.75 - 5);
 
     scene.tweens.add({
       targets: graphics,
       alpha: 0,
-      duration: 420,
+      duration: duration,
       onComplete: function () { graphics.destroy(); }
     });
+  }
+
+  function addBurst(scene, runner) {
+    addTrail(scene, runner, 0x7bd8ff, 0.82, 28, 3, 420);
+  }
+
+  function addStrongFinish(scene, runner) {
+    addTrail(scene, runner, 0xffd34d, 0.92, 38, 4, 520);
   }
 
   function addMistake(scene, runner) {
@@ -56,9 +69,46 @@ window.SKACHKI_RACE_EFFECTS = (function () {
     });
   }
 
+  function addFatigue(scene, runner) {
+    var angle;
+    var backX;
+    var backY;
+    var cloud;
+
+    if (!runner || !runner.sprite) return;
+
+    angle = runner.sprite.rotation - Math.PI / 2;
+    backX = runner.sprite.x - Math.cos(angle) * 24;
+    backY = runner.sprite.y - Math.sin(angle) * 24;
+    cloud = scene.add.circle(backX, backY, 8, 0x5a4a3b, 0.22)
+      .setDepth(Math.max(1, runner.sprite.depth - 3));
+
+    runner.sprite.setTint(0xd7c0a8);
+    scene.tweens.add({
+      targets: cloud,
+      alpha: 0,
+      scale: 2.1,
+      duration: 640,
+      onComplete: function () { cloud.destroy(); }
+    });
+    scene.tweens.add({
+      targets: runner.sprite,
+      alpha: 0.78,
+      yoyo: true,
+      repeat: 1,
+      duration: 140,
+      onComplete: function () {
+        runner.sprite.alpha = 1;
+        runner.sprite.clearTint();
+      }
+    });
+  }
+
   function addVisualRaceEvent(scene, runner, type) {
     if (type === 'burst') addBurst(scene, runner);
+    else if (type === 'strong_finish') addStrongFinish(scene, runner);
     else if (type === 'mistake') addMistake(scene, runner);
+    else if (type === 'fatigue') addFatigue(scene, runner);
   }
 
   return {
