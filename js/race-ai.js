@@ -132,12 +132,11 @@ window.SKACHKI_RACE_AI = (function () {
 
   function lineEfficiency(scene, runner) {
     var idx = laneIndex(scene, runner.lane);
-    var outerPenalty = idx * 0.0065;
     var turnBonus = nearOrInTurn(runner) ? 0.006 : 0;
     var blocker = findBlockingRunner(scene, runner);
     var blockedPenalty = blocker ? 0.045 : 0;
 
-    return clamp(1 - outerPenalty + (idx === 0 ? turnBonus : 0) - blockedPenalty, 0.88, 1.025);
+    return clamp(1 + (idx === 0 ? turnBonus : 0) - blockedPenalty, 0.88, 1.025);
   }
 
   function update(scene, runner, time) {
