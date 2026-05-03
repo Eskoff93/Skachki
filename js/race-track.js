@@ -1,7 +1,7 @@
 // Race track geometry and drawing helpers.
 
 window.SKACHKI_RACE_TRACK = (function () {
-  var START_FINISH_STRAIGHT_RATIO = 0.18;
+  var START_FINISH_STRAIGHT_RATIO = 0.5;
 
   function makeTrackGeometry(width, height, trackWidth, trackHeight, laneSpacing, horseCount) {
     var cx = width / 2;
