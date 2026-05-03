@@ -1,6 +1,8 @@
 // Race track geometry and drawing helpers.
 
 window.SKACHKI_RACE_TRACK = (function () {
+  var START_FINISH_STRAIGHT_RATIO = 0.18;
+
   function makeTrackGeometry(width, height, trackWidth, trackHeight, laneSpacing, horseCount) {
     var cx = width / 2;
     var cy = height / 2 + 12;
@@ -23,6 +25,19 @@ window.SKACHKI_RACE_TRACK = (function () {
     };
   }
 
+  function trackPerimeter(track, lane) {
+    var r = track.r + (Number(lane) || 0);
+    return track.straight * 2 + Math.PI * r * 2;
+  }
+
+  function startFinishX(track) {
+    return track.leftCx + track.straight * START_FINISH_STRAIGHT_RATIO;
+  }
+
+  function startProgress(track) {
+    return (track.straight * START_FINISH_STRAIGHT_RATIO) / trackPerimeter(track, 0);
+  }
+
   function drawTrack(scene, width, height) {
     var track = scene.track;
     var g = scene.add.graphics();
@@ -38,8 +53,7 @@ window.SKACHKI_RACE_TRACK = (function () {
     var infieldW = track.w - inner * 2;
     var infieldH = track.h - inner * 2;
     var infieldR = Math.max(20, track.r - inner);
-    var finishX = track.leftCx;
-    var topY = track.cy - track.r - 4;
+    var finishX = startFinishX(track);
     var s;
 
     drawGround(g, width, height);
@@ -49,7 +63,7 @@ window.SKACHKI_RACE_TRACK = (function () {
     drawLaneLines(g, track);
     drawRails(g, track);
     drawRailPosts(g, track);
-    drawFinish(g, track, finishX, topY);
+    drawFinish(g, track, finishX);
 
     for (s = 0; s < 12; s++) {
       g.lineStyle(1, 0xffffff, 0.018);
@@ -225,6 +239,8 @@ window.SKACHKI_RACE_TRACK = (function () {
   return {
     drawTrack: drawTrack,
     makeTrackGeometry: makeTrackGeometry,
-    pointOnTrack: pointOnTrack
+    pointOnTrack: pointOnTrack,
+    startFinishX: startFinishX,
+    startProgress: startProgress
   };
 })();
