@@ -11,7 +11,7 @@ window.SKACHKI_NAVIGATION = (function () {
   function bottomNav(active) {
     return '<div class="bottom-nav">' +
       '<button class="bottom-nav-btn ' + (active === 'stable' ? 'active' : '') + '" data-menu="stable"><span>🐴</span><b>Конюшня</b></button>' +
-      '<button class="bottom-nav-btn ' + (active === 'races' ? 'active' : '') + '" data-menu="races"><span>🏁</span><b>Гонки</b></button>' +
+      '<button class="bottom-nav-btn ' + (active === 'races' ? 'active' : '') + '" data-menu="races"><span>🏁</span><b>Скачки</b></button>' +
       '<button class="bottom-nav-btn ' + (active === 'breed' ? 'active' : '') + '" data-menu="breed"><span>🧬</span><b>Разведение</b></button>' +
       '<button class="bottom-nav-btn ' + (active === 'rating' ? 'active' : '') + '" data-menu="rating"><span>🏆</span><b>Рейтинг</b></button>' +
     '</div>';
@@ -36,7 +36,7 @@ window.SKACHKI_NAVIGATION = (function () {
       var raceMenu = document.createElement('div');
       raceMenu.id = 'raceMenuScreen';
       raceMenu.className = 'screen';
-      raceMenu.innerHTML = '<div class="topbar"><div class="topbar-row"><button class="icon-btn" id="raceMenuBackBtn">←</button><div class="topbar-title"><h1>ГОНКИ</h1><p>Выберите заезд и свою лошадь</p></div><div style="width:38px;flex:0 0 auto"></div></div></div><div class="content-scroll" id="raceMenuScroll"></div><div class="race-start-panel"><button class="btn btn-gold" id="raceMenuStartBtn" style="width:100%">Выберите заезд</button>' + bottomNav('races') + '</div>';
+      raceMenu.innerHTML = '<div class="topbar"><div class="topbar-row"><button class="icon-btn" id="raceMenuBackBtn">←</button><div class="topbar-title"><h1>СКАЧКИ</h1><p>Выберите заезд и свою лошадь</p></div><div style="width:38px;flex:0 0 auto"></div></div></div><div class="content-scroll" id="raceMenuScroll"></div><div class="race-start-panel"><button class="btn btn-gold" id="raceMenuStartBtn" style="width:100%">Выберите заезд</button>' + bottomNav('races') + '</div>';
       document.body.insertBefore(raceMenu, document.body.firstChild);
     }
 
