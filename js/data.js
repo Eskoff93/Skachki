@@ -25,7 +25,11 @@ window.SKACHKI_DATA = {
       prizeMax: 60,
       distance: 150,
       opponents: 3,
-      classOffset: -3,
+      botClassMin: 22,
+      botClassMax: 35,
+      botSpread: 4,
+      botQualityMin: 1,
+      botQualityMax: 8,
       desc: 'Бесплатный короткий старт, чтобы восстановить баланс и продолжить игру.'
     },
     {
@@ -37,7 +41,11 @@ window.SKACHKI_DATA = {
       prizeMax: 150,
       distance: 200,
       opponents: 5,
-      classOffset: 0,
+      botClassMin: 35,
+      botClassMax: 50,
+      botSpread: 5,
+      botQualityMin: 6,
+      botQualityMax: 12,
       desc: 'Базовый формат: нормальные соперники и честный приз.'
     },
     {
@@ -49,7 +57,11 @@ window.SKACHKI_DATA = {
       prizeMax: 300,
       distance: 300,
       opponents: 6,
-      classOffset: 10,
+      botClassMin: 50,
+      botClassMax: 70,
+      botSpread: 6,
+      botQualityMin: 8,
+      botQualityMax: 16,
       desc: 'Серьёзная проверка для прокачанных лошадей.'
     },
     {
@@ -61,7 +73,11 @@ window.SKACHKI_DATA = {
       prizeMax: 700,
       distance: 500,
       opponents: 7,
-      classOffset: 20,
+      botClassMin: 70,
+      botClassMax: 90,
+      botSpread: 6,
+      botQualityMin: 12,
+      botQualityMax: 20,
       desc: 'Большой риск и большой приз. Нужна сильная конюшня.'
     }
   ],
