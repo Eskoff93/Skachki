@@ -1,11 +1,12 @@
 // Race physics.
-// Converts horse stats into km/h, acceleration, stamina reserve and speed statistics.
+// Converts horse stats into km/h, acceleration, stamina tank and speed statistics.
 
 window.SKACHKI_RACE_PHYSICS = (function () {
   var KMH_PER_SPEED_POINT = 0.7;
   var KMH_TO_MPS = 1000 / 3600;
   var FORM_TICK_METERS = 20;
-  var TOP_SPEED_KMH = 70;
+  var TANK_PER_STAMINA_POINT = 35;
+  var BURST_STAMINA_DRAIN_MULTIPLIER = 2;
 
   var FORM_RANGES = {
     excellent: { min: 0.95, max: 1 },
@@ -38,11 +39,16 @@ window.SKACHKI_RACE_PHYSICS = (function () {
     return clamp((Number(value) || 0) * factor, 0, 100);
   }
 
+  function staminaTankMax(effectiveStamina) {
+    return Math.max(1, effectiveStat(effectiveStamina, 1) * TANK_PER_STAMINA_POINT);
+  }
+
   function initialRunnerPhysics(horse, raceDistanceMeters) {
     var formFactor = rollFormFactor(horse.form);
     var effectiveSpeed = effectiveStat(horse.speed, formFactor);
     var effectiveAcceleration = effectiveStat(horse.acceleration, formFactor);
     var effectiveStamina = effectiveStat(horse.stamina, formFactor);
+    var tankMax = staminaTankMax(effectiveStamina);
 
     return {
       raceDistanceMeters: Math.max(1, Number(raceDistanceMeters) || 150),
@@ -52,6 +58,8 @@ window.SKACHKI_RACE_PHYSICS = (function () {
       maxSpeedKmh: 0,
       averageSpeedKmh: 0,
       staminaReserve: 100,
+      staminaTank: tankMax,
+      staminaTankMax: tankMax,
       baseMaxSpeedKmh: speedToKmh(horse.speed),
       formTickMeters: FORM_TICK_METERS,
       nextFormTickMeters: FORM_TICK_METERS,
@@ -89,18 +97,14 @@ window.SKACHKI_RACE_PHYSICS = (function () {
     return 0.5 + staminaReserve / 15 * 0.2;
   }
 
-  function staminaDrainPerSecond(effectiveStamina, currentSpeedKmh, baseMaxSpeedKmh, lineEfficiency, isBursting) {
-    var stamina = clamp(Number(effectiveStamina) || 0, 0, 100);
-    var intensity = baseMaxSpeedKmh > 0 ? clamp(currentSpeedKmh / baseMaxSpeedKmh, 0, 1) : 0;
-    var speedLoad = clamp(currentSpeedKmh / TOP_SPEED_KMH, 0, 1);
-    var staminaProtection = clamp(1.45 - stamina / 100, 0.45, 1.45);
-    var intensityLoad = 0.18 + Math.pow(intensity, 1.9) * 1.42;
-    var absoluteSpeedLoad = 0.72 + Math.pow(speedLoad, 1.55) * 0.78;
-    var baseDrain = 1.55;
-    var trafficDrain = lineEfficiency < 0.97 ? (0.97 - lineEfficiency) * 8.5 : 0;
-    var burstDrain = isBursting ? 0.82 : 0;
+  function drainStaminaTank(physics, deltaSeconds, isBursting) {
+    var drainPerSecond = Math.max(0, Number(physics.currentSpeedKmh) || 0);
+    if (isBursting) drainPerSecond *= BURST_STAMINA_DRAIN_MULTIPLIER;
 
-    return baseDrain * staminaProtection * intensityLoad * absoluteSpeedLoad + trafficDrain + burstDrain;
+    physics.staminaTank = clamp(physics.staminaTank - drainPerSecond * deltaSeconds, 0, physics.staminaTankMax);
+    physics.staminaReserve = physics.staminaTankMax > 0
+      ? clamp(physics.staminaTank / physics.staminaTankMax * 100, 0, 100)
+      : 0;
   }
 
   function updateRunner(runner, context) {
@@ -114,7 +118,6 @@ window.SKACHKI_RACE_PHYSICS = (function () {
     var targetSpeedKmh;
     var speedDelta;
     var mps;
-    var drain;
 
     physics.elapsedSeconds += dt;
     applyFormTicks(physics, horse);
@@ -130,14 +133,7 @@ window.SKACHKI_RACE_PHYSICS = (function () {
       physics.currentSpeedKmh = Math.max(targetSpeedKmh, physics.currentSpeedKmh - speedDelta * 1.55);
     }
 
-    drain = staminaDrainPerSecond(
-      physics.effectiveStamina,
-      physics.currentSpeedKmh,
-      physics.baseMaxSpeedKmh,
-      lineEfficiency,
-      isBursting
-    );
-    physics.staminaReserve = clamp(physics.staminaReserve - drain * dt, 0, 100);
+    drainStaminaTank(physics, dt, isBursting);
 
     mps = physics.currentSpeedKmh * KMH_TO_MPS;
     physics.distanceMeters = Math.min(physics.raceDistanceMeters, physics.distanceMeters + mps * dt);
@@ -176,6 +172,7 @@ window.SKACHKI_RACE_PHYSICS = (function () {
   return {
     FORM_TICK_METERS: FORM_TICK_METERS,
     KMH_PER_SPEED_POINT: KMH_PER_SPEED_POINT,
+    TANK_PER_STAMINA_POINT: TANK_PER_STAMINA_POINT,
     accelerationToKmhPerSecond: accelerationToKmhPerSecond,
     initialRunnerPhysics: initialRunnerPhysics,
     progressPercent: progressPercent,
