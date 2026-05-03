@@ -1,7 +1,9 @@
 // Race runner view.
-// Owns horse race sprites, labels and visual color mapping.
+// Owns horse race sprites, labels, run animation and visual color mapping.
 
 window.SKACHKI_RACE_RUNNER_VIEW = (function () {
+  var FRAME_COUNT = 4;
+
   function game() { return window.SKACHKI_GAME; }
   function trackApi() { return window.SKACHKI_RACE_TRACK || {}; }
 
@@ -39,113 +41,124 @@ window.SKACHKI_RACE_RUNNER_VIEW = (function () {
     return name.length > 7 ? name.slice(0, 7).toUpperCase() : name.toUpperCase();
   }
 
-  function drawLegs(g, body, dark) {
-    g.lineStyle(5, dark, 0.86);
-    g.lineBetween(43, 54, 31, 70);
-    g.lineBetween(69, 54, 82, 70);
-    g.lineBetween(45, 39, 29, 26);
-    g.lineBetween(67, 39, 84, 27);
-
-    g.lineStyle(3, body, 0.92);
-    g.lineBetween(43, 54, 32, 68);
-    g.lineBetween(69, 54, 80, 68);
-    g.lineBetween(45, 39, 31, 28);
-    g.lineBetween(67, 39, 81, 29);
-
-    g.fillStyle(dark, 0.86).fillEllipse(31, 70, 8, 4);
-    g.fillStyle(dark, 0.86).fillEllipse(82, 70, 8, 4);
-    g.fillStyle(dark, 0.86).fillEllipse(29, 26, 7, 4);
-    g.fillStyle(dark, 0.86).fillEllipse(84, 27, 7, 4);
+  function legPose(phase) {
+    return [
+      { fl: -5, fr: 4, bl: 4, br: -5 },
+      { fl: 1, fr: -1, bl: -1, br: 1 },
+      { fl: 5, fr: -4, bl: -4, br: 5 },
+      { fl: -1, fr: 1, bl: 1, br: -1 }
+    ][phase % FRAME_COUNT];
   }
 
-  function drawHorseBody(g, body, index) {
+  function drawLeg(g, sx, sy, dx, dy, body, dark) {
+    g.lineStyle(4, dark, 0.78);
+    g.lineBetween(sx, sy, dx, dy);
+    g.lineStyle(2, body, 0.92);
+    g.lineBetween(sx, sy, dx, dy);
+    g.fillStyle(dark, 0.82).fillEllipse(dx, dy, 6, 3.2);
+  }
+
+  function drawLegs(g, body, dark, phase) {
+    var p = legPose(phase);
+
+    drawLeg(g, 49, 39, 43 + p.fl, 25, body, dark);
+    drawLeg(g, 63, 39, 69 + p.fr, 25, body, dark);
+    drawLeg(g, 49, 58, 43 + p.bl, 71, body, dark);
+    drawLeg(g, 63, 58, 69 + p.br, 71, body, dark);
+  }
+
+  function drawHorseBody(g, body, index, phase) {
     var dark = mixColor(body, 0x000000, body === 0x191919 ? 0.1 : 0.42);
     var light = mixColor(body, 0xffffff, body === 0x191919 ? 0.16 : 0.22);
     var mane = body === 0x191919 ? 0x474747 : 0x20140d;
     var mark = index % 3 === 0 ? 0xf5ead5 : mixColor(body, 0xffffff, 0.28);
+    var bob = phase === 1 || phase === 3 ? 1 : 0;
 
-    drawLegs(g, body, dark);
+    drawLegs(g, body, dark, phase);
 
-    g.fillStyle(body, 1).fillEllipse(56, 48, 30, 54);
-    g.fillStyle(light, 0.3).fillEllipse(61, 43, 12, 37);
-    g.fillStyle(dark, 0.2).fillEllipse(48, 55, 10, 32);
+    g.fillStyle(mane, 0.78).fillTriangle(45, 58 + bob, 35, 73 + bob, 48, 62 + bob);
+    g.fillStyle(body, 1).fillEllipse(56, 49 + bob, 29, 51);
+    g.fillStyle(light, 0.28).fillEllipse(61, 44 + bob, 11, 34);
+    g.fillStyle(dark, 0.18).fillEllipse(49, 55 + bob, 9, 28);
 
-    g.fillStyle(body, 1).fillEllipse(56, 22, 19, 24);
-    g.fillStyle(body, 1).fillEllipse(56, 13, 13, 15);
-    g.fillStyle(mark, 0.82).fillEllipse(56, 10, 5, 9);
+    g.fillStyle(body, 1).fillEllipse(56, 24 + bob, 18, 23);
+    g.fillStyle(body, 1).fillEllipse(56, 15 + bob, 12, 14);
+    g.fillStyle(mark, 0.8).fillEllipse(56, 12 + bob, 4.8, 8);
 
-    g.fillStyle(body, 1).fillTriangle(48, 14, 45, 4, 53, 11);
-    g.fillStyle(body, 1).fillTriangle(64, 14, 67, 4, 59, 11);
-    g.fillStyle(dark, 0.38).fillTriangle(48, 13, 47, 7, 52, 11);
-    g.fillStyle(dark, 0.38).fillTriangle(64, 13, 65, 7, 60, 11);
+    g.fillStyle(body, 1).fillTriangle(49, 16 + bob, 47, 7 + bob, 53, 13 + bob);
+    g.fillStyle(body, 1).fillTriangle(63, 16 + bob, 65, 7 + bob, 59, 13 + bob);
+    g.fillStyle(dark, 0.34).fillTriangle(49, 15 + bob, 48, 10 + bob, 52, 13 + bob);
+    g.fillStyle(dark, 0.34).fillTriangle(63, 15 + bob, 64, 10 + bob, 60, 13 + bob);
 
-    g.fillStyle(mane, 0.94).fillEllipse(45, 27, 8, 34);
-    g.fillStyle(mane, 0.8).fillTriangle(46, 64, 34, 79, 50, 67);
+    g.fillStyle(mane, 0.95).fillEllipse(47, 31 + bob, 7, 24);
+    g.fillStyle(mane, 0.72).fillEllipse(48, 43 + bob, 5, 21);
 
-    g.fillStyle(0x0b0b0b, 0.78).fillCircle(51, 13, 1.6).fillCircle(61, 13, 1.6);
+    g.fillStyle(0x0b0b0b, 0.78).fillCircle(52, 15 + bob, 1.5).fillCircle(60, 15 + bob, 1.5);
   }
 
-  function drawSaddleAndRider(g, saddle, horse, index) {
+  function drawSaddleAndRider(g, saddle, horse, index, phase) {
     var helmet = saddle;
     var trim = horse && horse.isPlayer ? 0x7bd8ff : 0xffffff;
     var numberBg = horse && horse.isPlayer ? 0x0b1e35 : 0xffffff;
     var numberDot = horse && horse.isPlayer ? 0x7bd8ff : 0x06111f;
+    var bob = phase === 1 || phase === 3 ? 1 : 0;
 
-    g.fillStyle(0x06111f, 0.52).fillRoundedRect(43, 39, 26, 20, 5);
-    g.fillStyle(saddle, 0.98).fillRoundedRect(44, 38, 24, 18, 5);
-    g.fillStyle(trim, 0.75).fillRect(44, 44, 24, 3);
+    g.fillStyle(0x06111f, 0.52).fillRoundedRect(43, 41 + bob, 26, 18, 5);
+    g.fillStyle(saddle, 0.98).fillRoundedRect(44, 40 + bob, 24, 16, 5);
+    g.fillStyle(trim, 0.75).fillRect(44, 45 + bob, 24, 3);
 
-    g.fillStyle(numberBg, 0.92).fillCircle(68, 48, 7);
-    g.fillStyle(numberDot, 0.86).fillCircle(68, 48, horse && horse.isPlayer ? 3.5 : 3);
+    g.fillStyle(numberBg, 0.92).fillCircle(68, 49 + bob, 6.5);
+    g.fillStyle(numberDot, 0.86).fillCircle(68, 49 + bob, horse && horse.isPlayer ? 3.3 : 2.8);
 
-    g.fillStyle(0xf0d3b1, 0.95).fillEllipse(56, 36, 9, 10);
-    g.fillStyle(helmet, 1).fillEllipse(56, 32, 11, 8);
-    g.fillStyle(trim, 0.72).fillRect(51, 31, 10, 2);
+    g.fillStyle(0xf0d3b1, 0.95).fillEllipse(56, 37 + bob, 8, 9);
+    g.fillStyle(helmet, 1).fillEllipse(56, 34 + bob, 10, 7);
+    g.fillStyle(trim, 0.72).fillRect(51, 33 + bob, 10, 2);
 
     if (index % 2 === 0) {
-      g.lineStyle(2, trim, 0.7);
-      g.lineBetween(45, 40, 67, 55);
+      g.lineStyle(2, trim, 0.66);
+      g.lineBetween(45, 42 + bob, 67, 55 + bob);
     }
   }
 
   function makeRunnerTexture(scene, key, horse, index) {
-    if (scene.textures.exists(key)) return;
-
     var body = coatColor(horse, index);
     var saddle = silkColor(index, horse);
-    var g = scene.make.graphics({ x: 0, y: 0, add: false });
+    var phase;
+    var frameKey;
+    var g;
 
-    g.fillStyle(0x000000, 0.24).fillEllipse(56, 68, 58, 16);
-    drawHorseBody(g, body, index);
-    drawSaddleAndRider(g, saddle, horse, index);
+    for (phase = 0; phase < FRAME_COUNT; phase++) {
+      frameKey = key + '_' + phase;
+      if (scene.textures.exists(frameKey)) continue;
 
-    if (horse && horse.isPlayer) {
-      g.lineStyle(2, 0x7bd8ff, 0.58).strokeEllipse(56, 48, 38, 62);
+      g = scene.make.graphics({ x: 0, y: 0, add: false });
+      g.fillStyle(0x000000, 0.22).fillEllipse(56, 68, 52, 14);
+      drawHorseBody(g, body, index, phase);
+      drawSaddleAndRider(g, saddle, horse, index, phase);
+      g.generateTexture(frameKey, 112, 92);
+      g.destroy();
     }
-
-    g.generateTexture(key, 112, 92);
-    g.destroy();
   }
 
   function createRunner(scene, horse, index, physics, raceDistanceMeters, startProgress) {
     var G = game();
     var track = trackApi();
-    var key = 'runner_' + index;
+    var key = 'runner_anim_' + index;
     var lane = index * scene.track.laneSpacing;
     var p = track.pointOnTrack(scene.track, startProgress, lane);
     var name = String(horse.name || '').replace(/^Вы:\s*/, '');
     var labelText = horse.isPlayer ? '★' : String(index + 1);
-    var scale = horse.isPlayer ? 1.08 : 0.98;
+    var scale = horse.isPlayer ? 1.06 : 0.97;
 
     makeRunnerTexture(scene, key, horse, index);
 
-    var sprite = scene.add.image(p.x, p.y, key).setScale(scale).setDepth(30 + index);
-    var label = scene.add.text(p.x, p.y - 56, labelText, {
+    var sprite = scene.add.image(p.x, p.y, key + '_0').setScale(scale).setDepth(30 + index);
+    var label = scene.add.text(p.x, p.y - 54, labelText, {
       fontFamily: 'Arial',
       fontSize: horse.isPlayer ? '15px' : '11px',
       fontStyle: '900',
       color: '#ffffff',
-      backgroundColor: horse.isPlayer ? 'rgba(47,131,255,.9)' : 'rgba(6,17,31,.62)',
+      backgroundColor: horse.isPlayer ? 'rgba(47,131,255,.88)' : 'rgba(6,17,31,.62)',
       padding: { left: 6, right: 6, top: 3, bottom: 3 },
       resolution: 2
     }).setOrigin(0.5).setDepth(230);
@@ -155,6 +168,8 @@ window.SKACHKI_RACE_RUNNER_VIEW = (function () {
       displayName: name,
       sprite: sprite,
       label: label,
+      textureKey: key,
+      visualFrame: 0,
       progress: startProgress,
       lane: lane,
       laneTarget: lane,
@@ -172,16 +187,30 @@ window.SKACHKI_RACE_RUNNER_VIEW = (function () {
     };
   }
 
+  function updateAnimationFrame(scene, runner) {
+    var speed = runner.physics ? runner.physics.currentSpeedKmh : 30;
+    var fps = Math.max(5, Math.min(14, speed / 4));
+    var frame = Math.floor(scene.time.now / (1000 / fps)) % FRAME_COUNT;
+
+    if (frame !== runner.visualFrame) {
+      runner.visualFrame = frame;
+      runner.sprite.setTexture(runner.textureKey + '_' + frame);
+    }
+  }
+
   function updateRunnerVisual(scene, runner) {
     var track = trackApi();
     var p = track.pointOnTrack(scene.track, ((runner.progress % 1) + 1) % 1, runner.lane);
+    var speed = runner.physics ? runner.physics.currentSpeedKmh : 30;
+    var bob = Math.sin(scene.time.now * Math.max(0.008, Math.min(0.018, speed / 3600))) * 1.4;
 
+    updateAnimationFrame(scene, runner);
     runner.sprite.x = p.x;
-    runner.sprite.y = p.y;
+    runner.sprite.y = p.y + bob;
     runner.sprite.rotation = p.angle + Math.PI / 2;
     runner.sprite.setDepth(30 + Math.floor(p.y));
     runner.label.x = p.x;
-    runner.label.y = p.y - 56;
+    runner.label.y = p.y - 54 + bob;
     runner.label.setDepth(runner.sprite.depth + 4);
   }
 
