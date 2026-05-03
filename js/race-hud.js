@@ -76,7 +76,7 @@ window.SKACHKI_RACE_HUD = (function () {
     var safeTop = hudSafeTop();
 
     scene.hud = {
-      boardWidth: Math.min(112, Math.max(96, Math.round(width * 0.26))),
+      boardWidth: Math.min(122, Math.max(106, Math.round(width * 0.285))),
       boardX: width - 8,
       boardY: 42 + safeTop,
       soundY: 8 + safeTop,
@@ -91,52 +91,86 @@ window.SKACHKI_RACE_HUD = (function () {
 
   function setupLeaderboard(scene) {
     var boardWidth = scene.hud.boardWidth;
-    var lineHeight = 24;
-    var boardHeight = 28 + scene.runners.length * lineHeight;
+    var lineHeight = 23;
+    var boardHeight = 38 + scene.runners.length * lineHeight;
     var x = scene.hud.boardX;
     var y = scene.hud.boardY;
 
-    scene.boardBg = scene.add.rectangle(x, y, boardWidth, boardHeight, 0x06111f, 0.76)
+    scene.boardBg = scene.add.rectangle(x, y, boardWidth, boardHeight, 0x06111f, 0.84)
       .setOrigin(1, 0)
       .setDepth(300)
       .setScrollFactor(0);
-    scene.boardBg.setStrokeStyle(1, 0xd8a943, 0.5);
+    scene.boardBg.setStrokeStyle(1, 0xd8a943, 0.52);
 
-    scene.boardTitle = scene.add.text(x - boardWidth + 9, y + 8, 'ТОП', {
+    scene.boardTopLine = scene.add.rectangle(x - boardWidth + 8, y + 7, boardWidth - 16, 2, 0xd8a943, 0.78)
+      .setOrigin(0, 0)
+      .setDepth(310)
+      .setScrollFactor(0);
+
+    scene.boardLiveDot = scene.add.circle(x - boardWidth + 15, y + 21, 3.3, 0xff4e4e, 0.95)
+      .setDepth(311)
+      .setScrollFactor(0);
+
+    scene.boardTitle = scene.add.text(x - boardWidth + 24, y + 14, 'ЗАЕЗД', {
       fontFamily: 'Arial',
       fontSize: '10px',
       fontStyle: '900',
       color: '#ffe6a2',
       resolution: 2
-    }).setDepth(310).setScrollFactor(0);
+    }).setDepth(311).setScrollFactor(0);
+
+    scene.boardSubTitle = scene.add.text(x - 10, y + 14, 'LIVE', {
+      fontFamily: 'Arial',
+      fontSize: '9px',
+      fontStyle: '900',
+      color: '#ffffff',
+      resolution: 2
+    }).setOrigin(1, 0).setDepth(311).setScrollFactor(0);
 
     scene.boardRows = [];
     for (var i = 0; i < scene.runners.length; i++) {
-      var rowY = y + 27 + i * lineHeight;
-      var rowBg = scene.add.rectangle(x - 4, rowY, boardWidth - 8, 20, 0x000000, 0)
+      var rowY = y + 34 + i * lineHeight;
+      var rowBg = scene.add.rectangle(x - 5, rowY, boardWidth - 10, 20, 0x000000, 0.18)
         .setOrigin(1, 0)
         .setDepth(304)
         .setScrollFactor(0);
-      var place = scene.add.text(x - boardWidth + 10, rowY + 3, String(i + 1), {
+      var placeBg = scene.add.rectangle(x - boardWidth + 20, rowY + 10, 23, 16, 0x0d2235, 0.86)
+        .setOrigin(0.5)
+        .setDepth(309)
+        .setScrollFactor(0);
+      placeBg.setStrokeStyle(1, 0xffffff, 0.12);
+      var place = scene.add.text(x - boardWidth + 20, rowY + 10, String(i + 1), {
         fontFamily: 'Arial',
-        fontSize: '14px',
+        fontSize: '12px',
         fontStyle: '900',
         color: '#ffffff',
+        align: 'center',
         resolution: 2
-      }).setDepth(311).setScrollFactor(0);
-      var silk = scene.add.rectangle(x - boardWidth + 34, rowY + 9, 12, 15, 0xffffff, 1)
+      }).setOrigin(0.5).setDepth(311).setScrollFactor(0);
+      var silk = scene.add.rectangle(x - boardWidth + 40, rowY + 10, 10, 15, 0xffffff, 1)
         .setDepth(311)
         .setScrollFactor(0);
       silk.setStrokeStyle(1, 0xffffff, 0.35);
-      var name = scene.add.text(x - boardWidth + 48, rowY + 4, '', {
+      var name = scene.add.text(x - boardWidth + 51, rowY + 5, '', {
         fontFamily: 'Arial',
         fontSize: '9px',
         fontStyle: '900',
         color: '#ffffff',
         resolution: 2
       }).setDepth(311).setScrollFactor(0);
+      var gap = scene.add.text(x - 10, rowY + 5, '', {
+        fontFamily: 'Arial',
+        fontSize: '8px',
+        fontStyle: '900',
+        color: '#8fa6bb',
+        resolution: 2
+      }).setOrigin(1, 0).setDepth(311).setScrollFactor(0);
+      var separator = scene.add.rectangle(x - boardWidth + 9, rowY + 21, boardWidth - 18, 1, 0xffffff, 0.055)
+        .setOrigin(0, 0)
+        .setDepth(305)
+        .setScrollFactor(0);
 
-      scene.boardRows.push({ rowBg: rowBg, place: place, silk: silk, name: name });
+      scene.boardRows.push({ rowBg: rowBg, placeBg: placeBg, place: place, silk: silk, name: name, gap: gap, separator: separator });
     }
   }
 
@@ -285,22 +319,44 @@ window.SKACHKI_RACE_HUD = (function () {
     return '+' + Math.max(0, gap).toFixed(1) + ' м от лидера';
   }
 
+  function compactGapText(scene, runner, leader) {
+    var leaderDistance;
+    var runnerDistance;
+    var gap;
+
+    if (!runner || !leader || !runner.physics || !leader.physics) return '';
+    if (runner === leader) return 'лид';
+
+    leaderDistance = leader.physics.distanceMeters || 0;
+    runnerDistance = runner.physics.distanceMeters || 0;
+    gap = Math.max(0, leaderDistance - runnerDistance);
+
+    return '+' + gap.toFixed(gap >= 10 ? 0 : 1) + 'м';
+  }
+
   function updateLeaderboard(scene) {
     var shortName = runnerView().shortName || function (name) { return String(name || '').slice(0, 7).toUpperCase(); };
     var order = sortedRunners(scene);
+    var leader = order[0];
 
     order.forEach(function (runner, index) {
       var row = scene.boardRows[index];
       if (!row) return;
       var isPlayer = runner === scene.playerRunner;
+      var isLeader = index === 0;
 
-      row.rowBg.setFillStyle(isPlayer ? 0x153d73 : 0x000000, isPlayer ? 0.78 : 0.16);
-      row.rowBg.setStrokeStyle(isPlayer ? 1 : 0, 0x7bd8ff, isPlayer ? 0.85 : 0);
+      row.rowBg.setFillStyle(isPlayer ? 0x123b68 : isLeader ? 0x231a0d : 0x000000, isPlayer ? 0.84 : isLeader ? 0.58 : 0.18);
+      row.rowBg.setStrokeStyle(isPlayer || isLeader ? 1 : 0, isPlayer ? 0x7bd8ff : 0xd8a943, isPlayer || isLeader ? 0.78 : 0);
+      row.placeBg.setFillStyle(isLeader ? 0xd8a943 : isPlayer ? 0x1c5f9f : 0x0d2235, isLeader ? 0.96 : 0.86);
+      row.placeBg.setStrokeStyle(1, isLeader ? 0xffe6a2 : 0xffffff, isLeader ? 0.38 : 0.14);
       row.place.setText(String(index + 1));
-      row.place.setColor(isPlayer ? '#ffffff' : '#ffffff');
+      row.place.setColor(isLeader ? '#06111f' : '#ffffff');
       row.silk.setFillStyle(runner.color || 0xffffff, 1);
-      row.name.setText(isPlayer ? shortName(runner.displayName) : '');
-      row.name.setColor(isPlayer ? '#ffffff' : '#ffffff');
+      row.name.setText(isPlayer ? shortName(runner.displayName) : isLeader ? 'ЛИДЕР' : '№' + String(index + 1));
+      row.name.setColor(isPlayer ? '#ffffff' : isLeader ? '#ffe6a2' : '#c8d4df');
+      row.gap.setText(compactGapText(scene, runner, leader));
+      row.gap.setColor(isLeader ? '#ffe6a2' : isPlayer ? '#7bd8ff' : '#8fa6bb');
+      row.separator.setFillStyle(0xffffff, isPlayer ? 0.08 : 0.045);
     });
   }
 
