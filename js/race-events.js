@@ -1,5 +1,5 @@
 // Contextual race events.
-// Chooses race events from runner state, track segment, stamina, traffic and horse qualities.
+// Chooses race events from runner state, track segment, stamina, traffic and hidden horse qualities.
 
 window.SKACHKI_RACE_EVENTS = (function () {
   var EVENT_TICK_METERS = 20;
@@ -86,11 +86,16 @@ window.SKACHKI_RACE_EVENTS = (function () {
     return { good: 1, bad: 1 };
   }
 
+  function hiddenQualities(horse) {
+    return horse.hiddenQualities || {};
+  }
+
   function buildContext(scene, runner, time) {
     var horse = runner.horse || {};
     var physics = runner.physics || {};
     var traffic = nearbyContext(scene, runner);
     var form = formBias(horse.form);
+    var qualities = hiddenQualities(horse);
 
     return {
       time: time,
@@ -101,9 +106,9 @@ window.SKACHKI_RACE_EVENTS = (function () {
       speedKmh: Number(physics.currentSpeedKmh) || 0,
       acceleration: stat(horse.acceleration, 50),
       stamina: stat(horse.stamina, 50),
-      agility: stat(horse.agility, 60),
-      strength: quality(horse.strength, 10),
-      instinct: quality(horse.instinct, 10),
+      agility: quality(qualities.agility, 10),
+      strength: quality(qualities.strength, 10),
+      instinct: quality(qualities.instinct, 10),
       formGoodBias: form.good,
       formBadBias: form.bad,
       frontRival: traffic.frontRival,
@@ -116,7 +121,7 @@ window.SKACHKI_RACE_EVENTS = (function () {
     return Math.random() < clamp(value, 0, 0.75);
   }
 
-  function cooldownReady(runner, key, time, ms) {
+  function cooldownReady(runner, key, time) {
     runner.eventCooldowns = runner.eventCooldowns || {};
     return time >= (runner.eventCooldowns[key] || 0) && time >= (runner.eventCooldowns.global || 0);
   }
@@ -146,9 +151,9 @@ window.SKACHKI_RACE_EVENTS = (function () {
     c += ctx.lanePressure * 0.014;
     if (ctx.staminaReserve < 35) c += 0.024;
     if (ctx.staminaReserve < 18) c += 0.025;
-    c += Math.max(0, 68 - ctx.agility) / 800;
-    c -= (ctx.instinct - 10) / 700;
-    c -= (ctx.strength - 10) / 850;
+    c += Math.max(0, 11 - ctx.agility) * 0.006;
+    c -= Math.max(0, ctx.instinct - 10) * 0.002;
+    c -= Math.max(0, ctx.strength - 10) * 0.0018;
     return c * ctx.formBadBias;
   }
 
@@ -159,6 +164,7 @@ window.SKACHKI_RACE_EVENTS = (function () {
     if (ctx.staminaReserve < 15) c += 0.06;
     if (ctx.phase === 'finish') c += 0.018;
     c += Math.max(0, 55 - ctx.stamina) / 1200;
+    c -= Math.max(0, ctx.strength - 10) * 0.0015;
     return c * ctx.formBadBias;
   }
 
@@ -201,10 +207,10 @@ window.SKACHKI_RACE_EVENTS = (function () {
   function chooseEvent(ctx, runner, time) {
     if (time < (runner.burstUntil || 0) || time < (runner.penaltyUntil || 0)) return null;
 
-    if (cooldownReady(runner, 'strong_finish', time, 0) && chance(strongFinishChance(ctx, runner))) return 'strong_finish';
-    if (cooldownReady(runner, 'mistake', time, 0) && chance(mistakeChance(ctx))) return 'mistake';
-    if (cooldownReady(runner, 'fatigue', time, 0) && chance(fatigueChance(ctx))) return 'fatigue';
-    if (cooldownReady(runner, 'burst', time, 0) && chance(burstChance(ctx))) return 'burst';
+    if (cooldownReady(runner, 'strong_finish', time) && chance(strongFinishChance(ctx, runner))) return 'strong_finish';
+    if (cooldownReady(runner, 'mistake', time) && chance(mistakeChance(ctx))) return 'mistake';
+    if (cooldownReady(runner, 'fatigue', time) && chance(fatigueChance(ctx))) return 'fatigue';
+    if (cooldownReady(runner, 'burst', time) && chance(burstChance(ctx))) return 'burst';
 
     return null;
   }
