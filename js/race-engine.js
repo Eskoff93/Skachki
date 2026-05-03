@@ -119,6 +119,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
     scene.worldHeight = worldHeight;
     scene.trackPixelsPerMeter = TRACK_PIXELS_PER_METER;
     scene.track = track.makeTrackGeometry(worldWidth, worldHeight, trackSize.width, trackSize.height, laneSpacing, horseCount);
+    if (track.startProgress) startProgress = track.startProgress(scene.track);
     scene.runners = [];
     scene.playerRunner = null;
     scene.startProgress = startProgress;
