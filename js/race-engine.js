@@ -1,5 +1,5 @@
 // Phaser race engine.
-// Coordinates scene lifecycle and delegates camera, runner visuals, effects, HUD, AI and physics to split modules.
+// Coordinates scene lifecycle and delegates camera, runner visuals, effects, HUD, AI, events and physics to split modules.
 
 window.SKACHKI_RACE_ENGINE = (function () {
   var TRACK_PIXELS_PER_METER = 7;
@@ -9,6 +9,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
   function raceTrack() { return window.SKACHKI_RACE_TRACK || {}; }
   function raceAudio() { return window.SKACHKI_RACE_AUDIO || {}; }
   function raceAi() { return window.SKACHKI_RACE_AI || {}; }
+  function raceEvents() { return window.SKACHKI_RACE_EVENTS || {}; }
   function racePhysics() { return window.SKACHKI_RACE_PHYSICS || {}; }
   function raceCamera() { return window.SKACHKI_RACE_CAMERA || {}; }
   function runnerView() { return window.SKACHKI_RACE_RUNNER_VIEW || {}; }
@@ -144,8 +145,8 @@ window.SKACHKI_RACE_ENGINE = (function () {
     if (hud.setup) hud.setup(scene, width, height);
   }
   function updateRaceScene(scene, time, delta) {
-    var G = game();
     var ai = raceAi();
+    var events = raceEvents();
     var physics = racePhysics();
     var view = runnerView();
     var effects = raceEffects();
@@ -175,7 +176,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
         isPenalized: isPenalized
       }) : null;
 
-      if (time > runner.nextEvent) handleRaceEvent(scene, runner, time);
+      if (events.update) events.update(scene, runner, time);
 
       runner.lane += (runner.laneTarget - runner.lane) * Math.min(1, delta / 440);
       if (runnerPhysics) runner.progress = scene.startProgress + runnerPhysics.distanceMeters / scene.raceDistanceMeters * scene.raceDistance;
@@ -194,28 +195,6 @@ window.SKACHKI_RACE_ENGINE = (function () {
     }
 
     if (scene.finishCount >= scene.runners.length) finishRace(scene);
-  }
-  function handleRaceEvent(scene, runner, time) {
-    var G = game();
-    var audio = raceAudio();
-    var effects = raceEffects();
-    var agility = Number(runner.horse.agility) || 60;
-    var roll = Math.random();
-
-    runner.nextEvent = time + G.randInt(4200, 7600);
-
-    if (roll < 0.28 || runner.horse.temperament === 'Быстрая') {
-      runner.burstUntil = time + 900;
-      if (audio.playBurst) audio.playBurst();
-      if (effects.addVisualRaceEvent) effects.addVisualRaceEvent(scene, runner, 'burst');
-      return;
-    }
-
-    if (roll > 0.88 && agility < 72) {
-      runner.penaltyUntil = time + 850;
-      if (audio.playMistake) audio.playMistake();
-      if (effects.addVisualRaceEvent) effects.addVisualRaceEvent(scene, runner, 'mistake');
-    }
   }
   function finishRunner(scene, runner, runnerPhysics) {
     var G = game();
