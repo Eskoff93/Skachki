@@ -2,6 +2,15 @@
 // Isolated developer tool: no rewards, no career usage, no stable persistence.
 
 window.SKACHKI_BALANCE_TEST = (function () {
+  var HORSE_PRESETS = [
+    { id: 'weak', label: 'Слабая', speed: 28, stamina: 28, acceleration: 28, form: 'normal' },
+    { id: 'medium', label: 'Средняя', speed: 45, stamina: 45, acceleration: 45, form: 'normal' },
+    { id: 'strong', label: 'Сильная', speed: 62, stamina: 62, acceleration: 62, form: 'normal' },
+    { id: 'top', label: 'Топовая', speed: 82, stamina: 82, acceleration: 82, form: 'excellent' },
+    { id: 'sprinter', label: 'Скорость+', speed: 78, stamina: 32, acceleration: 72, form: 'normal' },
+    { id: 'stayer', label: 'Выносливость+', speed: 42, stamina: 82, acceleration: 38, form: 'normal' }
+  ];
+
   var config = createDefaultConfig();
   var originalStartClick = null;
   var originalBackClick = null;
@@ -82,6 +91,14 @@ window.SKACHKI_BALANCE_TEST = (function () {
     '</div>';
   }
 
+  function renderPresetButtons(index) {
+    return '<div class="balance-preset-row" style="display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0;">' +
+      HORSE_PRESETS.map(function (preset) {
+        return '<button class="mini-tag" data-balance-preset="' + preset.id + '" data-index="' + index + '" type="button" style="border:1px solid rgba(255,255,255,.1);">' + preset.label + '</button>';
+      }).join('') +
+    '</div>';
+  }
+
   function renderHorseRow(horse, index) {
     return '<section class="race-card premium-race-card" style="padding:12px;margin-bottom:10px;">' +
       '<div class="race-top" style="align-items:center;margin-bottom:10px;">' +
@@ -90,6 +107,7 @@ window.SKACHKI_BALANCE_TEST = (function () {
       '</div>' +
       '<label class="select-label">Имя</label>' +
       '<input class="select" data-balance-field="name" data-index="' + index + '" value="' + escapeAttribute(horse.name) + '" maxlength="18" />' +
+      renderPresetButtons(index) +
       '<div class="race-grid" style="grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;">' +
         renderNumberInput(index, 'speed', 'Скорость', horse.speed) +
         renderNumberInput(index, 'stamina', 'Выносливость', horse.stamina) +
@@ -113,14 +131,14 @@ window.SKACHKI_BALANCE_TEST = (function () {
             '<span class="mini-tag">Без наград</span>' +
           '</div>' +
           '<div class="race-title">Баланс-тест</div>' +
-          '<div class="race-desc">Выбор дистанции и тестовых лошадей для проверки физики гонки.</div>' +
+          '<div class="race-desc">Выбор дистанции, тестовых лошадей и готовых пресетов для проверки физики гонки.</div>' +
         '</div>' +
         '<div class="race-fee">Dev</div>' +
       '</div>' +
       '<div class="race-grid">' +
         '<div class="race-box"><b>150–500 м</b><span>Дистанция</span></div>' +
         '<div class="race-box"><b>2–8</b><span>Лошади</span></div>' +
-        '<div class="race-box"><b>0 🪙</b><span>Взнос</span></div>' +
+        '<div class="race-box"><b>6</b><span>Пресетов</span></div>' +
       '</div>' +
     '</button>';
   }
@@ -225,6 +243,19 @@ window.SKACHKI_BALANCE_TEST = (function () {
     else horse[field] = clampStat(input.value);
   }
 
+  function applyPreset(index, presetId) {
+    var preset = HORSE_PRESETS.find(function (item) { return item.id === presetId; });
+    var horse = config.horses[index];
+    if (!preset || !horse) return;
+
+    horse.speed = preset.speed;
+    horse.stamina = preset.stamina;
+    horse.acceleration = preset.acceleration;
+    horse.form = preset.form || 'normal';
+    horse.name = preset.label + ' ' + (index + 1);
+    openSetup();
+  }
+
   function createTestHorse(horseConfig, index) {
     var G = game();
     var horse = {
@@ -275,7 +306,6 @@ window.SKACHKI_BALANCE_TEST = (function () {
       prizeMax: 0,
       distance: config.distance,
       opponents: config.horseCount - 1,
-      classOffset: 0,
       isBalanceTest: true,
       desc: 'Изолированный тест физики без наград и статистики.'
     };
@@ -294,6 +324,7 @@ window.SKACHKI_BALANCE_TEST = (function () {
       var open = event.target.closest('[data-balance-test-open]');
       var back = event.target.closest('[data-balance-test-back]');
       var distance = event.target.closest('[data-balance-distance]');
+      var preset = event.target.closest('[data-balance-preset]');
 
       if (open) {
         event.preventDefault();
@@ -311,6 +342,12 @@ window.SKACHKI_BALANCE_TEST = (function () {
         event.preventDefault();
         config.distance = Number(distance.dataset.balanceDistance) || 200;
         openSetup();
+        return;
+      }
+
+      if (preset) {
+        event.preventDefault();
+        applyPreset(Number(preset.dataset.index), preset.dataset.balancePreset);
       }
     });
 
