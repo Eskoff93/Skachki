@@ -25,9 +25,13 @@ window.SKACHKI_RACE_MENU = (function () {
       fee: 0,
       prizeMin: 30,
       prizeMax: 60,
-      distance: 1000,
+      distance: 150,
       opponents: 3,
-      classOffset: -12,
+      botClassMin: 22,
+      botClassMax: 35,
+      botSpread: 4,
+      botQualityMin: 1,
+      botQualityMax: 8,
       desc: 'Бесплатный старт.'
     }];
   }
@@ -75,17 +79,17 @@ window.SKACHKI_RACE_MENU = (function () {
   }
 
   function raceRiskLabel(race) {
-    if (race.fee <= 0) return 'Без риска';
-    if (race.classOffset <= 0) return 'Умеренный';
-    if (race.classOffset <= 10) return 'Высокий';
-    return 'Максимальный';
+    if (race.id === 'rookie') return 'Без риска';
+    if (race.id === 'standard') return 'Умеренный';
+    if (race.id === 'strong') return 'Высокий';
+    if (race.id === 'elite') return 'Максимальный';
+    return race.fee <= 0 ? 'Без риска' : 'Умеренный';
   }
 
   function classHint(race) {
-    if (race.classOffset <= -10) return '45–60';
-    if (race.classOffset <= 0) return '55–70';
-    if (race.classOffset <= 10) return '65–80';
-    return '75+';
+    var min = Number(race.botClassMin) || 0;
+    var max = Number(race.botClassMax) || min;
+    return min + '–' + max;
   }
 
   function raceAdvice(race) {
@@ -100,7 +104,7 @@ window.SKACHKI_RACE_MENU = (function () {
     var G = game();
     return '<section class="selection-summary race-menu-summary" style="padding:12px 14px;margin-bottom:10px;">' +
       '<div>' +
-        '<div class="summary-title" style="font-size:20px;line-height:1.05;">Гонки</div>' +
+        '<div class="summary-title" style="font-size:20px;line-height:1.05;">Скачки</div>' +
         '<div class="summary-desc" style="font-size:12px;line-height:1.25;margin-top:4px;">Выберите формат. Лошадь выберем следующим шагом.</div>' +
       '</div>' +
       '<div class="selection-count"><span>🪙</span><small>' + G.state.coins + '</small></div>' +
@@ -138,7 +142,7 @@ window.SKACHKI_RACE_MENU = (function () {
         '<div class="race-box"><b>' + raceRewardLabel(race) + '</b><span>Приз</span></div>' +
         '<div class="race-box"><b>' + race.distance + ' м</b><span>Дистанция</span></div>' +
         '<div class="race-box"><b>' + race.opponents + '</b><span>Соперники</span></div>' +
-        '<div class="race-box"><b>' + classHint(race) + '</b><span>Класс</span></div>' +
+        '<div class="race-box"><b>' + classHint(race) + '</b><span>Класс ботов</span></div>' +
       '</div>' +
     '</section>';
   }
@@ -173,7 +177,7 @@ window.SKACHKI_RACE_MENU = (function () {
         '<div class="race-box"><b>' + race.distance + ' м</b><span>Дистанция</span></div>' +
         '<div class="race-box"><b>' + raceRewardLabel(race) + '</b><span>Приз</span></div>' +
         '<div class="race-box"><b>' + race.opponents + '</b><span>Соперники</span></div>' +
-        '<div class="race-box"><b>' + classHint(race) + '</b><span>Класс</span></div>' +
+        '<div class="race-box"><b>' + classHint(race) + '</b><span>Класс ботов</span></div>' +
         '<div class="race-box"><b>' + (canPay ? 'Доступно' : 'Мало 🪙') + '</b><span>Статус</span></div>' +
       '</div>' +
     '</button>';
@@ -237,20 +241,33 @@ window.SKACHKI_RACE_MENU = (function () {
       : 'Начать заезд • бесплатно';
   }
 
-  function createBotHorse(base, index) {
+  function botQuality(race) {
+    var G = game();
+    var min = Number(race.botQualityMin) || 1;
+    var max = Number(race.botQualityMax) || min;
+    return G.clamp(G.randInt(min, max), 1, 20);
+  }
+
+  function createBotHorse(race, index) {
     var G = game();
     var botNames = G.DATA.botNames || ['Гром', 'Тайфун', 'Северный Ветер', 'Золотой Барс', 'Красный Шторм', 'Феникс'];
     var temperaments = G.DATA.temperaments || ['Смелая', 'Пугливая', 'Упрямая', 'Резкая', 'Быстрая'];
-    function stat() { return G.clamp(base + G.randInt(-8, 8), 35, 100); }
+    var base = G.randInt(Number(race.botClassMin) || 25, Number(race.botClassMax) || 35);
+    var spread = Number(race.botSpread) || 5;
+
+    function stat() { return G.clamp(base + G.randInt(-spread, spread), 1, 100); }
+
     return {
       id: 'bot_' + Date.now() + '_' + index,
       name: botNames[index % botNames.length],
       speed: stat(),
       stamina: stat(),
       acceleration: stat(),
-      agility: stat(),
-      power: stat(),
-      intelligence: stat(),
+      hiddenQualities: {
+        strength: botQuality(race),
+        agility: botQuality(race),
+        instinct: botQuality(race)
+      },
       potential: stat(),
       temperament: temperaments[G.randInt(0, temperaments.length - 1)],
       form: 'normal',
@@ -287,9 +304,8 @@ window.SKACHKI_RACE_MENU = (function () {
     playerClone.playerHorseId = player.id;
 
     G.state.currentRaceHorses = [playerClone];
-    var base = G.clamp(G.horseClass(player) + raceType.classOffset, 35, 100);
     for (var i = 0; i < raceType.opponents; i++) {
-      G.state.currentRaceHorses.push(createBotHorse(base, i));
+      G.state.currentRaceHorses.push(createBotHorse(raceType, i));
     }
 
     G.state.raceResults = [];
