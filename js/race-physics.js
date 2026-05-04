@@ -5,7 +5,7 @@ window.SKACHKI_RACE_PHYSICS = (function () {
   var KMH_PER_SPEED_POINT = 0.7;
   var KMH_TO_MPS = 1000 / 3600;
   var FORM_TICK_METERS = 20;
-  var TANK_PER_STAMINA_POINT = 35;
+  var TANK_PER_STAMINA_POINT = 15;
   var BURST_STAMINA_DRAIN_MULTIPLIER = 2;
 
   var FORM_RANGES = {
@@ -42,6 +42,11 @@ window.SKACHKI_RACE_PHYSICS = (function () {
 
   function staminaTankMax(effectiveStamina) {
     return Math.max(1, effectiveStat(effectiveStamina, 1) * TANK_PER_STAMINA_POINT);
+  }
+
+  function speedDrainPerSecond(currentSpeedKmh) {
+    var speed = Math.max(0, Number(currentSpeedKmh) || 0);
+    return speed * (speed / 100);
   }
 
   function isPureMode(horse, context) {
@@ -111,7 +116,7 @@ window.SKACHKI_RACE_PHYSICS = (function () {
   }
 
   function drainStaminaTank(physics, deltaSeconds, isBursting) {
-    var drainPerSecond = Math.max(0, Number(physics.currentSpeedKmh) || 0);
+    var drainPerSecond = speedDrainPerSecond(physics.currentSpeedKmh);
     if (isBursting) drainPerSecond *= BURST_STAMINA_DRAIN_MULTIPLIER;
 
     physics.staminaTank = clamp(physics.staminaTank - drainPerSecond * deltaSeconds, 0, physics.staminaTankMax);
@@ -192,6 +197,7 @@ window.SKACHKI_RACE_PHYSICS = (function () {
     initialRunnerPhysics: initialRunnerPhysics,
     progressPercent: progressPercent,
     resultStats: resultStats,
+    speedDrainPerSecond: speedDrainPerSecond,
     speedToKmh: speedToKmh,
     updateRunner: updateRunner
   };
