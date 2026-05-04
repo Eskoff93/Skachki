@@ -76,9 +76,9 @@ window.SKACHKI_RACE_HUD = (function () {
     var safeTop = hudSafeTop();
 
     scene.hud = {
-      boardWidth: Math.min(122, Math.max(106, Math.round(width * 0.285))),
-      boardX: width - 8,
-      boardY: 42 + safeTop,
+      boardWidth: Math.min(108, Math.max(96, Math.round(width * 0.245))),
+      boardX: width - 6,
+      boardY: 50 + safeTop,
       soundY: 8 + safeTop,
       bottomHeight: Math.min(112, Math.max(96, Math.round(height * 0.145))),
       margin: 8
@@ -91,37 +91,37 @@ window.SKACHKI_RACE_HUD = (function () {
 
   function setupLeaderboard(scene) {
     var boardWidth = scene.hud.boardWidth;
-    var lineHeight = 23;
-    var boardHeight = 38 + scene.runners.length * lineHeight;
+    var lineHeight = 20;
+    var boardHeight = 30 + scene.runners.length * lineHeight;
     var x = scene.hud.boardX;
     var y = scene.hud.boardY;
 
-    scene.boardBg = scene.add.rectangle(x, y, boardWidth, boardHeight, 0x06111f, 0.84)
+    scene.boardBg = scene.add.rectangle(x, y, boardWidth, boardHeight, 0x06111f, 0.66)
       .setOrigin(1, 0)
       .setDepth(300)
       .setScrollFactor(0);
-    scene.boardBg.setStrokeStyle(1, 0xd8a943, 0.52);
+    scene.boardBg.setStrokeStyle(1, 0xd8a943, 0.36);
 
-    scene.boardTopLine = scene.add.rectangle(x - boardWidth + 8, y + 7, boardWidth - 16, 2, 0xd8a943, 0.78)
+    scene.boardTopLine = scene.add.rectangle(x - boardWidth + 7, y + 6, boardWidth - 14, 2, 0xd8a943, 0.6)
       .setOrigin(0, 0)
       .setDepth(310)
       .setScrollFactor(0);
 
-    scene.boardLiveDot = scene.add.circle(x - boardWidth + 15, y + 21, 3.3, 0xff4e4e, 0.95)
+    scene.boardLiveDot = scene.add.circle(x - boardWidth + 12, y + 18, 2.8, 0xff4e4e, 0.88)
       .setDepth(311)
       .setScrollFactor(0);
 
-    scene.boardTitle = scene.add.text(x - boardWidth + 24, y + 14, 'ЗАЕЗД', {
+    scene.boardTitle = scene.add.text(x - boardWidth + 20, y + 12, 'ЗАЕЗД', {
       fontFamily: 'Arial',
-      fontSize: '10px',
+      fontSize: '9px',
       fontStyle: '900',
       color: '#ffe6a2',
       resolution: 2
     }).setDepth(311).setScrollFactor(0);
 
-    scene.boardSubTitle = scene.add.text(x - 10, y + 14, 'LIVE', {
+    scene.boardSubTitle = scene.add.text(x - 8, y + 12, 'LIVE', {
       fontFamily: 'Arial',
-      fontSize: '9px',
+      fontSize: '8px',
       fontStyle: '900',
       color: '#ffffff',
       resolution: 2
@@ -129,43 +129,43 @@ window.SKACHKI_RACE_HUD = (function () {
 
     scene.boardRows = [];
     for (var i = 0; i < scene.runners.length; i++) {
-      var rowY = y + 34 + i * lineHeight;
-      var rowBg = scene.add.rectangle(x - 5, rowY, boardWidth - 10, 20, 0x000000, 0.18)
+      var rowY = y + 28 + i * lineHeight;
+      var rowBg = scene.add.rectangle(x - 4, rowY, boardWidth - 8, 17, 0x000000, 0.14)
         .setOrigin(1, 0)
         .setDepth(304)
         .setScrollFactor(0);
-      var placeBg = scene.add.rectangle(x - boardWidth + 20, rowY + 10, 23, 16, 0x0d2235, 0.86)
+      var placeBg = scene.add.rectangle(x - boardWidth + 17, rowY + 8.5, 19, 14, 0x0d2235, 0.76)
         .setOrigin(0.5)
         .setDepth(309)
         .setScrollFactor(0);
-      placeBg.setStrokeStyle(1, 0xffffff, 0.12);
-      var place = scene.add.text(x - boardWidth + 20, rowY + 10, String(i + 1), {
+      placeBg.setStrokeStyle(1, 0xffffff, 0.1);
+      var place = scene.add.text(x - boardWidth + 17, rowY + 8, String(i + 1), {
         fontFamily: 'Arial',
-        fontSize: '12px',
+        fontSize: '10px',
         fontStyle: '900',
         color: '#ffffff',
         align: 'center',
         resolution: 2
       }).setOrigin(0.5).setDepth(311).setScrollFactor(0);
-      var silk = scene.add.rectangle(x - boardWidth + 40, rowY + 10, 10, 15, 0xffffff, 1)
+      var silk = scene.add.rectangle(x - boardWidth + 34, rowY + 8.5, 8, 13, 0xffffff, 0.95)
         .setDepth(311)
         .setScrollFactor(0);
-      silk.setStrokeStyle(1, 0xffffff, 0.35);
-      var name = scene.add.text(x - boardWidth + 51, rowY + 5, '', {
+      silk.setStrokeStyle(1, 0xffffff, 0.28);
+      var name = scene.add.text(x - boardWidth + 44, rowY + 4, '', {
         fontFamily: 'Arial',
-        fontSize: '9px',
+        fontSize: '8px',
         fontStyle: '900',
         color: '#ffffff',
         resolution: 2
       }).setDepth(311).setScrollFactor(0);
-      var gap = scene.add.text(x - 10, rowY + 5, '', {
+      var gap = scene.add.text(x - 8, rowY + 4, '', {
         fontFamily: 'Arial',
-        fontSize: '8px',
+        fontSize: '7px',
         fontStyle: '900',
         color: '#8fa6bb',
         resolution: 2
       }).setOrigin(1, 0).setDepth(311).setScrollFactor(0);
-      var separator = scene.add.rectangle(x - boardWidth + 9, rowY + 21, boardWidth - 18, 1, 0xffffff, 0.055)
+      var separator = scene.add.rectangle(x - boardWidth + 8, rowY + 18, boardWidth - 16, 1, 0xffffff, 0.04)
         .setOrigin(0, 0)
         .setDepth(305)
         .setScrollFactor(0);
@@ -345,18 +345,18 @@ window.SKACHKI_RACE_HUD = (function () {
       var isPlayer = runner === scene.playerRunner;
       var isLeader = index === 0;
 
-      row.rowBg.setFillStyle(isPlayer ? 0x123b68 : isLeader ? 0x231a0d : 0x000000, isPlayer ? 0.84 : isLeader ? 0.58 : 0.18);
-      row.rowBg.setStrokeStyle(isPlayer || isLeader ? 1 : 0, isPlayer ? 0x7bd8ff : 0xd8a943, isPlayer || isLeader ? 0.78 : 0);
-      row.placeBg.setFillStyle(isLeader ? 0xd8a943 : isPlayer ? 0x1c5f9f : 0x0d2235, isLeader ? 0.96 : 0.86);
-      row.placeBg.setStrokeStyle(1, isLeader ? 0xffe6a2 : 0xffffff, isLeader ? 0.38 : 0.14);
+      row.rowBg.setFillStyle(isPlayer ? 0x123b68 : isLeader ? 0x231a0d : 0x000000, isPlayer ? 0.72 : isLeader ? 0.46 : 0.12);
+      row.rowBg.setStrokeStyle(isPlayer || isLeader ? 1 : 0, isPlayer ? 0x7bd8ff : 0xd8a943, isPlayer || isLeader ? 0.58 : 0);
+      row.placeBg.setFillStyle(isLeader ? 0xd8a943 : isPlayer ? 0x1c5f9f : 0x0d2235, isLeader ? 0.9 : 0.74);
+      row.placeBg.setStrokeStyle(1, isLeader ? 0xffe6a2 : 0xffffff, isLeader ? 0.3 : 0.1);
       row.place.setText(String(index + 1));
       row.place.setColor(isLeader ? '#06111f' : '#ffffff');
       row.silk.setFillStyle(runner.color || 0xffffff, 1);
-      row.name.setText(isPlayer ? shortName(runner.displayName) : isLeader ? 'ЛИДЕР' : '№' + String(index + 1));
+      row.name.setText(isPlayer ? shortName(runner.displayName) : isLeader ? 'ЛИД' : '№' + String(index + 1));
       row.name.setColor(isPlayer ? '#ffffff' : isLeader ? '#ffe6a2' : '#c8d4df');
       row.gap.setText(compactGapText(scene, runner, leader));
       row.gap.setColor(isLeader ? '#ffe6a2' : isPlayer ? '#7bd8ff' : '#8fa6bb');
-      row.separator.setFillStyle(0xffffff, isPlayer ? 0.08 : 0.045);
+      row.separator.setFillStyle(0xffffff, isPlayer ? 0.06 : 0.035);
     });
   }
 
