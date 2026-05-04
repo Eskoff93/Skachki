@@ -2,6 +2,12 @@
 // Owns tactical lane choice: blocking, overtaking, inner-line preference and lane efficiency.
 
 window.SKACHKI_RACE_AI = (function () {
+  var LANE_SETTLE_THRESHOLD = 0.18;
+  var MIN_LANE_CHANGE_COOLDOWN = 900;
+  var MAX_LANE_CHANGE_COOLDOWN = 1450;
+  var MIN_THINK_DELAY = 520;
+  var MAX_THINK_DELAY = 900;
+
   function game() { return window.SKACHKI_GAME; }
 
   function clamp(value, min, max) {
@@ -20,6 +26,14 @@ window.SKACHKI_RACE_AI = (function () {
 
   function runnerLaneIndex(scene, runner) {
     return laneIndex(scene, runner.laneTarget);
+  }
+
+  function currentRunnerLaneIndex(scene, runner) {
+    return laneIndex(scene, runner.lane);
+  }
+
+  function laneIsSettled(scene, runner) {
+    return Math.abs((Number(runner.laneTarget) || 0) - (Number(runner.lane) || 0)) <= scene.track.laneSpacing * LANE_SETTLE_THRESHOLD;
   }
 
   function progressGap(fromRunner, toRunner) {
@@ -43,7 +57,7 @@ window.SKACHKI_RACE_AI = (function () {
   }
 
   function findBlockingRunner(scene, runner) {
-    var currentIndex = runnerLaneIndex(scene, runner);
+    var currentIndex = currentRunnerLaneIndex(scene, runner);
     var best = null;
     var bestGap = Infinity;
 
@@ -87,8 +101,8 @@ window.SKACHKI_RACE_AI = (function () {
   function innerDesire(runner) {
     var h = runner.horse || {};
     var agility = Number(h.agility || h.hiddenQualities && h.hiddenQualities.agility) || 50;
-    var bonus = nearOrInTurn(runner) ? 0.28 : 0.08;
-    return clamp(0.35 + agility / 260 + bonus, 0.35, 0.95);
+    var bonus = nearOrInTurn(runner) ? 0.18 : 0.04;
+    return clamp(0.22 + agility / 340 + bonus, 0.22, 0.62);
   }
 
   function chooseOvertakeLane(scene, runner, currentIndex) {
@@ -106,28 +120,40 @@ window.SKACHKI_RACE_AI = (function () {
     return currentIndex;
   }
 
+  function setNextThink(runner, time, changedLane) {
+    var minDelay = changedLane ? MIN_LANE_CHANGE_COOLDOWN : MIN_THINK_DELAY;
+    var maxDelay = changedLane ? MAX_LANE_CHANGE_COOLDOWN : MAX_THINK_DELAY;
+    runner.nextLaneThink = time + minDelay + Math.random() * (maxDelay - minDelay);
+    if (changedLane) runner.laneChangeLockedUntil = runner.nextLaneThink;
+  }
+
   function updateRunnerLane(scene, runner, time) {
     var currentIndex;
     var blocker;
     var shouldOvertake;
     var desiredIndex;
+    var changedLane;
 
     if (!runner || runner.finished) return;
     if (runner.nextLaneThink && time < runner.nextLaneThink) return;
+    if (runner.laneChangeLockedUntil && time < runner.laneChangeLockedUntil) return;
+    if (!laneIsSettled(scene, runner)) return;
 
-    currentIndex = runnerLaneIndex(scene, runner);
+    currentIndex = currentRunnerLaneIndex(scene, runner);
     blocker = findBlockingRunner(scene, runner);
     desiredIndex = currentIndex;
 
     if (blocker) {
-      shouldOvertake = runner.pace >= blocker.pace * (0.985 - aggression(runner) * 0.035);
+      shouldOvertake = runner.pace >= blocker.pace * (0.99 - aggression(runner) * 0.028);
       if (shouldOvertake) desiredIndex = chooseOvertakeLane(scene, runner, currentIndex);
     } else if (currentIndex > 0 && Math.random() < innerDesire(runner)) {
       desiredIndex = chooseInnerLane(scene, runner, currentIndex);
     }
 
+    desiredIndex = clamp(desiredIndex, currentIndex - 1, currentIndex + 1);
+    changedLane = desiredIndex !== currentIndex;
     runner.laneTarget = laneValue(scene, desiredIndex);
-    runner.nextLaneThink = time + 340 + Math.random() * 460;
+    setNextThink(runner, time, changedLane);
   }
 
   function lineEfficiency(scene, runner) {
