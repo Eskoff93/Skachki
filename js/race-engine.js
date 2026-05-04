@@ -5,6 +5,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
   var TRACK_PIXELS_PER_METER = 7;
   var TRACK_ASPECT_RATIO = 2.05;
   var RENDER_RESOLUTION_CAP = 3;
+  var LANE_CHANGE_SPEED_MULTIPLIER = 1.45;
 
   function game() { return window.SKACHKI_GAME; }
   function raceTrack() { return window.SKACHKI_RACE_TRACK || {}; }
@@ -164,6 +165,17 @@ window.SKACHKI_RACE_ENGINE = (function () {
     var factor = track.laneDistanceFactor ? track.laneDistanceFactor(scene.track, runner.lane) : 1;
     return Math.max(1, scene.raceDistanceMeters * factor);
   }
+  function advanceLane(scene, runner, delta) {
+    var laneDelta = (Number(runner.laneTarget) || 0) - (Number(runner.lane) || 0);
+    var maxStep = scene.track.laneSpacing * LANE_CHANGE_SPEED_MULTIPLIER * Math.max(0, delta) / 1000;
+
+    if (Math.abs(laneDelta) <= maxStep || maxStep <= 0) {
+      runner.lane = runner.laneTarget;
+      return;
+    }
+
+    runner.lane += Math.sign(laneDelta) * maxStep;
+  }
   function updateRaceScene(scene, time, delta) {
     var ai = raceAi();
     var events = raceEvents();
@@ -200,7 +212,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
 
       if (events.update) events.update(scene, runner, time);
 
-      runner.lane += (runner.laneTarget - runner.lane) * Math.min(1, delta / 440);
+      advanceLane(scene, runner, delta);
       laneDistanceMeters = runnerLaneDistanceMeters(scene, runner);
       if (runnerPhysics) runner.progress = scene.startProgress + runnerPhysics.distanceMeters / laneDistanceMeters * scene.raceDistance;
       if (view.updateRunnerVisual) view.updateRunnerVisual(scene, runner);
