@@ -133,7 +133,7 @@ window.SKACHKI_RACE_PHYSICS = (function () {
 
   function runnerOnTurn(runner) {
     var phase = runnerPhase(runner);
-    return (phase > 0.18 && phase < 0.50) || (phase > 0.68 && phase < 0.98);
+    return (phase > 0.23 && phase < 0.48) || (phase > 0.73 && phase < 0.98);
   }
 
   function turnSpeedFactor(context, runner) {
