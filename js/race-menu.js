@@ -9,7 +9,7 @@ window.SKACHKI_RACE_MENU = (function () {
   function activeHorses() {
     var G = game();
     return G.state.horses.filter(function (horse) {
-      return horse.status !== 'archived';
+      return horse.status !== 'archived' && !horse.isBalanceTestHorse;
     });
   }
 
@@ -213,7 +213,7 @@ window.SKACHKI_RACE_MENU = (function () {
     if (!button) return;
 
     var raceType = getRaceType();
-    var player = G.state.horses.find(function (horse) {
+    var player = activeHorses().find(function (horse) {
       return String(horse.id) === String(G.state.selectedPlayerHorseId);
     });
 
@@ -288,7 +288,7 @@ window.SKACHKI_RACE_MENU = (function () {
   function startRace() {
     var G = game();
     var raceType = getRaceType();
-    var player = G.state.horses.find(function (horse) { return String(horse.id) === String(G.state.selectedPlayerHorseId); });
+    var player = activeHorses().find(function (horse) { return String(horse.id) === String(G.state.selectedPlayerHorseId); });
 
     if (!raceType) return G.showToast('Выберите заезд');
     if (!player) return G.showToast('Выберите свою лошадь');
