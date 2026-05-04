@@ -7,6 +7,7 @@ window.SKACHKI_RACE_PHYSICS = (function () {
   var FORM_TICK_METERS = 20;
   var TANK_PER_STAMINA_POINT = 15;
   var BURST_STAMINA_DRAIN_MULTIPLIER = 2;
+  var TURN_SLOWDOWN_KMH_PER_SECOND = 18;
 
   var FORM_RANGES = {
     pure: { min: 1, max: 1 },
@@ -125,6 +126,10 @@ window.SKACHKI_RACE_PHYSICS = (function () {
       : 0;
   }
 
+  function turnSpeedFactor(context) {
+    return clamp(Number(context.turnSpeedFactor) || 1, 0.5, 1);
+  }
+
   function updateRunner(runner, context) {
     var dt = Math.max(0, Math.min(0.08, Number(context.deltaSeconds) || 0));
     var horse = runner.horse || {};
@@ -133,6 +138,8 @@ window.SKACHKI_RACE_PHYSICS = (function () {
     var randomFactor = context.pureBalanceTest ? 1 : clamp(Number(context.randomFactor) || 1, 0.94, 1);
     var isBursting = !context.pureBalanceTest && !!context.isBursting;
     var isPenalized = !context.pureBalanceTest && !!context.isPenalized;
+    var turnFactor = turnSpeedFactor(context || {});
+    var turnSlowdownDelta = TURN_SLOWDOWN_KMH_PER_SECOND * dt;
     var targetSpeedKmh;
     var speedDelta;
     var mps;
@@ -142,13 +149,15 @@ window.SKACHKI_RACE_PHYSICS = (function () {
     physics.elapsedSeconds += dt;
     applyFormTicks(physics, horse);
 
-    targetSpeedKmh = physics.effectiveMaxSpeedKmh * randomFactor * lineEfficiency * staminaSpeedFactor(physics.staminaReserve);
+    targetSpeedKmh = physics.effectiveMaxSpeedKmh * randomFactor * lineEfficiency * staminaSpeedFactor(physics.staminaReserve) * turnFactor;
     if (isPenalized) targetSpeedKmh *= 0.72;
     targetSpeedKmh = clamp(targetSpeedKmh, 0, physics.baseMaxSpeedKmh);
 
     speedDelta = physics.accelerationKmhPerSecond * (isBursting ? 1.28 : 1) * dt;
     if (physics.currentSpeedKmh < targetSpeedKmh) {
       physics.currentSpeedKmh = Math.min(targetSpeedKmh, physics.currentSpeedKmh + speedDelta);
+    } else if (turnFactor < 1) {
+      physics.currentSpeedKmh = Math.max(targetSpeedKmh, physics.currentSpeedKmh - turnSlowdownDelta);
     } else {
       physics.currentSpeedKmh = Math.max(targetSpeedKmh, physics.currentSpeedKmh - speedDelta * 1.55);
     }
