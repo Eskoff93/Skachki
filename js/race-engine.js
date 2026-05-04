@@ -4,6 +4,7 @@
 window.SKACHKI_RACE_ENGINE = (function () {
   var TRACK_PIXELS_PER_METER = 7;
   var TRACK_ASPECT_RATIO = 2.05;
+  var RENDER_RESOLUTION_CAP = 3;
 
   function game() { return window.SKACHKI_GAME; }
   function raceTrack() { return window.SKACHKI_RACE_TRACK || {}; }
@@ -30,7 +31,18 @@ window.SKACHKI_RACE_ENGINE = (function () {
     }
   }
   function raceRenderResolution() {
-    return Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
+    return Math.max(1, Math.min(RENDER_RESOLUTION_CAP, window.devicePixelRatio || 1));
+  }
+  function applyCanvasQuality(gameInstance, width, height) {
+    var canvas = gameInstance && gameInstance.canvas;
+    if (!canvas || !canvas.style) return;
+
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+    canvas.style.display = 'block';
+    canvas.style.imageRendering = 'auto';
+    canvas.style.transform = 'translateZ(0)';
+    canvas.style.backfaceVisibility = 'hidden';
   }
   function createRaceGame() {
     var G = game();
@@ -48,8 +60,8 @@ window.SKACHKI_RACE_ENGINE = (function () {
     if (!box) return;
 
     rect = box.getBoundingClientRect();
-    width = Math.max(360, Math.floor(rect.width));
-    height = Math.max(360, Math.floor(rect.height));
+    width = Math.max(360, Math.round(rect.width));
+    height = Math.max(360, Math.round(rect.height));
     resolution = raceRenderResolution();
 
     audio = raceAudio();
@@ -67,7 +79,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
       render: {
         antialias: true,
         antialiasGL: true,
-        roundPixels: false,
+        roundPixels: true,
         pixelArt: false,
         powerPreference: 'high-performance'
       },
@@ -76,6 +88,8 @@ window.SKACHKI_RACE_ENGINE = (function () {
         update: function (time, delta) { updateRaceScene(this, time, delta); }
       }
     });
+
+    applyCanvasQuality(G.state.raceGame, width, height);
   }
   function updateRaceTitle(raceType) {
     var G = game();
