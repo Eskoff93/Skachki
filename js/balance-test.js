@@ -11,9 +11,13 @@ window.SKACHKI_BALANCE_TEST = (function () {
     { id: 'stayer', label: 'Выносливость+', speed: 42, stamina: 82, acceleration: 38, form: 'normal' }
   ];
 
+  var PATCH_RETRY_DELAY_MS = 120;
+  var PATCH_RETRY_LIMIT = 30;
+
   var config = createDefaultConfig();
   var originalStartClick = null;
   var originalBackClick = null;
+  var patchRetryCount = 0;
 
   function game() { return window.SKACHKI_GAME; }
 
@@ -216,6 +220,17 @@ window.SKACHKI_BALANCE_TEST = (function () {
     firstRace.parentNode.insertBefore(wrapper.firstChild, firstRace);
   }
 
+  function restorePrimaryButtons() {
+    var G = game();
+    var start = G && G.byId ? G.byId('raceMenuStartBtn') : null;
+    var back = G && G.byId ? G.byId('raceMenuBackBtn') : null;
+
+    if (start && originalStartClick) start.onclick = originalStartClick;
+    if (back && originalBackClick) back.onclick = originalBackClick;
+    originalStartClick = null;
+    originalBackClick = null;
+  }
+
   function setPrimaryButtonForTest() {
     var G = game();
     var start = G && G.byId ? G.byId('raceMenuStartBtn') : null;
@@ -234,14 +249,7 @@ window.SKACHKI_BALANCE_TEST = (function () {
   }
 
   function restoreRaceMenu() {
-    var G = game();
-    var start = G && G.byId ? G.byId('raceMenuStartBtn') : null;
-    var back = G && G.byId ? G.byId('raceMenuBackBtn') : null;
-
-    if (start && originalStartClick) start.onclick = originalStartClick;
-    if (back && originalBackClick) back.onclick = originalBackClick;
-    originalStartClick = null;
-    originalBackClick = null;
+    restorePrimaryButtons();
 
     if (window.SKACHKI_RACE_MENU && window.SKACHKI_RACE_MENU.openRaceMenu) {
       window.SKACHKI_RACE_MENU.openRaceMenu();
@@ -326,9 +334,12 @@ window.SKACHKI_BALANCE_TEST = (function () {
     var G = game();
     if (!G) return;
 
+    restorePrimaryButtons();
     syncHorseCount();
     config.distance = clamp(Math.round(Number(config.distance) || 200), 50, 2000);
 
+    G.state.selectedRaceTypeId = null;
+    G.state.selectedPlayerHorseId = null;
     G.state.activeRaceType = {
       id: 'balance_test',
       name: config.trackType === 's_track' ? 'Баланс-тест: S-трасса' : config.pureCoreOnly ? 'Баланс-тест: чистый' : 'Баланс-тест',
@@ -429,10 +440,10 @@ window.SKACHKI_BALANCE_TEST = (function () {
   function patchRaceMenuRender() {
     var menu = window.SKACHKI_RACE_MENU;
     var original;
-    if (!menu || menu.__balanceTestPatched) return;
+    if (!menu || menu.__balanceTestPatched) return false;
 
     original = menu.renderRaceMenu;
-    if (typeof original !== 'function') return;
+    if (typeof original !== 'function') return false;
 
     menu.renderRaceMenu = function () {
       var result = original.apply(menu, arguments);
@@ -440,10 +451,19 @@ window.SKACHKI_BALANCE_TEST = (function () {
       return result;
     };
     menu.__balanceTestPatched = true;
+    injectCard();
+    return true;
+  }
+
+  function patchRaceMenuRenderWhenReady() {
+    if (patchRaceMenuRender()) return;
+    if (patchRetryCount >= PATCH_RETRY_LIMIT) return;
+    patchRetryCount++;
+    setTimeout(patchRaceMenuRenderWhenReady, PATCH_RETRY_DELAY_MS);
   }
 
   function init() {
-    patchRaceMenuRender();
+    patchRaceMenuRenderWhenReady();
     bind();
     setTimeout(injectCard, 0);
   }
