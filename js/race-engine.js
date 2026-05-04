@@ -145,6 +145,11 @@ window.SKACHKI_RACE_ENGINE = (function () {
     if (camera.setup) camera.setup(scene);
     if (hud.setup) hud.setup(scene, width, height);
   }
+  function runnerLaneDistanceMeters(scene, runner) {
+    var track = raceTrack();
+    var factor = track.laneDistanceFactor ? track.laneDistanceFactor(scene.track, runner.lane) : 1;
+    return Math.max(1, scene.raceDistanceMeters * factor);
+  }
   function updateRaceScene(scene, time, delta) {
     var ai = raceAi();
     var events = raceEvents();
@@ -161,15 +166,17 @@ window.SKACHKI_RACE_ENGINE = (function () {
       var isBursting;
       var isPenalized;
       var runnerPhysics;
+      var laneDistanceMeters;
 
       if (runner.finished) return;
 
       lineEfficiency = ai.update ? ai.update(scene, runner, time) : 1;
       isBursting = time < runner.burstUntil;
       isPenalized = time < runner.penaltyUntil;
+      laneDistanceMeters = runnerLaneDistanceMeters(scene, runner);
       runnerPhysics = physics.updateRunner ? physics.updateRunner(runner, {
         deltaSeconds: deltaSeconds,
-        raceDistanceMeters: scene.raceDistanceMeters,
+        raceDistanceMeters: laneDistanceMeters,
         lineEfficiency: lineEfficiency,
         formMultiplier: runner.formMultiplier,
         randomFactor: runner.randomFactor,
@@ -180,11 +187,12 @@ window.SKACHKI_RACE_ENGINE = (function () {
       if (events.update) events.update(scene, runner, time);
 
       runner.lane += (runner.laneTarget - runner.lane) * Math.min(1, delta / 440);
-      if (runnerPhysics) runner.progress = scene.startProgress + runnerPhysics.distanceMeters / scene.raceDistanceMeters * scene.raceDistance;
+      laneDistanceMeters = runnerLaneDistanceMeters(scene, runner);
+      if (runnerPhysics) runner.progress = scene.startProgress + runnerPhysics.distanceMeters / laneDistanceMeters * scene.raceDistance;
       if (view.updateRunnerVisual) view.updateRunnerVisual(scene, runner);
       if (effects.addDust && time - scene.lastDust > 110) effects.addDust(scene, runner, isBursting);
 
-      if (runnerPhysics && runnerPhysics.distanceMeters >= scene.raceDistanceMeters) finishRunner(scene, runner, runnerPhysics);
+      if (runnerPhysics && runnerPhysics.distanceMeters >= laneDistanceMeters) finishRunner(scene, runner, runnerPhysics);
     });
 
     if (time - scene.lastDust > 110) scene.lastDust = time;
