@@ -16,7 +16,7 @@ window.SKACHKI_RACE_CAMERA = (function () {
     var dy;
     var len;
     var ahead = Math.min(135, Math.max(82, scene.viewportWidth * 0.26));
-    var verticalBias = -Math.min(46, Math.max(24, scene.viewportHeight * 0.065));
+    var verticalBias = Math.min(34, Math.max(18, scene.viewportHeight * 0.045));
 
     if (!track.pointOnTrack || !runner) return null;
 
