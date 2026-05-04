@@ -26,6 +26,24 @@ window.SKACHKI_RACE_RUNNER_VIEW = (function () {
     return [0x24a35a, 0x2f83ff, 0xd93a2e, 0xf0c94e, 0x8b4bd8, 0x22c3d4, 0xdfe6ed, 0xf07a24][index % 8];
   }
 
+  function textureToken(value) {
+    return String(value || 'x')
+      .toLowerCase()
+      .replace(/[^a-z0-9а-яё_-]+/gi, '_')
+      .slice(0, 28);
+  }
+
+  function runnerTextureKey(horse, index) {
+    return [
+      'runner_anim',
+      index,
+      textureToken(horse && horse.id),
+      textureToken(horse && horse.coat),
+      horse && horse.isPlayer ? 'player' : 'bot',
+      silkColor(index, horse).toString(16)
+    ].join('_');
+  }
+
   function mixColor(a, b, amount) {
     var ar = (a >> 16) & 255;
     var ag = (a >> 8) & 255;
@@ -147,7 +165,7 @@ window.SKACHKI_RACE_RUNNER_VIEW = (function () {
   function createRunner(scene, horse, index, physics, raceDistanceMeters, startProgress) {
     var G = game();
     var track = trackApi();
-    var key = 'runner_anim_' + index;
+    var key = runnerTextureKey(horse, index);
     var lane = index * scene.track.laneSpacing;
     var p = track.pointOnTrack(scene.track, startProgress, lane);
     var name = String(horse.name || '').replace(/^Вы:\s*/, '');
