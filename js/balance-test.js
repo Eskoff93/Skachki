@@ -31,6 +31,7 @@ window.SKACHKI_BALANCE_TEST = (function () {
     return {
       distance: 200,
       horseCount: 4,
+      pureCoreOnly: false,
       horses: [
         createDefaultHorse(0),
         createDefaultHorse(1),
@@ -72,6 +73,7 @@ window.SKACHKI_BALANCE_TEST = (function () {
   }
 
   function formLabel(form) {
+    if (config.pureCoreOnly) return 'Форма выкл.';
     if (form === 'excellent') return 'Отличная';
     if (form === 'bad') return 'Плохая';
     return 'Нормальная';
@@ -99,6 +101,21 @@ window.SKACHKI_BALANCE_TEST = (function () {
     '</div>';
   }
 
+  function renderPureToggle() {
+    var active = !!config.pureCoreOnly;
+    return '<button class="race-card premium-race-card" data-balance-pure-toggle type="button" style="padding:12px;margin:10px 0 12px;text-align:left;border-color:' + (active ? 'rgba(123,216,255,.78)' : 'rgba(255,255,255,.08)') + ';">' +
+      '<div class="race-top" style="align-items:center;margin-bottom:6px;">' +
+        '<div>' +
+          '<div class="race-title" style="font-size:16px;margin:0;">Чистый тест параметров</div>' +
+          '<div class="race-desc" style="font-size:12px;line-height:1.35;">' + (active
+            ? 'Включено: работают только скорость, выносливость и ускорение.'
+            : 'Отключает форму, события, AI, рывки, случайность и влияние дорожек.') + '</div>' +
+        '</div>' +
+        '<span class="mini-tag" style="border-color:' + (active ? 'rgba(123,216,255,.7)' : 'rgba(255,255,255,.12)') + ';">' + (active ? 'ВКЛ' : 'ВЫКЛ') + '</span>' +
+      '</div>' +
+    '</button>';
+  }
+
   function renderHorseRow(horse, index) {
     return '<section class="race-card premium-race-card" style="padding:12px;margin-bottom:10px;">' +
       '<div class="race-top" style="align-items:center;margin-bottom:10px;">' +
@@ -114,7 +131,7 @@ window.SKACHKI_BALANCE_TEST = (function () {
         renderNumberInput(index, 'acceleration', 'Ускорение', horse.acceleration) +
       '</div>' +
       '<label class="select-label">Форма</label>' +
-      '<select class="select" data-balance-field="form" data-index="' + index + '">' +
+      '<select class="select" data-balance-field="form" data-index="' + index + '" ' + (config.pureCoreOnly ? 'disabled' : '') + '>' +
         '<option value="excellent" ' + (horse.form === 'excellent' ? 'selected' : '') + '>Отличная 95–100%</option>' +
         '<option value="normal" ' + (horse.form === 'normal' ? 'selected' : '') + '>Нормальная 80–100%</option>' +
         '<option value="bad" ' + (horse.form === 'bad' ? 'selected' : '') + '>Плохая 70–90%</option>' +
@@ -138,7 +155,7 @@ window.SKACHKI_BALANCE_TEST = (function () {
       '<div class="race-grid">' +
         '<div class="race-box"><b>150–500 м</b><span>Дистанция</span></div>' +
         '<div class="race-box"><b>2–8</b><span>Лошади</span></div>' +
-        '<div class="race-box"><b>6</b><span>Пресетов</span></div>' +
+        '<div class="race-box"><b>Pure</b><span>Режим</span></div>' +
       '</div>' +
     '</button>';
   }
@@ -153,6 +170,7 @@ window.SKACHKI_BALANCE_TEST = (function () {
       '</div>' +
       '<button class="breed-change-btn" type="button" data-balance-test-back>Назад</button>' +
     '</section>' +
+    renderPureToggle() +
     '<div class="section-label">Дистанция</div>' +
     '<div class="race-grid" style="margin-bottom:12px;">' + [150, 200, 300, 500].map(renderDistanceButton).join('') + '</div>' +
     '<label class="select-label">Своя дистанция, м</label>' +
@@ -273,7 +291,7 @@ window.SKACHKI_BALANCE_TEST = (function () {
       hiddenQualities: { strength: 8, agility: 8, instinct: 8 },
       potential: 100,
       temperament: 'Смелая',
-      form: horseConfig.form || 'normal',
+      form: config.pureCoreOnly ? 'pure' : horseConfig.form || 'normal',
       rating: 0,
       racesRun: 0,
       wins: 0,
@@ -299,7 +317,7 @@ window.SKACHKI_BALANCE_TEST = (function () {
 
     G.state.activeRaceType = {
       id: 'balance_test',
-      name: 'Баланс-тест',
+      name: config.pureCoreOnly ? 'Баланс-тест: чистый' : 'Баланс-тест',
       level: 'Тест',
       fee: 0,
       prizeMin: 0,
@@ -307,7 +325,10 @@ window.SKACHKI_BALANCE_TEST = (function () {
       distance: config.distance,
       opponents: config.horseCount - 1,
       isBalanceTest: true,
-      desc: 'Изолированный тест физики без наград и статистики.'
+      pureBalanceTest: !!config.pureCoreOnly,
+      desc: config.pureCoreOnly
+        ? 'Чистый тест: только скорость, выносливость и ускорение.'
+        : 'Изолированный тест физики без наград и статистики.'
     };
 
     G.state.currentRaceHorses = config.horses.map(createTestHorse);
@@ -325,6 +346,7 @@ window.SKACHKI_BALANCE_TEST = (function () {
       var back = event.target.closest('[data-balance-test-back]');
       var distance = event.target.closest('[data-balance-distance]');
       var preset = event.target.closest('[data-balance-preset]');
+      var pureToggle = event.target.closest('[data-balance-pure-toggle]');
 
       if (open) {
         event.preventDefault();
@@ -335,6 +357,13 @@ window.SKACHKI_BALANCE_TEST = (function () {
       if (back) {
         event.preventDefault();
         closeSetup();
+        return;
+      }
+
+      if (pureToggle) {
+        event.preventDefault();
+        config.pureCoreOnly = !config.pureCoreOnly;
+        openSetup();
         return;
       }
 
