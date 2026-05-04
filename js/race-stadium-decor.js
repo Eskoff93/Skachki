@@ -1,5 +1,5 @@
 // Race stadium decor.
-// Visual-only layer for stands, ad boards and finish arch. No track geometry or physics.
+// Visual-only layer for stands and ad boards. No track geometry or physics.
 
 window.SKACHKI_RACE_STADIUM_DECOR = (function () {
   function drawBack(g, track, width, outerX, outerY, outerW, outerH) {
@@ -59,24 +59,8 @@ window.SKACHKI_RACE_STADIUM_DECOR = (function () {
     g.fillStyle(0xd6a23d, 0.62).fillRect(x + 7, y + 5, Math.max(8, w - 14), 2);
   }
 
-  function drawFinishArch(g, track, finishX) {
-    var topY = track.cy - track.r - track.laneOuter - 12;
-    var bottomY = track.cy - track.r + track.laneInner + 10;
-    var archW = 28;
-
-    g.lineStyle(3, 0x06111f, 0.72);
-    g.lineBetween(finishX - archW / 2, topY, finishX - archW / 2, bottomY);
-    g.lineBetween(finishX + archW / 2, topY, finishX + archW / 2, bottomY);
-    g.lineBetween(finishX - archW / 2, topY, finishX + archW / 2, topY);
-
-    g.lineStyle(1, 0xd6a23d, 0.78);
-    g.lineBetween(finishX - archW / 2 + 2, topY + 3, finishX + archW / 2 - 2, topY + 3);
-    g.fillStyle(0xd6a23d, 0.78).fillCircle(finishX, topY + 3, 3);
-  }
-
   return {
     drawBack: drawBack,
-    drawFinishArch: drawFinishArch,
     drawFront: drawFront
   };
 })();
