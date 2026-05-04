@@ -67,6 +67,7 @@ window.SKACHKI_RACE_TRACK = (function () {
       laneInner: pathWidth / 2,
       laneSpan: laneSpan,
       pathWidth: pathWidth,
+      centerLane: laneSpan / 2,
       sPath: path
     };
   }
@@ -108,8 +109,6 @@ window.SKACHKI_RACE_TRACK = (function () {
     var finish = { x: right, y: bottom };
 
     points.push(start);
-
-    // Stable open S route: no diagonal return and no self-intersections.
     sampleLine(points, start.x, start.y, topRight.x, topRight.y, 32);
     sampleCubic(points, topRight,
       { x: right + width * 0.18, y: top + (middle - top) * 0.22 },
@@ -215,19 +214,20 @@ window.SKACHKI_RACE_TRACK = (function () {
     var g = scene.add.graphics();
     var lane;
     var i;
+    var centerLane = track.centerLane;
 
     drawGround(g, width, height);
     drawSTrackDecor(g, track, width, height);
 
-    strokeSTrack(g, track, 0, track.pathWidth + 36, 0x07111d, 0.42);
-    strokeSTrack(g, track, 0, track.pathWidth + 22, 0x4f2d1d, 1);
-    strokeSTrack(g, track, 0, track.pathWidth + 10, 0x8c5737, 1);
-    strokeSTrack(g, track, 0, track.pathWidth, 0xc47a3f, 1);
-    strokeSTrack(g, track, 0, track.pathWidth - 18, 0xa9653a, 0.42);
+    strokeSTrack(g, track, centerLane, track.pathWidth + 36, 0x07111d, 0.42);
+    strokeSTrack(g, track, centerLane, track.pathWidth + 22, 0x4f2d1d, 1);
+    strokeSTrack(g, track, centerLane, track.pathWidth + 10, 0x8c5737, 1);
+    strokeSTrack(g, track, centerLane, track.pathWidth, 0xc47a3f, 1);
+    strokeSTrack(g, track, centerLane, track.pathWidth - 18, 0xa9653a, 0.42);
 
     for (i = 0; i < 70; i++) {
-      lane = (Math.random() - 0.5) * track.laneSpan;
-      var p = pointOnTrack(track, Math.random(), lane + track.laneSpan / 2);
+      lane = Math.random() * track.laneSpan;
+      var p = pointOnTrack(track, Math.random(), lane);
       g.fillStyle(i % 2 ? 0xe0a05f : 0x6f4028, i % 2 ? 0.08 : 0.06)
         .fillEllipse(p.x, p.y, 7 + Math.random() * 14, 3 + Math.random() * 5);
     }
@@ -421,7 +421,7 @@ window.SKACHKI_RACE_TRACK = (function () {
   }
 
   function sLaneOffset(track, lane) {
-    return (Number(lane) || 0) - track.laneSpan / 2;
+    return (Number(lane) || 0) - track.centerLane;
   }
 
   function pointOnSTrack(track, progress, lane) {
@@ -459,7 +459,7 @@ window.SKACHKI_RACE_TRACK = (function () {
   }
 
   function drawSTrackGate(g, track, progress, label) {
-    var center = pointOnSTrack(track, progress, track.laneSpan / 2);
+    var center = pointOnSTrack(track, progress, track.centerLane);
     var sample = sTrackSample(track, progress);
     var nx = -sample.ty;
     var ny = sample.tx;
