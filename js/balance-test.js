@@ -31,6 +31,7 @@ window.SKACHKI_BALANCE_TEST = (function () {
     return {
       distance: 200,
       horseCount: 4,
+      trackType: 'oval',
       pureCoreOnly: false,
       horses: [
         createDefaultHorse(0),
@@ -60,7 +61,7 @@ window.SKACHKI_BALANCE_TEST = (function () {
   }
 
   function syncHorseCount() {
-    var count = clamp(Math.round(Number(config.horseCount) || 4), 2, 8);
+    var count = config.trackType === 's_track' ? 8 : clamp(Math.round(Number(config.horseCount) || 4), 2, 8);
     config.horseCount = count;
 
     while (config.horses.length < count) {
@@ -83,6 +84,13 @@ window.SKACHKI_BALANCE_TEST = (function () {
     var active = Number(config.distance) === distance;
     return '<button class="race-box" data-balance-distance="' + distance + '" type="button" style="color:#fff;border-color:' + (active ? 'rgba(255,210,93,.72)' : 'rgba(255,255,255,.08)') + ';">' +
       '<b>' + distance + ' м</b><span>' + (active ? 'Выбрано' : 'Выбрать') + '</span>' +
+    '</button>';
+  }
+
+  function renderTrackTypeButton(trackType, title, desc) {
+    var active = config.trackType === trackType;
+    return '<button class="race-box" data-balance-track="' + trackType + '" type="button" style="color:#fff;border-color:' + (active ? 'rgba(123,216,255,.78)' : 'rgba(255,255,255,.08)') + ';">' +
+      '<b>' + title + '</b><span>' + desc + '</span>' +
     '</button>';
   }
 
@@ -148,12 +156,12 @@ window.SKACHKI_BALANCE_TEST = (function () {
             '<span class="mini-tag">Без наград</span>' +
           '</div>' +
           '<div class="race-title">Баланс-тест</div>' +
-          '<div class="race-desc">Выбор дистанции, тестовых лошадей и готовых пресетов для проверки физики гонки.</div>' +
+          '<div class="race-desc">Выбор дистанции, трассы, тестовых лошадей и готовых пресетов.</div>' +
         '</div>' +
         '<div class="race-fee">Dev</div>' +
       '</div>' +
       '<div class="race-grid">' +
-        '<div class="race-box"><b>150–500 м</b><span>Дистанция</span></div>' +
+        '<div class="race-box"><b>Овал / S</b><span>Трасса</span></div>' +
         '<div class="race-box"><b>2–8</b><span>Лошади</span></div>' +
         '<div class="race-box"><b>Pure</b><span>Режим</span></div>' +
       '</div>' +
@@ -171,14 +179,20 @@ window.SKACHKI_BALANCE_TEST = (function () {
       '<button class="breed-change-btn" type="button" data-balance-test-back>Назад</button>' +
     '</section>' +
     renderPureToggle() +
+    '<div class="section-label">Тип трассы</div>' +
+    '<div class="race-grid" style="margin-bottom:12px;">' +
+      renderTrackTypeButton('oval', 'Овал', 'Стабильная') +
+      renderTrackTypeButton('s_track', 'S-трасса', '8 дорожек') +
+    '</div>' +
     '<div class="section-label">Дистанция</div>' +
     '<div class="race-grid" style="margin-bottom:12px;">' + [150, 200, 300, 500].map(renderDistanceButton).join('') + '</div>' +
     '<label class="select-label">Своя дистанция, м</label>' +
     '<input class="select" data-balance-custom-distance type="number" min="50" max="2000" value="' + config.distance + '" />' +
     '<label class="select-label">Количество лошадей</label>' +
-    '<select class="select" data-balance-count>' + [2, 3, 4, 5, 6, 7, 8].map(function (count) {
+    '<select class="select" data-balance-count ' + (config.trackType === 's_track' ? 'disabled' : '') + '>' + [2, 3, 4, 5, 6, 7, 8].map(function (count) {
       return '<option value="' + count + '" ' + (count === config.horseCount ? 'selected' : '') + '>' + count + '</option>';
     }).join('') + '</select>' +
+    (config.trackType === 's_track' ? '<div class="race-desc" style="font-size:12px;margin:6px 0 10px;">Для S-трассы всегда используется 8 дорожек.</div>' : '') +
     '<div class="section-label">Тестовые лошади</div>' +
     config.horses.map(renderHorseRow).join('');
   }
@@ -317,13 +331,14 @@ window.SKACHKI_BALANCE_TEST = (function () {
 
     G.state.activeRaceType = {
       id: 'balance_test',
-      name: config.pureCoreOnly ? 'Баланс-тест: чистый' : 'Баланс-тест',
+      name: config.trackType === 's_track' ? 'Баланс-тест: S-трасса' : config.pureCoreOnly ? 'Баланс-тест: чистый' : 'Баланс-тест',
       level: 'Тест',
       fee: 0,
       prizeMin: 0,
       prizeMax: 0,
       distance: config.distance,
       opponents: config.horseCount - 1,
+      trackType: config.trackType,
       isBalanceTest: true,
       pureBalanceTest: !!config.pureCoreOnly,
       desc: config.pureCoreOnly
@@ -347,6 +362,7 @@ window.SKACHKI_BALANCE_TEST = (function () {
       var distance = event.target.closest('[data-balance-distance]');
       var preset = event.target.closest('[data-balance-preset]');
       var pureToggle = event.target.closest('[data-balance-pure-toggle]');
+      var track = event.target.closest('[data-balance-track]');
 
       if (open) {
         event.preventDefault();
@@ -363,6 +379,14 @@ window.SKACHKI_BALANCE_TEST = (function () {
       if (pureToggle) {
         event.preventDefault();
         config.pureCoreOnly = !config.pureCoreOnly;
+        openSetup();
+        return;
+      }
+
+      if (track) {
+        event.preventDefault();
+        config.trackType = track.dataset.balanceTrack === 's_track' ? 's_track' : 'oval';
+        syncHorseCount();
         openSetup();
         return;
       }
@@ -392,6 +416,7 @@ window.SKACHKI_BALANCE_TEST = (function () {
     document.addEventListener('change', function (event) {
       var input = event.target;
       if (input.matches('[data-balance-count]')) {
+        if (config.trackType === 's_track') return;
         config.horseCount = Number(input.value) || 4;
         syncHorseCount();
         openSetup();
