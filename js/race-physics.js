@@ -119,6 +119,7 @@ window.SKACHKI_RACE_PHYSICS = (function () {
     var speedDelta;
     var mps;
 
+    physics.raceDistanceMeters = Math.max(1, Number(context.raceDistanceMeters) || physics.raceDistanceMeters || 150);
     physics.elapsedSeconds += dt;
     applyFormTicks(physics, horse);
 
