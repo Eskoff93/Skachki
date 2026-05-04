@@ -140,6 +140,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
     scene.startProgress = startProgress;
     scene.raceDistance = 1;
     scene.raceDistanceMeters = raceDistanceMeters;
+    scene.pureBalanceTest = !!raceType.pureBalanceTest;
     scene.finishProgress = startProgress + scene.raceDistance;
     scene.finishCount = 0;
     scene.finished = false;
@@ -151,7 +152,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
     track.drawTrack(scene, worldWidth, worldHeight);
 
     G.state.currentRaceHorses.forEach(function (horse, index) {
-      var runner = view.createRunner(scene, horse, index, physics, raceDistanceMeters, startProgress);
+      var runner = view.createRunner(scene, horse, index, physics, raceDistanceMeters, startProgress, scene.pureBalanceTest);
       scene.runners.push(runner);
       if (horse.isPlayer) scene.playerRunner = runner;
     });
@@ -162,7 +163,9 @@ window.SKACHKI_RACE_ENGINE = (function () {
   }
   function runnerLaneDistanceMeters(scene, runner) {
     var track = raceTrack();
-    var factor = track.laneDistanceFactor ? track.laneDistanceFactor(scene.track, runner.lane) : 1;
+    var factor;
+    if (scene.pureBalanceTest) return Math.max(1, scene.raceDistanceMeters);
+    factor = track.laneDistanceFactor ? track.laneDistanceFactor(scene.track, runner.lane) : 1;
     return Math.max(1, scene.raceDistanceMeters * factor);
   }
   function advanceLane(scene, runner, delta) {
@@ -196,27 +199,30 @@ window.SKACHKI_RACE_ENGINE = (function () {
 
       if (runner.finished) return;
 
-      lineEfficiency = ai.update ? ai.update(scene, runner, time) : 1;
-      isBursting = time < runner.burstUntil;
-      isPenalized = time < runner.penaltyUntil;
+      lineEfficiency = scene.pureBalanceTest ? 1 : ai.update ? ai.update(scene, runner, time) : 1;
+      isBursting = !scene.pureBalanceTest && time < runner.burstUntil;
+      isPenalized = !scene.pureBalanceTest && time < runner.penaltyUntil;
       laneDistanceMeters = runnerLaneDistanceMeters(scene, runner);
       runnerPhysics = physics.updateRunner ? physics.updateRunner(runner, {
         deltaSeconds: deltaSeconds,
         raceDistanceMeters: laneDistanceMeters,
         lineEfficiency: lineEfficiency,
         formMultiplier: runner.formMultiplier,
-        randomFactor: runner.randomFactor,
+        randomFactor: scene.pureBalanceTest ? 1 : runner.randomFactor,
+        pureBalanceTest: scene.pureBalanceTest,
         isBursting: isBursting,
         isPenalized: isPenalized
       }) : null;
 
-      if (events.update) events.update(scene, runner, time);
+      if (!scene.pureBalanceTest && events.update) events.update(scene, runner, time);
 
-      advanceLane(scene, runner, delta);
+      if (!scene.pureBalanceTest) advanceLane(scene, runner, delta);
+      else runner.laneTarget = runner.lane;
+
       laneDistanceMeters = runnerLaneDistanceMeters(scene, runner);
       if (runnerPhysics) runner.progress = scene.startProgress + runnerPhysics.distanceMeters / laneDistanceMeters * scene.raceDistance;
       if (view.updateRunnerVisual) view.updateRunnerVisual(scene, runner);
-      if (effects.addDust && time - scene.lastDust > 110) effects.addDust(scene, runner, isBursting);
+      if (!scene.pureBalanceTest && effects.addDust && time - scene.lastDust > 110) effects.addDust(scene, runner, isBursting);
 
       if (runnerPhysics && runnerPhysics.distanceMeters >= laneDistanceMeters) finishRunner(scene, runner, runnerPhysics);
     });
