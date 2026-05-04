@@ -9,6 +9,7 @@ window.SKACHKI_RACE_AI = (function () {
   var MAX_THINK_DELAY = 1300;
 
   function game() { return window.SKACHKI_GAME; }
+  function trackApi() { return window.SKACHKI_RACE_TRACK || {}; }
 
   function clamp(value, min, max) {
     var G = game();
@@ -85,9 +86,23 @@ window.SKACHKI_RACE_AI = (function () {
     return ((runner.progress % 1) + 1) % 1;
   }
 
-  function nearOrInTurn(runner) {
+  function fallbackSegmentType(runner) {
     var p = phase(runner);
-    return (p > 0.18 && p < 0.50) || (p > 0.68 && p < 0.98);
+    return (p > 0.18 && p < 0.50) || (p > 0.68 && p < 0.98) ? 'turn' : 'straight';
+  }
+
+  function segmentType(scene, runner) {
+    var api = trackApi();
+    var info;
+    if (api.segmentAt && scene && scene.track && runner) {
+      info = api.segmentAt(scene.track, runner.progress, runner.lane);
+      if (info && info.type) return info.type;
+    }
+    return fallbackSegmentType(runner);
+  }
+
+  function nearOrInTurn(scene, runner) {
+    return segmentType(scene, runner) === 'turn';
   }
 
   function aggression(runner) {
@@ -98,10 +113,10 @@ window.SKACHKI_RACE_AI = (function () {
     return clamp((accel * 0.55 + agility * 0.45) / 100 + temperamentBonus, 0.2, 0.95);
   }
 
-  function innerDesire(runner) {
+  function innerDesire(scene, runner) {
     var h = runner.horse || {};
     var agility = Number(h.agility || h.hiddenQualities && h.hiddenQualities.agility) || 50;
-    var bonus = nearOrInTurn(runner) ? 0.06 : 0.01;
+    var bonus = nearOrInTurn(scene, runner) ? 0.06 : 0.01;
     return clamp(0.1 + agility / 520 + bonus, 0.1, 0.34);
   }
 
@@ -146,7 +161,7 @@ window.SKACHKI_RACE_AI = (function () {
     if (blocker) {
       shouldOvertake = runner.pace >= blocker.pace * (1 - aggression(runner) * 0.018);
       if (shouldOvertake) desiredIndex = chooseOvertakeLane(scene, runner, currentIndex);
-    } else if (currentIndex > 0 && Math.random() < innerDesire(runner)) {
+    } else if (currentIndex > 0 && Math.random() < innerDesire(scene, runner)) {
       desiredIndex = chooseInnerLane(scene, runner, currentIndex);
     }
 
@@ -158,7 +173,7 @@ window.SKACHKI_RACE_AI = (function () {
 
   function lineEfficiency(scene, runner) {
     var idx = laneIndex(scene, runner.lane);
-    var turnBonus = nearOrInTurn(runner) ? 0.006 : 0;
+    var turnBonus = nearOrInTurn(scene, runner) ? 0.006 : 0;
     var blocker = findBlockingRunner(scene, runner);
     var blockedPenalty = blocker ? 0.045 : 0;
 
