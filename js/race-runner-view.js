@@ -3,6 +3,9 @@
 
 window.SKACHKI_RACE_RUNNER_VIEW = (function () {
   var FRAME_COUNT = 4;
+  var TEXTURE_SCALE = 2;
+  var TEXTURE_WIDTH = 112;
+  var TEXTURE_HEIGHT = 92;
 
   function game() { return window.SKACHKI_GAME; }
   function trackApi() { return window.SKACHKI_RACE_TRACK || {}; }
@@ -132,10 +135,11 @@ window.SKACHKI_RACE_RUNNER_VIEW = (function () {
       if (scene.textures.exists(frameKey)) continue;
 
       g = scene.make.graphics({ x: 0, y: 0, add: false });
+      g.scaleCanvas(TEXTURE_SCALE, TEXTURE_SCALE);
       g.fillStyle(0x000000, 0.2).fillEllipse(56, 68, 48, 12);
       drawHorseBody(g, body, index, phase);
       drawSaddleAndRider(g, saddle, horse, index, phase);
-      g.generateTexture(frameKey, 112, 92);
+      g.generateTexture(frameKey, TEXTURE_WIDTH * TEXTURE_SCALE, TEXTURE_HEIGHT * TEXTURE_SCALE);
       g.destroy();
     }
   }
@@ -148,7 +152,7 @@ window.SKACHKI_RACE_RUNNER_VIEW = (function () {
     var p = track.pointOnTrack(scene.track, startProgress, lane);
     var name = String(horse.name || '').replace(/^Вы:\s*/, '');
     var labelText = horse.isPlayer ? '★' : String(index + 1);
-    var scale = horse.isPlayer ? 1.06 : 0.97;
+    var scale = (horse.isPlayer ? 1.06 : 0.97) / TEXTURE_SCALE;
 
     makeRunnerTexture(scene, key, horse, index);
 
@@ -160,7 +164,7 @@ window.SKACHKI_RACE_RUNNER_VIEW = (function () {
       color: '#ffffff',
       backgroundColor: horse.isPlayer ? 'rgba(47,131,255,.88)' : 'rgba(6,17,31,.62)',
       padding: { left: 6, right: 6, top: 3, bottom: 3 },
-      resolution: 2
+      resolution: 3
     }).setOrigin(0.5).setDepth(230);
 
     return {
