@@ -54,20 +54,20 @@ window.SKACHKI_RACE_RUNNER_VIEW = (function () {
   }
 
   function drawLeg(g, sx, sy, dx, dy, body, dark) {
-    g.lineStyle(5, dark, 0.54);
+    g.lineStyle(4, dark, 0.48);
     g.lineBetween(sx, sy, dx, dy);
-    g.lineStyle(3, body, 0.86);
+    g.lineStyle(2, body, 0.84);
     g.lineBetween(sx, sy, dx, dy);
-    g.fillStyle(dark, 0.62).fillEllipse(dx, dy, 5, 2.7);
+    g.fillStyle(dark, 0.56).fillEllipse(dx, dy, 4, 2.2);
   }
 
   function drawLegs(g, body, dark, phase) {
     var p = legPose(phase);
 
-    drawLeg(g, 49, 40, 45 + p.fl, 31, body, dark);
-    drawLeg(g, 63, 40, 67 + p.fr, 31, body, dark);
-    drawLeg(g, 49, 57, 45 + p.bl, 66, body, dark);
-    drawLeg(g, 63, 57, 67 + p.br, 66, body, dark);
+    drawLeg(g, 50, 41, 47 + p.fl, 32, body, dark);
+    drawLeg(g, 62, 41, 65 + p.fr, 32, body, dark);
+    drawLeg(g, 50, 56, 47 + p.bl, 65, body, dark);
+    drawLeg(g, 62, 56, 65 + p.br, 65, body, dark);
   }
 
   function drawHorseBody(g, body, index, phase) {
@@ -79,24 +79,24 @@ window.SKACHKI_RACE_RUNNER_VIEW = (function () {
 
     drawLegs(g, body, dark, phase);
 
-    g.fillStyle(mane, 0.7).fillTriangle(46, 58 + bob, 38, 70 + bob, 49, 62 + bob);
-    g.fillStyle(body, 1).fillEllipse(56, 49 + bob, 29, 51);
-    g.fillStyle(light, 0.28).fillEllipse(61, 44 + bob, 11, 34);
-    g.fillStyle(dark, 0.18).fillEllipse(49, 55 + bob, 9, 28);
+    g.fillStyle(mane, 0.62).fillTriangle(47, 57 + bob, 40, 68 + bob, 50, 61 + bob);
+    g.fillStyle(body, 1).fillEllipse(56, 49 + bob, 23, 47);
+    g.fillStyle(light, 0.24).fillEllipse(60, 44 + bob, 8, 30);
+    g.fillStyle(dark, 0.16).fillEllipse(50, 55 + bob, 7, 24);
 
-    g.fillStyle(body, 1).fillEllipse(56, 24 + bob, 18, 23);
-    g.fillStyle(body, 1).fillEllipse(56, 15 + bob, 12, 14);
-    g.fillStyle(mark, 0.8).fillEllipse(56, 12 + bob, 4.8, 8);
+    g.fillStyle(body, 1).fillEllipse(56, 25 + bob, 15, 20);
+    g.fillStyle(body, 1).fillEllipse(56, 16 + bob, 10, 12);
+    g.fillStyle(mark, 0.76).fillEllipse(56, 13 + bob, 3.6, 6.8);
 
-    g.fillStyle(body, 1).fillTriangle(49, 16 + bob, 47, 7 + bob, 53, 13 + bob);
-    g.fillStyle(body, 1).fillTriangle(63, 16 + bob, 65, 7 + bob, 59, 13 + bob);
-    g.fillStyle(dark, 0.34).fillTriangle(49, 15 + bob, 48, 10 + bob, 52, 13 + bob);
-    g.fillStyle(dark, 0.34).fillTriangle(63, 15 + bob, 64, 10 + bob, 60, 13 + bob);
+    g.fillStyle(body, 1).fillTriangle(50, 17 + bob, 48, 9 + bob, 53, 14 + bob);
+    g.fillStyle(body, 1).fillTriangle(62, 17 + bob, 64, 9 + bob, 59, 14 + bob);
+    g.fillStyle(dark, 0.28).fillTriangle(50, 16 + bob, 49, 11 + bob, 52, 14 + bob);
+    g.fillStyle(dark, 0.28).fillTriangle(62, 16 + bob, 63, 11 + bob, 60, 14 + bob);
 
-    g.fillStyle(mane, 0.94).fillEllipse(47, 31 + bob, 7, 23);
-    g.fillStyle(mane, 0.68).fillEllipse(48, 42 + bob, 5, 19);
+    g.fillStyle(mane, 0.9).fillEllipse(49, 32 + bob, 5, 20);
+    g.fillStyle(mane, 0.6).fillEllipse(49, 42 + bob, 4, 16);
 
-    g.fillStyle(0x0b0b0b, 0.78).fillCircle(52, 15 + bob, 1.5).fillCircle(60, 15 + bob, 1.5);
+    g.fillStyle(0x0b0b0b, 0.76).fillCircle(53, 16 + bob, 1.3).fillCircle(59, 16 + bob, 1.3);
   }
 
   function drawSaddleAndRider(g, saddle, horse, index, phase) {
@@ -106,20 +106,20 @@ window.SKACHKI_RACE_RUNNER_VIEW = (function () {
     var numberDot = horse && horse.isPlayer ? 0x7bd8ff : 0x06111f;
     var bob = 0;
 
-    g.fillStyle(0x06111f, 0.52).fillRoundedRect(43, 41 + bob, 26, 18, 5);
-    g.fillStyle(saddle, 0.98).fillRoundedRect(44, 40 + bob, 24, 16, 5);
-    g.fillStyle(trim, 0.75).fillRect(44, 45 + bob, 24, 3);
+    g.fillStyle(0x06111f, 0.48).fillRoundedRect(45, 42 + bob, 22, 15, 4);
+    g.fillStyle(saddle, 0.96).fillRoundedRect(46, 41 + bob, 20, 13, 4);
+    g.fillStyle(trim, 0.68).fillRect(46, 45 + bob, 20, 2);
 
-    g.fillStyle(numberBg, 0.92).fillCircle(68, 49 + bob, 6.5);
-    g.fillStyle(numberDot, 0.86).fillCircle(68, 49 + bob, horse && horse.isPlayer ? 3.3 : 2.8);
+    g.fillStyle(numberBg, 0.9).fillCircle(67, 49 + bob, 5.6);
+    g.fillStyle(numberDot, 0.82).fillCircle(67, 49 + bob, horse && horse.isPlayer ? 2.8 : 2.4);
 
-    g.fillStyle(0xf0d3b1, 0.95).fillEllipse(56, 37 + bob, 8, 9);
-    g.fillStyle(helmet, 1).fillEllipse(56, 34 + bob, 10, 7);
-    g.fillStyle(trim, 0.72).fillRect(51, 33 + bob, 10, 2);
+    g.fillStyle(0xf0d3b1, 0.94).fillEllipse(56, 37 + bob, 7, 8);
+    g.fillStyle(helmet, 1).fillEllipse(56, 34 + bob, 8.5, 6);
+    g.fillStyle(trim, 0.66).fillRect(52, 33 + bob, 8, 2);
 
     if (index % 2 === 0) {
-      g.lineStyle(2, trim, 0.58);
-      g.lineBetween(45, 42 + bob, 67, 55 + bob);
+      g.lineStyle(2, trim, 0.5);
+      g.lineBetween(46, 42 + bob, 66, 54 + bob);
     }
   }
 
@@ -136,7 +136,7 @@ window.SKACHKI_RACE_RUNNER_VIEW = (function () {
 
       g = scene.make.graphics({ x: 0, y: 0, add: false });
       g.scaleCanvas(TEXTURE_SCALE, TEXTURE_SCALE);
-      g.fillStyle(0x000000, 0.2).fillEllipse(56, 68, 48, 12);
+      g.fillStyle(0x000000, 0.18).fillEllipse(56, 68, 42, 10);
       drawHorseBody(g, body, index, phase);
       drawSaddleAndRider(g, saddle, horse, index, phase);
       g.generateTexture(frameKey, TEXTURE_WIDTH * TEXTURE_SCALE, TEXTURE_HEIGHT * TEXTURE_SCALE);
@@ -152,14 +152,14 @@ window.SKACHKI_RACE_RUNNER_VIEW = (function () {
     var p = track.pointOnTrack(scene.track, startProgress, lane);
     var name = String(horse.name || '').replace(/^Вы:\s*/, '');
     var labelText = horse.isPlayer ? '★' : String(index + 1);
-    var scale = (horse.isPlayer ? 1.06 : 0.97) / TEXTURE_SCALE;
+    var scale = (horse.isPlayer ? 0.94 : 0.87) / TEXTURE_SCALE;
 
     makeRunnerTexture(scene, key, horse, index);
 
     var sprite = scene.add.image(p.x, p.y, key + '_0').setScale(scale).setDepth(30 + index);
-    var label = scene.add.text(p.x, p.y - 54, labelText, {
+    var label = scene.add.text(p.x, p.y - 48, labelText, {
       fontFamily: 'Arial',
-      fontSize: horse.isPlayer ? '15px' : '11px',
+      fontSize: horse.isPlayer ? '14px' : '10px',
       fontStyle: '900',
       color: '#ffffff',
       backgroundColor: horse.isPlayer ? 'rgba(47,131,255,.88)' : 'rgba(6,17,31,.62)',
@@ -212,7 +212,7 @@ window.SKACHKI_RACE_RUNNER_VIEW = (function () {
     runner.sprite.rotation = p.angle + Math.PI / 2;
     runner.sprite.setDepth(30 + Math.floor(p.y));
     runner.label.x = p.x;
-    runner.label.y = p.y - 54;
+    runner.label.y = p.y - 48;
     runner.label.setDepth(runner.sprite.depth + 4);
   }
 
