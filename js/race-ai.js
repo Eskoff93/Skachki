@@ -2,11 +2,11 @@
 // Owns tactical lane choice: blocking, overtaking, inner-line preference and lane efficiency.
 
 window.SKACHKI_RACE_AI = (function () {
-  var LANE_SETTLE_THRESHOLD = 0.18;
-  var MIN_LANE_CHANGE_COOLDOWN = 900;
-  var MAX_LANE_CHANGE_COOLDOWN = 1450;
-  var MIN_THINK_DELAY = 520;
-  var MAX_THINK_DELAY = 900;
+  var LANE_SETTLE_THRESHOLD = 0.1;
+  var MIN_LANE_CHANGE_COOLDOWN = 1600;
+  var MAX_LANE_CHANGE_COOLDOWN = 2400;
+  var MIN_THINK_DELAY = 820;
+  var MAX_THINK_DELAY = 1300;
 
   function game() { return window.SKACHKI_GAME; }
 
@@ -94,15 +94,15 @@ window.SKACHKI_RACE_AI = (function () {
     var h = runner.horse || {};
     var accel = Number(h.acceleration) || 50;
     var agility = Number(h.agility || h.hiddenQualities && h.hiddenQualities.agility) || 50;
-    var temperamentBonus = h.temperament === 'Резкая' ? 0.18 : h.temperament === 'Быстрая' ? 0.12 : 0;
-    return clamp((accel * 0.55 + agility * 0.45) / 100 + temperamentBonus, 0.25, 1.15);
+    var temperamentBonus = h.temperament === 'Резкая' ? 0.1 : h.temperament === 'Быстрая' ? 0.07 : 0;
+    return clamp((accel * 0.55 + agility * 0.45) / 100 + temperamentBonus, 0.2, 0.95);
   }
 
   function innerDesire(runner) {
     var h = runner.horse || {};
     var agility = Number(h.agility || h.hiddenQualities && h.hiddenQualities.agility) || 50;
-    var bonus = nearOrInTurn(runner) ? 0.18 : 0.04;
-    return clamp(0.22 + agility / 340 + bonus, 0.22, 0.62);
+    var bonus = nearOrInTurn(runner) ? 0.06 : 0.01;
+    return clamp(0.1 + agility / 520 + bonus, 0.1, 0.34);
   }
 
   function chooseOvertakeLane(scene, runner, currentIndex) {
@@ -144,7 +144,7 @@ window.SKACHKI_RACE_AI = (function () {
     desiredIndex = currentIndex;
 
     if (blocker) {
-      shouldOvertake = runner.pace >= blocker.pace * (0.99 - aggression(runner) * 0.028);
+      shouldOvertake = runner.pace >= blocker.pace * (1 - aggression(runner) * 0.018);
       if (shouldOvertake) desiredIndex = chooseOvertakeLane(scene, runner, currentIndex);
     } else if (currentIndex > 0 && Math.random() < innerDesire(runner)) {
       desiredIndex = chooseInnerLane(scene, runner, currentIndex);
