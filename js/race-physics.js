@@ -112,7 +112,7 @@ window.SKACHKI_RACE_PHYSICS = (function () {
     if (staminaReserve >= 70) return 1;
     if (staminaReserve >= 40) return 0.85 + (staminaReserve - 40) / 30 * 0.15;
     if (staminaReserve >= 15) return 0.6 + (staminaReserve - 15) / 25 * 0.25;
-    return 0.5 + staminaReserve / 15 * 0.1;
+    return 0.3 + staminaReserve / 15 * 0.2;
   }
 
   function drainStaminaTank(physics, deltaSeconds, isBursting) {
