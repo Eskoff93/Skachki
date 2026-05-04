@@ -5,6 +5,8 @@ window.SKACHKI_RACE_EVENTS = (function () {
   var EVENT_TICK_METERS = 20;
   var GLOBAL_COOLDOWN_MS = 1800;
 
+  function trackApi() { return window.SKACHKI_RACE_TRACK || {}; }
+
   function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
   }
@@ -29,7 +31,7 @@ window.SKACHKI_RACE_EVENTS = (function () {
     return 'middle';
   }
 
-  function segment(scene, runner) {
+  function fallbackOvalSegment(scene, runner) {
     var track = scene.track;
     var lane = runner.lane || 0;
     var r = track.r + lane;
@@ -42,6 +44,19 @@ window.SKACHKI_RACE_EVENTS = (function () {
     if (d < straight + arc) return 'turn';
     if (d < straight * 2 + arc) return 'straight';
     return 'turn';
+  }
+
+  function segment(scene, runner) {
+    var api = trackApi();
+    var info;
+
+    if (api.segmentAt && scene && scene.track && runner) {
+      info = api.segmentAt(scene.track, runner.progress, runner.lane);
+      if (info && info.type) return info.type;
+    }
+
+    if (!scene || !scene.track || scene.track.type !== 'oval') return 'straight';
+    return fallbackOvalSegment(scene, runner);
   }
 
   function nearbyContext(scene, runner) {
