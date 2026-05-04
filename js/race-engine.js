@@ -4,6 +4,8 @@
 window.SKACHKI_RACE_ENGINE = (function () {
   var TRACK_PIXELS_PER_METER = 7;
   var TRACK_ASPECT_RATIO = 2.05;
+  var TRACK_LANE_COUNT = 8;
+  var TRACK_LANE_SPACING = 19;
   var RENDER_RESOLUTION_CAP = 3;
   var LANE_CHANGE_SPEED_MULTIPLIER = 0.62;
 
@@ -117,12 +119,12 @@ window.SKACHKI_RACE_ENGINE = (function () {
     var camera = raceCamera();
     var raceType = G.state.activeRaceType || {};
     var horseCount = G.state.currentRaceHorses.length;
-    var laneSpacing = horseCount > 6 ? 19 : 22;
+    var laneSpacing = TRACK_LANE_SPACING;
     var startProgress = 0.006;
     var raceDistanceMeters = Math.max(80, Number(raceType.distance) || 220);
     var trackSize = trackSizeForDistance(raceDistanceMeters);
-    var trackPaddingX = laneSpacing * horseCount * 2 + 180;
-    var trackPaddingY = laneSpacing * horseCount * 2 + 210;
+    var trackPaddingX = laneSpacing * TRACK_LANE_COUNT * 2 + 180;
+    var trackPaddingY = laneSpacing * TRACK_LANE_COUNT * 2 + 210;
     var worldWidth = Math.max(width * 1.4, trackSize.width + trackPaddingX);
     var worldHeight = Math.max(height * 1.25, trackSize.height + trackPaddingY);
 
