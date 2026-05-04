@@ -1,6 +1,7 @@
 // Race track geometry and drawing helpers.
 
 window.SKACHKI_RACE_TRACK = (function () {
+  var TRACK_LANE_COUNT = 8;
   var START_FINISH_STRAIGHT_RATIO = 0.5;
   var S_TRACK_LANE_COUNT = 8;
 
@@ -15,13 +16,14 @@ window.SKACHKI_RACE_TRACK = (function () {
 
   function makeTrackGeometry(width, height, trackWidth, trackHeight, laneSpacing, horseCount) {
     if (activeTrackType() === 's_track') return makeSTrackGeometry(width, height, trackWidth, trackHeight, laneSpacing);
-    return makeOvalTrackGeometry(width, height, trackWidth, trackHeight, laneSpacing, horseCount);
+    return makeOvalTrackGeometry(width, height, trackWidth, trackHeight, laneSpacing);
   }
 
-  function makeOvalTrackGeometry(width, height, trackWidth, trackHeight, laneSpacing, horseCount) {
+  function makeOvalTrackGeometry(width, height, trackWidth, trackHeight, laneSpacing) {
     var cx = width / 2;
     var cy = height / 2 + 12;
-    var radius = trackHeight / 2 - Math.max(32, laneSpacing * horseCount * 0.58);
+    var laneCount = TRACK_LANE_COUNT;
+    var radius = trackHeight / 2 - Math.max(32, laneSpacing * laneCount * 0.58);
     var straight = Math.max(120, trackWidth - radius * 2);
 
     return {
@@ -35,8 +37,8 @@ window.SKACHKI_RACE_TRACK = (function () {
       leftCx: cx - straight / 2,
       rightCx: cx + straight / 2,
       laneSpacing: laneSpacing,
-      laneCount: horseCount,
-      laneOuter: laneSpacing * Math.max(1, horseCount - 1) + 18,
+      laneCount: laneCount,
+      laneOuter: laneSpacing * Math.max(1, laneCount - 1) + 18,
       laneInner: 24
     };
   }
