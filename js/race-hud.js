@@ -76,9 +76,9 @@ window.SKACHKI_RACE_HUD = (function () {
     var safeTop = hudSafeTop();
 
     scene.hud = {
-      boardWidth: Math.min(108, Math.max(96, Math.round(width * 0.245))),
+      boardWidth: Math.min(106, Math.max(94, Math.round(width * 0.24))),
       boardX: width - 6,
-      boardY: 50 + safeTop,
+      boardY: 34 + safeTop,
       soundY: 8 + safeTop,
       bottomHeight: Math.min(112, Math.max(96, Math.round(height * 0.145))),
       margin: 8
@@ -91,37 +91,37 @@ window.SKACHKI_RACE_HUD = (function () {
 
   function setupLeaderboard(scene) {
     var boardWidth = scene.hud.boardWidth;
-    var lineHeight = 20;
-    var boardHeight = 30 + scene.runners.length * lineHeight;
+    var lineHeight = 19;
+    var boardHeight = 28 + scene.runners.length * lineHeight;
     var x = scene.hud.boardX;
     var y = scene.hud.boardY;
 
-    scene.boardBg = scene.add.rectangle(x, y, boardWidth, boardHeight, 0x06111f, 0.66)
+    scene.boardBg = scene.add.rectangle(x, y, boardWidth, boardHeight, 0x06111f, 0.58)
       .setOrigin(1, 0)
       .setDepth(300)
       .setScrollFactor(0);
-    scene.boardBg.setStrokeStyle(1, 0xd8a943, 0.36);
+    scene.boardBg.setStrokeStyle(1, 0xd8a943, 0.3);
 
-    scene.boardTopLine = scene.add.rectangle(x - boardWidth + 7, y + 6, boardWidth - 14, 2, 0xd8a943, 0.6)
+    scene.boardTopLine = scene.add.rectangle(x - boardWidth + 7, y + 6, boardWidth - 14, 2, 0xd8a943, 0.52)
       .setOrigin(0, 0)
       .setDepth(310)
       .setScrollFactor(0);
 
-    scene.boardLiveDot = scene.add.circle(x - boardWidth + 12, y + 18, 2.8, 0xff4e4e, 0.88)
+    scene.boardLiveDot = scene.add.circle(x - boardWidth + 12, y + 17, 2.6, 0xff4e4e, 0.82)
       .setDepth(311)
       .setScrollFactor(0);
 
-    scene.boardTitle = scene.add.text(x - boardWidth + 20, y + 12, 'ЗАЕЗД', {
+    scene.boardTitle = scene.add.text(x - boardWidth + 20, y + 11, 'ЗАЕЗД', {
       fontFamily: 'Arial',
-      fontSize: '9px',
+      fontSize: '8px',
       fontStyle: '900',
       color: '#ffe6a2',
       resolution: 2
     }).setDepth(311).setScrollFactor(0);
 
-    scene.boardSubTitle = scene.add.text(x - 8, y + 12, 'LIVE', {
+    scene.boardSubTitle = scene.add.text(x - 8, y + 11, 'LIVE', {
       fontFamily: 'Arial',
-      fontSize: '8px',
+      fontSize: '7px',
       fontStyle: '900',
       color: '#ffffff',
       resolution: 2
@@ -129,43 +129,43 @@ window.SKACHKI_RACE_HUD = (function () {
 
     scene.boardRows = [];
     for (var i = 0; i < scene.runners.length; i++) {
-      var rowY = y + 28 + i * lineHeight;
-      var rowBg = scene.add.rectangle(x - 4, rowY, boardWidth - 8, 17, 0x000000, 0.14)
+      var rowY = y + 26 + i * lineHeight;
+      var rowBg = scene.add.rectangle(x - 4, rowY, boardWidth - 8, 16, 0x000000, 0.1)
         .setOrigin(1, 0)
         .setDepth(304)
         .setScrollFactor(0);
-      var placeBg = scene.add.rectangle(x - boardWidth + 17, rowY + 8.5, 19, 14, 0x0d2235, 0.76)
+      var placeBg = scene.add.rectangle(x - boardWidth + 16, rowY + 8, 18, 13, 0x0d2235, 0.68)
         .setOrigin(0.5)
         .setDepth(309)
         .setScrollFactor(0);
-      placeBg.setStrokeStyle(1, 0xffffff, 0.1);
-      var place = scene.add.text(x - boardWidth + 17, rowY + 8, String(i + 1), {
+      placeBg.setStrokeStyle(1, 0xffffff, 0.08);
+      var place = scene.add.text(x - boardWidth + 16, rowY + 7.5, String(i + 1), {
         fontFamily: 'Arial',
-        fontSize: '10px',
+        fontSize: '9px',
         fontStyle: '900',
         color: '#ffffff',
         align: 'center',
         resolution: 2
       }).setOrigin(0.5).setDepth(311).setScrollFactor(0);
-      var silk = scene.add.rectangle(x - boardWidth + 34, rowY + 8.5, 8, 13, 0xffffff, 0.95)
+      var silk = scene.add.rectangle(x - boardWidth + 32, rowY + 8, 7, 12, 0xffffff, 0.9)
         .setDepth(311)
         .setScrollFactor(0);
-      silk.setStrokeStyle(1, 0xffffff, 0.28);
-      var name = scene.add.text(x - boardWidth + 44, rowY + 4, '', {
+      silk.setStrokeStyle(1, 0xffffff, 0.24);
+      var name = scene.add.text(x - boardWidth + 41, rowY + 3.5, '', {
         fontFamily: 'Arial',
-        fontSize: '8px',
+        fontSize: '7px',
         fontStyle: '900',
         color: '#ffffff',
         resolution: 2
       }).setDepth(311).setScrollFactor(0);
-      var gap = scene.add.text(x - 8, rowY + 4, '', {
+      var gap = scene.add.text(x - 7, rowY + 3.5, '', {
         fontFamily: 'Arial',
         fontSize: '7px',
         fontStyle: '900',
         color: '#8fa6bb',
         resolution: 2
       }).setOrigin(1, 0).setDepth(311).setScrollFactor(0);
-      var separator = scene.add.rectangle(x - boardWidth + 8, rowY + 18, boardWidth - 16, 1, 0xffffff, 0.04)
+      var separator = scene.add.rectangle(x - boardWidth + 8, rowY + 17, boardWidth - 16, 1, 0xffffff, 0.035)
         .setOrigin(0, 0)
         .setDepth(305)
         .setScrollFactor(0);
@@ -345,10 +345,10 @@ window.SKACHKI_RACE_HUD = (function () {
       var isPlayer = runner === scene.playerRunner;
       var isLeader = index === 0;
 
-      row.rowBg.setFillStyle(isPlayer ? 0x123b68 : isLeader ? 0x231a0d : 0x000000, isPlayer ? 0.72 : isLeader ? 0.46 : 0.12);
-      row.rowBg.setStrokeStyle(isPlayer || isLeader ? 1 : 0, isPlayer ? 0x7bd8ff : 0xd8a943, isPlayer || isLeader ? 0.58 : 0);
-      row.placeBg.setFillStyle(isLeader ? 0xd8a943 : isPlayer ? 0x1c5f9f : 0x0d2235, isLeader ? 0.9 : 0.74);
-      row.placeBg.setStrokeStyle(1, isLeader ? 0xffe6a2 : 0xffffff, isLeader ? 0.3 : 0.1);
+      row.rowBg.setFillStyle(isPlayer ? 0x123b68 : isLeader ? 0x231a0d : 0x000000, isPlayer ? 0.66 : isLeader ? 0.4 : 0.09);
+      row.rowBg.setStrokeStyle(isPlayer || isLeader ? 1 : 0, isPlayer ? 0x7bd8ff : 0xd8a943, isPlayer || isLeader ? 0.48 : 0);
+      row.placeBg.setFillStyle(isLeader ? 0xd8a943 : isPlayer ? 0x1c5f9f : 0x0d2235, isLeader ? 0.84 : 0.66);
+      row.placeBg.setStrokeStyle(1, isLeader ? 0xffe6a2 : 0xffffff, isLeader ? 0.26 : 0.08);
       row.place.setText(String(index + 1));
       row.place.setColor(isLeader ? '#06111f' : '#ffffff');
       row.silk.setFillStyle(runner.color || 0xffffff, 1);
@@ -356,7 +356,7 @@ window.SKACHKI_RACE_HUD = (function () {
       row.name.setColor(isPlayer ? '#ffffff' : isLeader ? '#ffe6a2' : '#c8d4df');
       row.gap.setText(compactGapText(scene, runner, leader));
       row.gap.setColor(isLeader ? '#ffe6a2' : isPlayer ? '#7bd8ff' : '#8fa6bb');
-      row.separator.setFillStyle(0xffffff, isPlayer ? 0.06 : 0.035);
+      row.separator.setFillStyle(0xffffff, isPlayer ? 0.05 : 0.03);
     });
   }
 
