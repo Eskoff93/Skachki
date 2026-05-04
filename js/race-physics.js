@@ -8,6 +8,7 @@ window.SKACHKI_RACE_PHYSICS = (function () {
   var TANK_PER_STAMINA_POINT = 15;
   var BURST_STAMINA_DRAIN_MULTIPLIER = 2;
   var TURN_SLOWDOWN_KMH_PER_SECOND = 18;
+  var TURN_SPEED_FACTOR = 0.78;
 
   var FORM_RANGES = {
     pure: { min: 1, max: 1 },
@@ -126,8 +127,19 @@ window.SKACHKI_RACE_PHYSICS = (function () {
       : 0;
   }
 
-  function turnSpeedFactor(context) {
-    return clamp(Number(context.turnSpeedFactor) || 1, 0.5, 1);
+  function runnerPhase(runner) {
+    return ((runner.progress % 1) + 1) % 1;
+  }
+
+  function runnerOnTurn(runner) {
+    var phase = runnerPhase(runner);
+    return (phase > 0.18 && phase < 0.50) || (phase > 0.68 && phase < 0.98);
+  }
+
+  function turnSpeedFactor(context, runner) {
+    var explicitFactor = Number(context.turnSpeedFactor);
+    if (Number.isFinite(explicitFactor) && explicitFactor > 0) return clamp(explicitFactor, 0.5, 1);
+    return runnerOnTurn(runner) ? TURN_SPEED_FACTOR : 1;
   }
 
   function updateRunner(runner, context) {
@@ -138,7 +150,7 @@ window.SKACHKI_RACE_PHYSICS = (function () {
     var randomFactor = context.pureBalanceTest ? 1 : clamp(Number(context.randomFactor) || 1, 0.94, 1);
     var isBursting = !context.pureBalanceTest && !!context.isBursting;
     var isPenalized = !context.pureBalanceTest && !!context.isPenalized;
-    var turnFactor = turnSpeedFactor(context || {});
+    var turnFactor = turnSpeedFactor(context || {}, runner);
     var turnSlowdownDelta = TURN_SLOWDOWN_KMH_PER_SECOND * dt;
     var targetSpeedKmh;
     var speedDelta;
