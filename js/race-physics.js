@@ -9,6 +9,7 @@ window.SKACHKI_RACE_PHYSICS = (function () {
   var BURST_STAMINA_DRAIN_MULTIPLIER = 2;
 
   var FORM_RANGES = {
+    pure: { min: 1, max: 1 },
     excellent: { min: 0.95, max: 1 },
     normal: { min: 0.8, max: 1 },
     bad: { min: 0.7, max: 0.9 }
@@ -43,8 +44,13 @@ window.SKACHKI_RACE_PHYSICS = (function () {
     return Math.max(1, effectiveStat(effectiveStamina, 1) * TANK_PER_STAMINA_POINT);
   }
 
-  function initialRunnerPhysics(horse, raceDistanceMeters) {
-    var formFactor = rollFormFactor(horse.form);
+  function isPureMode(horse, context) {
+    return !!(context && context.pureBalanceTest) || horse.form === 'pure';
+  }
+
+  function initialRunnerPhysics(horse, raceDistanceMeters, options) {
+    var pure = isPureMode(horse || {}, options || {});
+    var formFactor = pure ? 1 : rollFormFactor(horse.form);
     var effectiveSpeed = effectiveStat(horse.speed, formFactor);
     var effectiveAcceleration = effectiveStat(horse.acceleration, formFactor);
     var effectiveStamina = effectiveStat(horse.stamina, formFactor);
@@ -63,6 +69,7 @@ window.SKACHKI_RACE_PHYSICS = (function () {
       baseMaxSpeedKmh: speedToKmh(horse.speed),
       formTickMeters: FORM_TICK_METERS,
       nextFormTickMeters: FORM_TICK_METERS,
+      pureBalanceTest: pure,
       formFactor: formFactor,
       effectiveSpeed: effectiveSpeed,
       effectiveAcceleration: effectiveAcceleration,
@@ -73,7 +80,11 @@ window.SKACHKI_RACE_PHYSICS = (function () {
   }
 
   function updateEffectiveStats(physics, horse) {
-    physics.formFactor = rollFormFactor(horse.form);
+    if (physics.pureBalanceTest || horse.form === 'pure') {
+      physics.formFactor = 1;
+    } else {
+      physics.formFactor = rollFormFactor(horse.form);
+    }
     physics.effectiveSpeed = effectiveStat(horse.speed, physics.formFactor);
     physics.effectiveAcceleration = effectiveStat(horse.acceleration, physics.formFactor);
     physics.effectiveStamina = effectiveStat(horse.stamina, physics.formFactor);
@@ -82,6 +93,8 @@ window.SKACHKI_RACE_PHYSICS = (function () {
   }
 
   function applyFormTicks(physics, horse) {
+    if (physics.pureBalanceTest || horse.form === 'pure') return;
+
     while (physics.distanceMeters >= physics.nextFormTickMeters && physics.distanceMeters < physics.raceDistanceMeters) {
       updateEffectiveStats(physics, horse);
       physics.nextFormTickMeters += physics.formTickMeters;
@@ -110,15 +123,16 @@ window.SKACHKI_RACE_PHYSICS = (function () {
   function updateRunner(runner, context) {
     var dt = Math.max(0, Math.min(0.08, Number(context.deltaSeconds) || 0));
     var horse = runner.horse || {};
-    var physics = runner.physics || initialRunnerPhysics(horse, context.raceDistanceMeters);
+    var physics = runner.physics || initialRunnerPhysics(horse, context.raceDistanceMeters, context);
     var lineEfficiency = Number(context.lineEfficiency) || 1;
-    var randomFactor = clamp(Number(context.randomFactor) || 1, 0.94, 1);
-    var isBursting = !!context.isBursting;
-    var isPenalized = !!context.isPenalized;
+    var randomFactor = context.pureBalanceTest ? 1 : clamp(Number(context.randomFactor) || 1, 0.94, 1);
+    var isBursting = !context.pureBalanceTest && !!context.isBursting;
+    var isPenalized = !context.pureBalanceTest && !!context.isPenalized;
     var targetSpeedKmh;
     var speedDelta;
     var mps;
 
+    physics.pureBalanceTest = !!context.pureBalanceTest || physics.pureBalanceTest || horse.form === 'pure';
     physics.raceDistanceMeters = Math.max(1, Number(context.raceDistanceMeters) || physics.raceDistanceMeters || 150);
     physics.elapsedSeconds += dt;
     applyFormTicks(physics, horse);
