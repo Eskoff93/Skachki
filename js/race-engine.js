@@ -5,7 +5,7 @@ window.SKACHKI_RACE_ENGINE = (function () {
   var TRACK_PIXELS_PER_METER = 7;
   var TRACK_ASPECT_RATIO = 2.05;
   var RENDER_RESOLUTION_CAP = 3;
-  var LANE_CHANGE_SPEED_MULTIPLIER = 1.45;
+  var LANE_CHANGE_SPEED_MULTIPLIER = 0.62;
 
   function game() { return window.SKACHKI_GAME; }
   function raceTrack() { return window.SKACHKI_RACE_TRACK || {}; }
