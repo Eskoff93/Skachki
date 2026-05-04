@@ -101,33 +101,28 @@ window.SKACHKI_RACE_TRACK = (function () {
     var points = [];
     var width = right - left;
     var start = { x: left, y: top };
-    var leftMiddle = { x: left, y: middle };
-    var rightMiddle = { x: right, y: middle };
-    var rightBottom = { x: right, y: bottom };
-    var finish = { x: right, y: top };
+    var topRight = { x: right, y: top };
+    var middleRight = { x: right, y: middle };
+    var middleLeft = { x: left, y: middle };
+    var bottomLeft = { x: left, y: bottom };
+    var finish = { x: right, y: bottom };
 
     points.push(start);
-    sampleCubic(points, start,
-      { x: left - width * 0.18, y: top + (middle - top) * 0.28 },
-      { x: left - width * 0.18, y: middle - (middle - top) * 0.22 },
-      leftMiddle,
-      22);
-    sampleCubic(points, leftMiddle,
-      { x: left + width * 0.36, y: middle + (bottom - middle) * 0.04 },
-      { x: right - width * 0.36, y: middle - (middle - top) * 0.04 },
-      rightMiddle,
-      34);
-    sampleCubic(points, rightMiddle,
-      { x: right + width * 0.18, y: middle + (bottom - middle) * 0.22 },
-      { x: right + width * 0.18, y: bottom - (bottom - middle) * 0.28 },
-      rightBottom,
-      22);
-    sampleLine(points, rightBottom.x, rightBottom.y, left + width * 0.18, bottom, 24);
-    sampleCubic(points, { x: left + width * 0.18, y: bottom },
-      { x: left - width * 0.18, y: bottom - (bottom - middle) * 0.12 },
-      { x: right - width * 0.22, y: top + (middle - top) * 0.12 },
-      finish,
-      42);
+
+    // Stable open S route: no diagonal return and no self-intersections.
+    sampleLine(points, start.x, start.y, topRight.x, topRight.y, 32);
+    sampleCubic(points, topRight,
+      { x: right + width * 0.18, y: top + (middle - top) * 0.22 },
+      { x: right + width * 0.18, y: middle - (middle - top) * 0.22 },
+      middleRight,
+      28);
+    sampleLine(points, middleRight.x, middleRight.y, middleLeft.x, middleLeft.y, 36);
+    sampleCubic(points, middleLeft,
+      { x: left - width * 0.18, y: middle + (bottom - middle) * 0.22 },
+      { x: left - width * 0.18, y: bottom - (bottom - middle) * 0.22 },
+      bottomLeft,
+      28);
+    sampleLine(points, bottomLeft.x, bottomLeft.y, finish.x, finish.y, 32);
 
     return points;
   }
