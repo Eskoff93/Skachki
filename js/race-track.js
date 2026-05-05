@@ -169,6 +169,26 @@ window.SKACHKI_RACE_TRACK = (function () {
     return (track.straight * START_FINISH_STRAIGHT_RATIO) / trackPerimeter(track);
   }
 
+  function segmentAt(track, progress, lane) {
+    var perimeter;
+    var d;
+    var straight;
+    var arc;
+
+    if (!track) return { type: 'straight', progress: 0 };
+    if (track.type === 's_track') return { type: 'straight', progress: Math.max(0, Math.min(1, Number(progress) || 0)) };
+
+    straight = Number(track.straight) || 1;
+    arc = Math.PI * (Number(track.r) || 1);
+    perimeter = trackPerimeter(track);
+    d = (((Number(progress) || 0) % 1) + 1) % 1 * perimeter;
+
+    if (d < straight) return { type: 'straight', name: 'top_straight', distance: d, progress: d / perimeter };
+    if (d < straight + arc) return { type: 'turn', name: 'right_turn', distance: d, progress: d / perimeter };
+    if (d < straight * 2 + arc) return { type: 'straight', name: 'bottom_straight', distance: d, progress: d / perimeter };
+    return { type: 'turn', name: 'left_turn', distance: d, progress: d / perimeter };
+  }
+
   function drawTrack(scene, width, height) {
     if (scene.track && scene.track.type === 's_track') return drawSTrack(scene, width, height);
     return drawOvalTrack(scene, width, height);
@@ -545,6 +565,7 @@ window.SKACHKI_RACE_TRACK = (function () {
     laneDistanceFactor: laneDistanceFactor,
     makeTrackGeometry: makeTrackGeometry,
     pointOnTrack: pointOnTrack,
+    segmentAt: segmentAt,
     startFinishX: startFinishX,
     startProgress: startProgress
   };
