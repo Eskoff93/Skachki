@@ -17,6 +17,8 @@ window.SKACHKI_RACE_PHYSICS = (function () {
     bad: { min: 0.7, max: 0.9 }
   };
 
+  function trackApi() { return window.SKACHKI_RACE_TRACK || {}; }
+
   function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
   }
@@ -127,19 +129,20 @@ window.SKACHKI_RACE_PHYSICS = (function () {
       : 0;
   }
 
-  function runnerPhase(runner) {
-    return ((runner.progress % 1) + 1) % 1;
-  }
-
-  function runnerOnTurn(runner) {
-    var phase = runnerPhase(runner);
-    return (phase > 0.23 && phase < 0.48) || (phase > 0.73 && phase < 0.98);
+  function trackSegmentType(context, runner) {
+    var api = trackApi();
+    var info;
+    if (api.segmentAt && context && context.track && runner) {
+      info = api.segmentAt(context.track, runner.progress, runner.lane);
+      if (info && info.type) return info.type;
+    }
+    return 'straight';
   }
 
   function turnSpeedFactor(context, runner) {
     var explicitFactor = Number(context.turnSpeedFactor);
     if (Number.isFinite(explicitFactor) && explicitFactor > 0) return clamp(explicitFactor, 0.5, 1);
-    return runnerOnTurn(runner) ? TURN_SPEED_FACTOR : 1;
+    return trackSegmentType(context || {}, runner) === 'turn' ? TURN_SPEED_FACTOR : 1;
   }
 
   function updateRunner(runner, context) {
